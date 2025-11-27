@@ -1,0 +1,263 @@
+# AsyncAPI specification for Schedule X events
+asyncapi: '2.6.0'
+info:
+  title: Schedule X Events API
+  version: '1.0.0'
+  description: |
+    Event-driven architecture for Schedule X reconciliation system.
+    
+    **Events Published**:
+    - schedule-x-updated: When Schedule X data is modified (triggers PDF regeneration)
+    - schedule-x-validation-warning: When variance >20% detected (flags for review)
+    
+    **Event Consumers**:
+    - pdf-service: Regenerates Form 27 PDF when Schedule X updated
+    - audit-service: Logs all Schedule X changes for compliance
+    - notification-service: Alerts users when validation warnings triggered
+  contact:
+    name: MuniTax Engineering
+    email: engineering@munitax.com
+
+servers:
+  development:
+    url: redis://localhost:6379
+    protocol: redis
+    description: Local development (Redis Pub/Sub)
+  production:
+    url: kafka://kafka.munitax.com:9092
+    protocol: kafka
+    description: Production (Apache Kafka)
+
+channels:
+  business-tax/schedule-x-updated:
+    description: |
+      Published when Schedule X data is updated for a business tax return.
+      Triggers downstream services (PDF generation, audit logging).
+    publish:
+      summary: Schedule X Updated Event
+      operationId: publishScheduleXUpdated
+      message:
+        $ref: '#/components/messages/ScheduleXUpdated'
+    subscribe:
+      summary: Listen for Schedule X updates
+      operationId: subscribeScheduleXUpdated
+      message:
+        $ref: '#/components/messages/ScheduleXUpdated'
+
+  business-tax/schedule-x-validation-warning:
+    description: |
+      Published when Schedule X validation detects >20% variance between federal and municipal income.
+      Triggers user notification and flags return for auditor review (FR-034).
+    publish:
+      summary: Schedule X Validation Warning Event
+      operationId: publishScheduleXValidationWarning
+      message:
+        $ref: '#/components/messages/ScheduleXValidationWarning'
+    subscribe:
+      summary: Listen for Schedule X validation warnings
+      operationId: subscribeScheduleXValidationWarning
+      message:
+        $ref: '#/components/messages/ScheduleXValidationWarning'
+
+components:
+  messages:
+    ScheduleXUpdated:
+      name: ScheduleXUpdated
+      title: Schedule X Updated Event
+      summary: Schedule X data was modified for a business tax return
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ScheduleXUpdatedPayload'
+      examples:
+        - name: C-Corp Schedule X Update
+          summary: C-Corp updated depreciation and meals adjustments
+          payload:
+            eventId: "750e8400-e29b-41d4-a716-446655440000"
+            eventType: "SCHEDULE_X_UPDATED"
+            timestamp: "2024-11-27T20:15:00Z"
+            tenantId: "dublin"
+            businessId: "550e8400-e29b-41d4-a716-446655440000"
+            returnId: "650e8400-e29b-41d4-a716-446655440000"
+            taxYear: 2024
+            changedFields:
+              - "addBacks.depreciationAdjustment"
+              - "addBacks.mealsAndEntertainment"
+            oldValues:
+              depreciationAdjustment: 0.00
+              mealsAndEntertainment: 0.00
+            newValues:
+              depreciationAdjustment: 50000.00
+              mealsAndEntertainment: 15000.00
+            calculatedFields:
+              totalAddBacks: 75000.00
+              totalDeductions: 0.00
+              adjustedMunicipalIncome: 575000.00
+            userId: "user-uuid-456"
+            userRole: "CPA"
+
+    ScheduleXValidationWarning:
+      name: ScheduleXValidationWarning
+      title: Schedule X Validation Warning Event
+      summary: Schedule X validation detected >20% variance (requires review)
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ScheduleXValidationWarningPayload'
+      examples:
+        - name: High Variance Detected
+          summary: Adjusted municipal income 30% higher than federal
+          payload:
+            eventId: "760e8400-e29b-41d4-a716-446655440001"
+            eventType: "SCHEDULE_X_VALIDATION_WARNING"
+            timestamp: "2024-11-27T20:15:05Z"
+            tenantId: "dublin"
+            businessId: "550e8400-e29b-41d4-a716-446655440000"
+            returnId: "650e8400-e29b-41d4-a716-446655440000"
+            taxYear: 2024
+            warningType: "HIGH_VARIANCE"
+            fedTaxableIncome: 500000.00
+            adjustedMunicipalIncome: 650000.00
+            varianceAmount: 150000.00
+            variancePercentage: 30.00
+            message: "Adjusted municipal income differs from federal by 30% (>20% threshold). Please verify all adjustments."
+            suggestedActions:
+              - "Review depreciation adjustments ($50,000)"
+              - "Verify meals & entertainment calculation ($15,000)"
+              - "Confirm all add-backs are accurate"
+
+  schemas:
+    ScheduleXUpdatedPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - businessId
+        - returnId
+        - taxYear
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Unique event identifier
+        eventType:
+          type: string
+          enum: [SCHEDULE_X_UPDATED]
+          description: Event type discriminator
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+        tenantId:
+          type: string
+          description: Tenant identifier (municipality code)
+          example: "dublin"
+        businessId:
+          type: string
+          format: uuid
+          description: Business identifier
+        returnId:
+          type: string
+          format: uuid
+          description: Tax return identifier
+        taxYear:
+          type: integer
+          description: Tax year for return
+          example: 2024
+        changedFields:
+          type: array
+          items:
+            type: string
+          description: List of Schedule X fields that were modified
+          example: ["addBacks.depreciationAdjustment", "addBacks.mealsAndEntertainment"]
+        oldValues:
+          type: object
+          description: Previous values for changed fields
+        newValues:
+          type: object
+          description: New values for changed fields
+        calculatedFields:
+          type: object
+          description: Recalculated totals and adjusted municipal income
+          properties:
+            totalAddBacks:
+              type: number
+            totalDeductions:
+              type: number
+            adjustedMunicipalIncome:
+              type: number
+        userId:
+          type: string
+          format: uuid
+          description: User who made the change
+        userRole:
+          type: string
+          enum: [BUSINESS, CPA, AUDITOR]
+          description: Role of user who made the change
+
+    ScheduleXValidationWarningPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - businessId
+        - returnId
+        - taxYear
+        - warningType
+        - fedTaxableIncome
+        - adjustedMunicipalIncome
+        - varianceAmount
+        - variancePercentage
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Unique event identifier
+        eventType:
+          type: string
+          enum: [SCHEDULE_X_VALIDATION_WARNING]
+          description: Event type discriminator
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+        tenantId:
+          type: string
+          description: Tenant identifier (municipality code)
+        businessId:
+          type: string
+          format: uuid
+          description: Business identifier
+        returnId:
+          type: string
+          format: uuid
+          description: Tax return identifier
+        taxYear:
+          type: integer
+          description: Tax year for return
+        warningType:
+          type: string
+          enum: [HIGH_VARIANCE, NEGATIVE_INCOME, MISSING_REQUIRED_FIELD]
+          description: Type of validation warning
+        fedTaxableIncome:
+          type: number
+          description: Federal taxable income
+        adjustedMunicipalIncome:
+          type: number
+          description: Calculated adjusted municipal income
+        varianceAmount:
+          type: number
+          description: Absolute difference (adjustedMunicipalIncome - fedTaxableIncome)
+        variancePercentage:
+          type: number
+          description: Variance as percentage of federal income
+        message:
+          type: string
+          description: Human-readable warning message
+        suggestedActions:
+          type: array
+          items:
+            type: string
+          description: Suggested actions to resolve warning

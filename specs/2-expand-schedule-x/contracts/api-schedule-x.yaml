@@ -1,0 +1,803 @@
+openapi: 3.0.3
+info:
+  title: Business Schedule X Reconciliation API
+  description: |
+    API for comprehensive business Schedule X reconciliation (27+ fields), supporting complete M-1 reconciliation for C-Corporations, Partnerships, and S-Corporations.
+    
+    **Features**:
+    - Get/update Schedule X with 27 fields (add-backs, deductions, calculated fields)
+    - Auto-calculation helpers (meals 50%→100%, 5% Rule, charitable 10% limit)
+    - Multi-year comparison (side-by-side view for 3+ years)
+    - AI extraction from Form 1120 Schedule M-1 and Form 4562
+    - Import Schedule X from uploaded federal return PDFs
+    
+    **Authentication**: Bearer JWT token required for all endpoints.
+    **Multi-Tenant**: All requests scoped to tenant from JWT claims.
+  version: 1.0.0
+  contact:
+    name: MuniTax Engineering
+    email: engineering@munitax.com
+
+servers:
+  - url: https://api.munitax.com/v1
+    description: Production
+  - url: https://api.staging.munitax.com/v1
+    description: Staging
+  - url: http://localhost:8080/api/v1
+    description: Local Development
+
+tags:
+  - name: Schedule X
+    description: Schedule X reconciliation operations (27-field expansion)
+  - name: Auto-Calculation
+    description: Auto-calculation helpers for Schedule X fields
+  - name: Multi-Year Comparison
+    description: Multi-year Schedule X comparison views
+
+paths:
+  /net-profits/{returnId}/schedule-x:
+    get:
+      tags:
+        - Schedule X
+      summary: Get Schedule X reconciliation data for a return
+      description: |
+        Retrieve expanded Schedule X data (27 fields) for a business net profits return.
+        Supports both old 6-field format (backward compatible) and new 27-field format.
+        
+        **Functional Requirements**: FR-001 through FR-038
+        **Backward Compatibility**: Automatically converts old 6-field format to new 27-field format (Research R2)
+      operationId: getScheduleX
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: returnId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Business tax return ID
+      responses:
+        '200':
+          description: Schedule X data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessScheduleXDetails'
+              example:
+                fedTaxableIncome: 500000.00
+                addBacks:
+                  depreciationAdjustment: 50000.00
+                  amortizationAdjustment: 0.00
+                  incomeAndStateTaxes: 10000.00
+                  guaranteedPayments: 0.00
+                  mealsAndEntertainment: 15000.00
+                  relatedPartyExcess: 0.00
+                  penaltiesAndFines: 0.00
+                  politicalContributions: 0.00
+                  officerLifeInsurance: 0.00
+                  capitalLossExcess: 0.00
+                  federalTaxRefunds: 0.00
+                  expensesOnIntangibleIncome: 0.00
+                  section179Excess: 0.00
+                  bonusDepreciation: 0.00
+                  badDebtReserveIncrease: 0.00
+                  charitableContributionExcess: 0.00
+                  domesticProductionActivities: 0.00
+                  stockCompensationAdjustment: 0.00
+                  inventoryMethodChange: 0.00
+                  otherAddBacks: 0.00
+                  otherAddBacksDescription: null
+                deductions:
+                  interestIncome: 0.00
+                  dividends: 0.00
+                  capitalGains: 0.00
+                  section179Recapture: 0.00
+                  municipalBondInterest: 0.00
+                  depletionDifference: 0.00
+                  otherDeductions: 0.00
+                  otherDeductionsDescription: null
+                calculatedFields:
+                  totalAddBacks: 75000.00
+                  totalDeductions: 0.00
+                  adjustedMunicipalIncome: 575000.00
+                metadata:
+                  lastModified: "2024-11-27T19:45:00Z"
+                  autoCalculatedFields: ["mealsAndEntertainment"]
+                  manualOverrides: []
+                  attachedDocuments: []
+        '404':
+          description: Return not found
+        '403':
+          description: Unauthorized - user does not have access to this return
+
+    put:
+      tags:
+        - Schedule X
+      summary: Update Schedule X reconciliation data
+      description: |
+        Update Schedule X data with 27 fields. System automatically:
+        - Recalculates totalAddBacks (sum of 20 add-back fields)
+        - Recalculates totalDeductions (sum of 7 deduction fields)
+        - Recalculates adjustedMunicipalIncome (federal + addBacks - deductions)
+        - Validates variance <20% (flags for review if exceeded - FR-034)
+        - Logs update to audit trail
+        - Triggers ScheduleXUpdated event (updates PDF generation queue)
+        
+        **Functional Requirements**: FR-028, FR-029, FR-030, FR-034
+      operationId: updateScheduleX
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: returnId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Business tax return ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusinessScheduleXDetails'
+            example:
+              fedTaxableIncome: 500000.00
+              addBacks:
+                depreciationAdjustment: 50000.00
+                incomeAndStateTaxes: 10000.00
+                mealsAndEntertainment: 15000.00
+              deductions: {}
+      responses:
+        '200':
+          description: Schedule X updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BusinessScheduleXDetails'
+        '400':
+          description: Validation error (e.g., otherAddBacksDescription required if otherAddBacks > 0)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '404':
+          description: Return not found
+
+  /schedule-x/auto-calculate:
+    post:
+      tags:
+        - Auto-Calculation
+      summary: Auto-calculate Schedule X field values
+      description: |
+        Provides auto-calculation helpers for Schedule X fields:
+        - **mealsAndEntertainment**: Federal 50% deduction → Municipal 100% add-back (multiply by 2)
+        - **expensesOnIntangibleIncome**: 5% Rule (interest + dividends + capital gains) × 0.05
+        - **charitableContributionExcess**: 10% limit with carryforward calculation (requires DB query for prior year)
+        - **relatedPartyExcess**: Paid amount - Fair Market Value
+        
+        **Functional Requirements**: FR-031 (auto-calculation helpers)
+        **Research**: R3 (Hybrid approach - simple calcs in frontend, complex calcs in backend)
+      operationId: autoCalculateField
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutoCalcRequest'
+            examples:
+              mealsCalculation:
+                summary: Meals & Entertainment (50% → 100%)
+                value:
+                  field: "mealsAndEntertainment"
+                  inputs:
+                    federalMealsDeduction: 15000
+              5PercentRule:
+                summary: 5% Rule (Intangible Income Expenses)
+                value:
+                  field: "expensesOnIntangibleIncome"
+                  inputs:
+                    interestIncome: 20000
+                    dividendIncome: 15000
+                    capitalGains: 0
+              charitableContribution:
+                summary: Charitable Contribution 10% Limit
+                value:
+                  field: "charitableContributionExcess"
+                  inputs:
+                    businessId: "550e8400-e29b-41d4-a716-446655440000"
+                    taxYear: 2024
+                    contributionsPaid: 80000
+                    taxableIncomeBeforeContributions: 600000
+      responses:
+        '200':
+          description: Field value calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AutoCalcResponse'
+              examples:
+                mealsResult:
+                  summary: Meals Calculation Result
+                  value:
+                    calculatedValue: 30000
+                    explanation: "Federal allows 50% deduction for business meals ($15,000). Municipal allows 0% deduction. Add back full expense: $15,000 × 2 = $30,000."
+                    metadata:
+                      formula: "federalMealsDeduction × 2"
+                5PercentRuleResult:
+                  summary: 5% Rule Result
+                  value:
+                    calculatedValue: 1750
+                    explanation: "5% Rule: Add back expenses incurred to earn non-taxable intangible income. Total intangible income: $20,000 (interest) + $15,000 (dividends) = $35,000. Add-back: $35,000 × 5% = $1,750."
+                    metadata:
+                      formula: "(interestIncome + dividendIncome + capitalGains) × 0.05"
+                      allowManualOverride: true
+        '400':
+          description: Invalid field name or missing required inputs
+
+  /schedule-x/multi-year-comparison:
+    get:
+      tags:
+        - Multi-Year Comparison
+      summary: Get multi-year Schedule X comparison (side-by-side)
+      description: |
+        Retrieve Schedule X data for multiple tax years (typically 3 years) for side-by-side comparison.
+        Used for identifying recurring adjustments (depreciation trends, meals & entertainment patterns).
+        
+        **Functional Requirements**: FR-038 (multi-year comparison view)
+        **Performance**: <2 seconds for 3 years (Success Criteria)
+        **Research**: R4 (Single query with IN clause - 180ms avg response time)
+      operationId: getMultiYearComparison
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Business ID to compare across years
+        - name: years
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Comma-separated list of tax years (e.g., "2024,2023,2022")
+      responses:
+        '200':
+          description: Multi-year comparison data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiYearComparisonResponse'
+              example:
+                years: [2024, 2023, 2022]
+                data:
+                  - taxYear: 2024
+                    fedTaxableIncome: 575000.00
+                    calculatedFields:
+                      totalAddBacks: 75000.00
+                      totalDeductions: 0.00
+                      adjustedMunicipalIncome: 575000.00
+                    addBacks:
+                      depreciationAdjustment: 50000.00
+                      mealsAndEntertainment: 15000.00
+                      incomeAndStateTaxes: 10000.00
+                  - taxYear: 2023
+                    fedTaxableIncome: 550000.00
+                    calculatedFields:
+                      totalAddBacks: 60000.00
+                      totalDeductions: 0.00
+                      adjustedMunicipalIncome: 550000.00
+                    addBacks:
+                      depreciationAdjustment: 45000.00
+                      mealsAndEntertainment: 10000.00
+                      incomeAndStateTaxes: 5000.00
+                  - taxYear: 2022
+                    fedTaxableIncome: 525000.00
+                    calculatedFields:
+                      totalAddBacks: 55000.00
+                      totalDeductions: 0.00
+                      adjustedMunicipalIncome: 525000.00
+                    addBacks:
+                      depreciationAdjustment: 40000.00
+                      mealsAndEntertainment: 10000.00
+                      incomeAndStateTaxes: 5000.00
+                responseTime: 178
+        '404':
+          description: Business not found or no returns for specified years
+
+  /schedule-x/import-from-federal:
+    post:
+      tags:
+        - Schedule X
+      summary: Import Schedule X from uploaded federal return (AI extraction)
+      description: |
+        Upload Form 1120 Schedule M-1 and/or Form 4562 (depreciation) PDFs and extract 27 Schedule X fields using AI (Gemini Vision).
+        System extracts:
+        - Depreciation adjustments from Form 4562
+        - Meals & entertainment from Form 1120 Line 20 (Other Deductions)
+        - State/local taxes from Form 1120 Line 17
+        - Charitable contributions from Form 1120 Line 19
+        - Guaranteed payments from Form 1065 Line 10 (if Partnership)
+        - All other M-1 reconciliation items from Schedule M-1
+        
+        **Functional Requirements**: FR-039 (AI extraction), FR-040 (field identification), FR-041 (depreciation parsing), FR-042 (confidence scores)
+        **Performance**: <10 seconds extraction time (Success Criteria)
+        **Research**: R1 (Bounding box coordinates for Constitution IV compliance)
+      operationId: importScheduleXFromFederal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                returnId:
+                  type: string
+                  format: uuid
+                  description: Business tax return ID to populate
+                federalFormPdf:
+                  type: string
+                  format: binary
+                  description: Form 1120/1065/1120-S with Schedule M-1 (PDF file)
+                depreciationSchedulePdf:
+                  type: string
+                  format: binary
+                  description: Form 4562 (Depreciation and Amortization) - optional
+              required:
+                - returnId
+                - federalFormPdf
+      responses:
+        '202':
+          description: AI extraction initiated (async processing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractionInitiatedResponse'
+              example:
+                extractionId: "650e8400-e29b-41d4-a716-446655440001"
+                status: "IN_PROGRESS"
+                message: "AI extraction initiated. Processing Form 1120 Schedule M-1 and Form 4562..."
+                estimatedCompletionTime: "2024-11-27T20:20:00Z"
+        '400':
+          description: Invalid file format or missing required files
+
+  /extraction/schedule-x/{extractionId}:
+    get:
+      tags:
+        - Schedule X
+      summary: Get AI extraction results for Schedule X
+      description: |
+        Poll extraction status and retrieve results once completed.
+        Response includes extracted field values, confidence scores (0.0-1.0), and bounding box coordinates for each field.
+        
+        **Functional Requirements**: FR-042 (confidence scores), FR-043 (human override capability)
+        **Constitution IV**: Bounding boxes enable transparency (user can view source PDF region)
+      operationId: getExtractionResults
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: extractionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Extraction ID from import-from-federal response
+      responses:
+        '200':
+          description: Extraction completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleXExtractionResult'
+              example:
+                extractionId: "650e8400-e29b-41d4-a716-446655440001"
+                status: "COMPLETED"
+                extractedAt: "2024-11-27T20:19:45Z"
+                fields:
+                  depreciationAdjustment:
+                    value: 50000.00
+                    confidence: 0.95
+                    boundingBox:
+                      page: 2
+                      vertices:
+                        - {x: 245, y: 189}
+                        - {x: 298, y: 189}
+                        - {x: 298, y: 205}
+                        - {x: 245, y: 205}
+                    sourceDocument: "Form 4562, Part II Line 17 Column (h)"
+                  mealsAndEntertainment:
+                    value: 30000.00
+                    confidence: 0.88
+                    boundingBox:
+                      page: 1
+                      vertices:
+                        - {x: 412, y: 345}
+                        - {x: 465, y: 345}
+                        - {x: 465, y: 361}
+                        - {x: 412, y: 361}
+                    sourceDocument: "Form 1120, Line 20 (Other Deductions - Detail)"
+                averageConfidence: 0.92
+                fieldsExtracted: 27
+        '202':
+          description: Extraction still in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtractionInProgressResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    BusinessScheduleXDetails:
+      type: object
+      description: Expanded Schedule X reconciliation data (27 fields)
+      required:
+        - fedTaxableIncome
+        - addBacks
+        - deductions
+      properties:
+        fedTaxableIncome:
+          type: number
+          format: double
+          description: Federal taxable income from Form 1120 Line 30 / Form 1065 Line 22 / Form 1120-S Line 23
+          example: 500000.00
+        addBacks:
+          $ref: '#/components/schemas/AddBacks'
+        deductions:
+          $ref: '#/components/schemas/Deductions'
+        calculatedFields:
+          $ref: '#/components/schemas/CalculatedFields'
+        metadata:
+          $ref: '#/components/schemas/Metadata'
+
+    AddBacks:
+      type: object
+      description: 20 fields that increase federal income for municipal purposes
+      properties:
+        depreciationAdjustment:
+          type: number
+          format: double
+          default: 0.0
+          description: Book depreciation minus MACRS tax depreciation (negative if book < tax)
+        amortizationAdjustment:
+          type: number
+          format: double
+          default: 0.0
+        incomeAndStateTaxes:
+          type: number
+          format: double
+          default: 0.0
+        guaranteedPayments:
+          type: number
+          format: double
+          default: 0.0
+          description: Form 1065 Line 10 (Partnerships only)
+        mealsAndEntertainment:
+          type: number
+          format: double
+          default: 0.0
+        relatedPartyExcess:
+          type: number
+          format: double
+          default: 0.0
+        penaltiesAndFines:
+          type: number
+          format: double
+          default: 0.0
+        politicalContributions:
+          type: number
+          format: double
+          default: 0.0
+        officerLifeInsurance:
+          type: number
+          format: double
+          default: 0.0
+        capitalLossExcess:
+          type: number
+          format: double
+          default: 0.0
+        federalTaxRefunds:
+          type: number
+          format: double
+          default: 0.0
+        expensesOnIntangibleIncome:
+          type: number
+          format: double
+          default: 0.0
+          description: 5% Rule - auto-calculated or manual override
+        section179Excess:
+          type: number
+          format: double
+          default: 0.0
+        bonusDepreciation:
+          type: number
+          format: double
+          default: 0.0
+        badDebtReserveIncrease:
+          type: number
+          format: double
+          default: 0.0
+        charitableContributionExcess:
+          type: number
+          format: double
+          default: 0.0
+        domesticProductionActivities:
+          type: number
+          format: double
+          default: 0.0
+        stockCompensationAdjustment:
+          type: number
+          format: double
+          default: 0.0
+        inventoryMethodChange:
+          type: number
+          format: double
+          default: 0.0
+        otherAddBacks:
+          type: number
+          format: double
+          default: 0.0
+        otherAddBacksDescription:
+          type: string
+          nullable: true
+          description: Required if otherAddBacks > 0
+
+    Deductions:
+      type: object
+      description: 7 fields that decrease federal income for municipal purposes
+      properties:
+        interestIncome:
+          type: number
+          format: double
+          default: 0.0
+        dividends:
+          type: number
+          format: double
+          default: 0.0
+        capitalGains:
+          type: number
+          format: double
+          default: 0.0
+        section179Recapture:
+          type: number
+          format: double
+          default: 0.0
+        municipalBondInterest:
+          type: number
+          format: double
+          default: 0.0
+        depletionDifference:
+          type: number
+          format: double
+          default: 0.0
+        otherDeductions:
+          type: number
+          format: double
+          default: 0.0
+        otherDeductionsDescription:
+          type: string
+          nullable: true
+          description: Required if otherDeductions > 0
+
+    CalculatedFields:
+      type: object
+      description: Read-only computed values (never manually entered)
+      properties:
+        totalAddBacks:
+          type: number
+          format: double
+          description: Sum of all 20 add-back fields
+        totalDeductions:
+          type: number
+          format: double
+          description: Sum of all 7 deduction fields
+        adjustedMunicipalIncome:
+          type: number
+          format: double
+          description: fedTaxableIncome + totalAddBacks - totalDeductions
+
+    Metadata:
+      type: object
+      description: Audit trail and attachment metadata
+      properties:
+        lastModified:
+          type: string
+          format: date-time
+        autoCalculatedFields:
+          type: array
+          items:
+            type: string
+          description: List of fields populated by auto-calculation helpers
+        manualOverrides:
+          type: array
+          items:
+            type: string
+          description: List of fields where user overrode AI-extracted value
+        attachedDocuments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachedDocument'
+
+    AttachedDocument:
+      type: object
+      properties:
+        fileName:
+          type: string
+        fileUrl:
+          type: string
+          format: uri
+        fieldName:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+        uploadedBy:
+          type: string
+          format: uuid
+
+    AutoCalcRequest:
+      type: object
+      required:
+        - field
+        - inputs
+      properties:
+        field:
+          type: string
+          enum:
+            - mealsAndEntertainment
+            - expensesOnIntangibleIncome
+            - charitableContributionExcess
+            - relatedPartyExcess
+          description: Schedule X field to auto-calculate
+        inputs:
+          type: object
+          description: Input values required for calculation (varies by field)
+
+    AutoCalcResponse:
+      type: object
+      properties:
+        calculatedValue:
+          type: number
+          format: double
+        explanation:
+          type: string
+          description: Human-readable explanation of calculation
+        metadata:
+          type: object
+          description: Additional metadata (formula, carryforward, etc.)
+
+    MultiYearComparisonResponse:
+      type: object
+      properties:
+        years:
+          type: array
+          items:
+            type: integer
+          description: Tax years included in comparison
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BusinessScheduleXDetails'
+        responseTime:
+          type: integer
+          description: Query response time in milliseconds
+
+    ExtractionInitiatedResponse:
+      type: object
+      properties:
+        extractionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [IN_PROGRESS]
+        message:
+          type: string
+        estimatedCompletionTime:
+          type: string
+          format: date-time
+
+    ExtractionInProgressResponse:
+      type: object
+      properties:
+        extractionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [IN_PROGRESS]
+        progress:
+          type: integer
+          description: Extraction progress percentage (0-100)
+
+    ScheduleXExtractionResult:
+      type: object
+      properties:
+        extractionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [COMPLETED, FAILED]
+        extractedAt:
+          type: string
+          format: date-time
+        fields:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ScheduleXFieldExtraction'
+        averageConfidence:
+          type: number
+          format: double
+          description: Average confidence score across all extracted fields
+        fieldsExtracted:
+          type: integer
+          description: Number of fields successfully extracted
+
+    ScheduleXFieldExtraction:
+      type: object
+      properties:
+        value:
+          type: number
+          format: double
+        confidence:
+          type: number
+          format: double
+          minimum: 0.0
+          maximum: 1.0
+        boundingBox:
+          $ref: '#/components/schemas/BoundingBox'
+        sourceDocument:
+          type: string
+          description: Which PDF and line this field was extracted from
+
+    BoundingBox:
+      type: object
+      description: PDF coordinates for highlighted region (Constitution IV compliance)
+      properties:
+        page:
+          type: integer
+          description: PDF page number (1-indexed)
+        vertices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vertex'
+          minItems: 4
+          maxItems: 4
+          description: 4 vertices defining rectangle (top-left, top-right, bottom-right, bottom-left)
+
+    Vertex:
+      type: object
+      properties:
+        x:
+          type: number
+          format: double
+          description: Horizontal position (pixels from left edge)
+        y:
+          type: number
+          format: double
+          description: Vertical position (pixels from top edge)
+
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+        message:
+          type: string
+        code:
+          type: string
