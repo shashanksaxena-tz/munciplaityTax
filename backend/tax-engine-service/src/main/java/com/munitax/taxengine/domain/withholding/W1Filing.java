@@ -163,8 +163,9 @@ public class W1Filing {
      * Null if is_amended = false.
      * Enables audit trail: both original and amended filings preserved (FR-003, FR-017).
      */
-    @Column(name = "amends_filing_id")
-    private UUID amendsFilingId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "amends_filing_id")
+    private W1Filing amendsFilingRef;
     
     /**
      * Required explanation when filing amended W-1 (FR-003).

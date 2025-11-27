@@ -26,10 +26,7 @@ CREATE INDEX idx_audit_tenant ON dublin.withholding_audit_log(tenant_id);
 CREATE INDEX idx_audit_action ON dublin.withholding_audit_log(action);
 
 -- Comments
-COMMENT ON TABLE dublin.withholding_audit_log IS 'Immutable audit trail per Constitution III. 7-year retention per IRS IRC § 6001';
+COMMENT ON TABLE dublin.withholding_audit_log IS 'Immutable audit trail per Constitution III. 7-year retention per IRS IRC § 6001. WARNING: Never DELETE records. Archive to cold storage after 10 years per data retention policy';
 COMMENT ON COLUMN dublin.withholding_audit_log.old_value IS 'Previous state (JSON) before action. NULL for CREATE actions';
 COMMENT ON COLUMN dublin.withholding_audit_log.new_value IS 'New state (JSON) after action. NULL for DELETE actions';
 COMMENT ON COLUMN dublin.withholding_audit_log.actor_role IS 'BUSINESS (owner/accountant), AUDITOR (municipality), SYSTEM (automated)';
-
--- Permanent retention notice
-COMMENT ON TABLE dublin.withholding_audit_log IS 'WARNING: Never DELETE records. Archive to cold storage after 10 years per data retention policy';

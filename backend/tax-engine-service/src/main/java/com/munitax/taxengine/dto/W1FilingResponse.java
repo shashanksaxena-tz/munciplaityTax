@@ -99,7 +99,7 @@ public class W1FilingResponse {
      * Amendment information.
      */
     private Boolean isAmended;
-    private UUID amendsFilingId;
+    private UUID amendsFilingId; // ID only for API response
     private String amendmentReason;
     
     /**

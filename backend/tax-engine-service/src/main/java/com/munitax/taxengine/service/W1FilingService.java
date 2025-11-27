@@ -258,7 +258,7 @@ public class W1FilingService {
             .underpaymentPenalty(filing.getUnderpaymentPenalty())
             .totalAmountDue(filing.getTotalAmountDue())
             .isAmended(filing.getIsAmended())
-            .amendsFilingId(filing.getAmendsFilingId())
+            .amendsFilingId(filing.getAmendsFilingRef() != null ? filing.getAmendsFilingRef().getId() : null)
             .amendmentReason(filing.getAmendmentReason())
             .employeeCount(filing.getEmployeeCount())
             .status(filing.getStatus())
