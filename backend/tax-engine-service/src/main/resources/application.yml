@@ -8,8 +8,8 @@ spring:
   # Database Configuration
   datasource:
     url: jdbc:postgresql://localhost:5432/munitax
-    username: postgres
-    password: postgres
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
   
   # JPA Configuration
@@ -23,7 +23,7 @@ spring:
         jdbc:
           lob:
             non_contextual_creation: true
-    show-sql: false
+    show-sql: true
   
   # Flyway Configuration
   flyway:
@@ -43,4 +43,4 @@ logging:
   level:
     com.munitax.taxengine: DEBUG
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO

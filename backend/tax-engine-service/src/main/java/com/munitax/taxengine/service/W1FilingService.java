@@ -8,6 +8,7 @@ import com.munitax.taxengine.dto.W1FilingResponse;
 import com.munitax.taxengine.repository.W1FilingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,7 @@ import java.util.UUID;
  * - FR-013: Support multiple filing frequencies
  * 
  * Business Rules:
- * - Municipal tax rate: 2.0% (configurable per municipality)
+ * - Municipal tax rate: Configurable per municipality (default 2.0% for Dublin)
  * - Late filing penalty: 5% per month, max 25%, min $50 if tax > $200 (Research R4)
  * - Due dates: Varies by filing frequency (Research R5)
  * 
@@ -43,8 +44,13 @@ public class W1FilingService {
     
     private final W1FilingRepository w1FilingRepository;
     
-    // Municipal tax rate for Dublin (configurable per municipality)
-    private static final BigDecimal MUNICIPAL_TAX_RATE = new BigDecimal("0.0200"); // 2.0%
+    /**
+     * Municipal tax rate (configurable per municipality).
+     * Default: 2.0% for Dublin.
+     * Override in application.yml: tax.municipal.rate=0.0225
+     */
+    @Value("${tax.municipal.rate:0.0200}")
+    private BigDecimal municipalTaxRate;
     
     /**
      * File a new W-1 withholding return.
@@ -90,11 +96,11 @@ public class W1FilingService {
         LocalDate dueDate = calculateDueDate(request.getFilingFrequency(), request.getPeriodEndDate());
         
         // Calculate tax due
-        BigDecimal taxDue = taxableWages.multiply(MUNICIPAL_TAX_RATE).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal taxDue = taxableWages.multiply(municipalTaxRate).setScale(2, RoundingMode.HALF_UP);
         
         // Calculate late filing penalty
         LocalDateTime now = LocalDateTime.now();
-        BigDecimal lateFilingPenalty = calculateLateFilingPenalty(dueDate, LocalDate.now(), taxDue);
+        BigDecimal lateFilingPenalty = calculateLateFilingPenalty(dueDate, now.toLocalDate(), taxDue);
         
         // Calculate total amount due
         BigDecimal totalAmountDue = taxDue.add(adjustments).add(lateFilingPenalty);
@@ -112,7 +118,7 @@ public class W1FilingService {
             .filingDate(now)
             .grossWages(request.getGrossWages())
             .taxableWages(taxableWages)
-            .taxRate(MUNICIPAL_TAX_RATE)
+            .taxRate(municipalTaxRate)
             .taxDue(taxDue)
             .adjustments(adjustments)
             .totalAmountDue(totalAmountDue)
@@ -212,9 +218,10 @@ public class W1FilingService {
             return BigDecimal.ZERO; // No penalty for $0 tax due (seasonal businesses)
         }
         
-        // Calculate months late (round up partial months per Research R4)
-        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, filingDate);
-        int monthsLate = (int) Math.ceil(daysLate / 30.0);
+        // Calculate months late using calendar months (partial month rounds up per Research R4)
+        long monthsBetween = java.time.temporal.ChronoUnit.MONTHS.between(dueDate, filingDate);
+        LocalDate monthAdjustedDueDate = dueDate.plusMonths(monthsBetween);
+        int monthsLate = filingDate.isAfter(monthAdjustedDueDate) ? (int) monthsBetween + 1 : (int) monthsBetween;
         
         // Cap at 5 months (25% maximum penalty)
         monthsLate = Math.min(monthsLate, 5);
@@ -234,6 +241,9 @@ public class W1FilingService {
     
     /**
      * Map W1Filing entity to response DTO.
+     * Note: Cumulative totals are intentionally omitted in this method.
+     * They should be fetched separately and added by the calling method
+     * to avoid unnecessary queries when cumulative data is not needed.
      * 
      * @param filing W1Filing entity
      * @return W1FilingResponse DTO
@@ -266,6 +276,5 @@ public class W1FilingService {
             .createdBy(filing.getCreatedBy())
             .updatedAt(filing.getUpdatedAt())
             .build();
-        // TODO: Add cumulative totals to response
     }
 }

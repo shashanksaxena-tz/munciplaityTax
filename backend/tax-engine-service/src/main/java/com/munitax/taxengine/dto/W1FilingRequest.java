@@ -122,8 +122,31 @@ public class W1FilingRequest {
     @AssertTrue(message = "Period end date must be on or after period start date")
     public boolean isPeriodDateRangeValid() {
         if (periodStartDate == null || periodEndDate == null) {
-            return true; // Skip validation if dates not provided (handled by @NotNull)
+            return false; // Both dates required for valid range
         }
         return !periodEndDate.isBefore(periodStartDate);
+    }
+    
+    /**
+     * Custom validator: For daily periods (DYYYYMMDD), ensure date portion is valid.
+     */
+    @AssertTrue(message = "For daily periods, the date portion (YYYYMMDD) must be a valid date")
+    public boolean isPeriodDateValid() {
+        if (period == null || period.isBlank()) {
+            return true; // Not this method's responsibility
+        }
+        if (period.startsWith("D") && period.length() == 9) {
+            String datePart = period.substring(1);
+            try {
+                int year = Integer.parseInt(datePart.substring(0, 4));
+                int month = Integer.parseInt(datePart.substring(4, 6));
+                int day = Integer.parseInt(datePart.substring(6, 8));
+                java.time.LocalDate.of(year, month, day);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return true; // Not a daily period, so valid
     }
 }

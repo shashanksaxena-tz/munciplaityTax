@@ -80,8 +80,9 @@ public interface WithholdingReconciliationRepository extends JpaRepository<Withh
      * 
      * @param businessId Business profile ID
      * @param taxYear Tax year to check
-     * @return true if reconciliation exists and status = DISCREPANCY
+     * @param status Reconciliation status to check (typically DISCREPANCY)
+     * @return true if reconciliation exists with given status
      */
-    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM WithholdingReconciliation r WHERE r.businessId = :businessId AND r.taxYear = :taxYear AND r.status = 'DISCREPANCY'")
-    boolean hasUnresolvedReconciliation(@Param("businessId") UUID businessId, @Param("taxYear") Integer taxYear);
+    @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM WithholdingReconciliation r WHERE r.businessId = :businessId AND r.taxYear = :taxYear AND r.status = :status")
+    boolean hasUnresolvedReconciliation(@Param("businessId") UUID businessId, @Param("taxYear") Integer taxYear, @Param("status") ReconciliationStatus status);
 }
