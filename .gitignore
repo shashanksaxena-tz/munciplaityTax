@@ -6,19 +6,118 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+application.log
+spring.log
 
+# Node.js / Frontend
 node_modules
 dist
 dist-ssr
 *.local
+build
+.cache
+.parcel-cache
+.next
+out
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
+*.iml
+*.iws
+*.ipr
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Java / Maven / Spring Boot
+target/
+*.jar
+*.war
+*.ear
+*.class
+*.ctxt
+.mtj.tmp/
+hs_err_pid*
+replay_pid*
+
+# Backend service target directories with JARs
+backend/auth-service/target/
+backend/discovery-service/target/
+backend/extraction-service/target/
+backend/gateway-service/target/
+backend/pdf-service/target/
+backend/submission-service/target/
+backend/tax-engine-service/target/
+backend/tenant-service/target/
+
+# Maven specific
+.mvn/
+mvnw
+mvnw.cmd
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Environment variables
+.env
+.env.test
+.env.production
+.env.development
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yml
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# Secrets and credentials
+*.pem
+*.key
+*.p12
+*.jks
+secrets/
+credentials/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Operating System Files
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.directory
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
