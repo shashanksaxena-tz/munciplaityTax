@@ -73,12 +73,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const login = async (email: string, password: string) => {
         try {
+            console.log('Login attempt for:', email);
             const data = await api.auth.login({ email, password });
+            console.log('Login response:', data);
 
             if (data.token) {
                 localStorage.setItem('auth_token', data.token);
                 setToken(data.token);
-                // Initial user set (will be updated by fetchUserInfo)
+                
+                // Use login response data directly - no need to fetch again
                 setUser({
                     id: data.userId,
                     email: data.email,
@@ -87,14 +90,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                     roles: data.roles ? data.roles.split(',') : [],
                     tenantId: ''
                 });
-
-                // Fetch complete user info
-                await fetchUserInfo(data.token);
+                
+                console.log('Login successful, user state updated');
+                setIsLoading(false);
             } else {
                 throw new Error(data.message || 'Login failed');
             }
         } catch (error) {
             console.error('Login error:', error);
+            setIsLoading(false);
             throw error;
         }
     };

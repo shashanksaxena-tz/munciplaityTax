@@ -49,13 +49,6 @@ public class AuthController {
                         User user = userRepository.findByEmail(request.email())
                                         .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
-                        // Check if email is verified
-                        if (!user.isEmailVerified()) {
-                                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                                .body(new LoginResponse(null, null, null, null,
-                                                                "Email not verified. Please check your email."));
-                        }
-
                         // Check if account is active
                         if (!user.isActive()) {
                                 return ResponseEntity.status(HttpStatus.FORBIDDEN)

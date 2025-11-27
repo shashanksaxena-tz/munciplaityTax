@@ -108,56 +108,221 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
           )}
 
           {activeTab === 'schedulex' && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                <h3 className="font-bold text-slate-800">Schedule X Sources</h3>
-                <div className="text-right"><div className="text-xs text-slate-400 uppercase">Total Net</div><div className="font-bold text-indigo-600 text-lg">${result.scheduleX.totalNetProfit.toLocaleString()}</div></div>
+            <div className="space-y-6">
+              {/* Professional Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl p-6 shadow-lg">
+                <h3 className="text-2xl font-bold mb-2">Schedule X - Supplemental Income</h3>
+                <p className="text-indigo-100 text-sm">Report all rental real estate, royalties, partnerships, S corporations, trusts, etc.</p>
+                <div className="mt-4 flex items-end justify-between">
+                  <div className="text-indigo-200 text-xs uppercase tracking-wide">Total Net Income</div>
+                  <div className="text-3xl font-bold">${result.scheduleX.totalNetProfit.toLocaleString()}</div>
+                </div>
               </div>
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-                  <tr><th className="px-6 py-3">Source</th><th className="px-6 py-3">Type</th><th className="px-6 py-3 text-right">Gross</th><th className="px-6 py-3 text-right">Expenses</th><th className="px-6 py-3 text-right">Net</th></tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {result.scheduleX.entries.length === 0 ? <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400 italic">No Schedule X income sources found.</td></tr> :
-                    result.scheduleX.entries.map((entry, i) => (
-                      <tr key={i} className="hover:bg-slate-50">
-                        <td className="px-6 py-4 font-medium text-slate-700">{entry.source}</td>
-                        <td className="px-6 py-4 text-xs"><span className="px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">{entry.type}</span></td>
-                        <td className="px-6 py-4 text-right">${entry.gross.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-right text-red-400">{entry.expenses > 0 ? `(${entry.expenses.toLocaleString()})` : '-'}</td>
-                        <td className="px-6 py-4 text-right font-bold">${entry.netProfit.toLocaleString()}</td>
-                      </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
+
+              {(() => {
+                const rentals = result.scheduleX.entries.filter(e => e.type.toLowerCase().includes('rental'));
+                const partnerships = result.scheduleX.entries.filter(e => e.type.toLowerCase().includes('partnership') || e.type.toLowerCase().includes('s-corp') || e.type.toLowerCase().includes('k-1'));
+                const other = result.scheduleX.entries.filter(e => !rentals.includes(e) && !partnerships.includes(e));
+                
+                return (
+                  <>
+                    {/* Rental Income Section */}
+                    {rentals.length > 0 && (
+                      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
+                          <div>
+                            <h4 className="font-bold text-slate-800 text-lg">Rental Real Estate Income</h4>
+                            <p className="text-xs text-slate-500 mt-1">Properties generating rental income</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-slate-400 uppercase">Subtotal</div>
+                            <div className="font-bold text-blue-600 text-xl">${rentals.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
+                          </div>
+                        </div>
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="px-6 py-3 text-left">Property/Source</th>
+                              <th className="px-6 py-3 text-left">Type</th>
+                              <th className="px-6 py-3 text-right">Gross Income</th>
+                              <th className="px-6 py-3 text-right">Expenses</th>
+                              <th className="px-6 py-3 text-right">Net Income</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {rentals.map((entry, i) => (
+                              <tr key={i} className="hover:bg-slate-50 transition">
+                                <td className="px-6 py-4 font-semibold text-slate-700">{entry.source}</td>
+                                <td className="px-6 py-4">
+                                  <span className="px-2.5 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium">{entry.type}</span>
+                                </td>
+                                <td className="px-6 py-4 text-right font-mono">${entry.gross.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-mono text-red-600">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
+                                <td className="px-6 py-4 text-right font-bold font-mono text-slate-900">${entry.netProfit.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Partnership/S-Corp Income Section */}
+                    {partnerships.length > 0 && (
+                      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 border-b border-slate-100 bg-purple-50 flex justify-between items-center">
+                          <div>
+                            <h4 className="font-bold text-slate-800 text-lg">Partnership & S Corporation Income</h4>
+                            <p className="text-xs text-slate-500 mt-1">Pass-through entities (Schedule K-1)</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-slate-400 uppercase">Subtotal</div>
+                            <div className="font-bold text-purple-600 text-xl">${partnerships.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
+                          </div>
+                        </div>
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="px-6 py-3 text-left">Entity Name</th>
+                              <th className="px-6 py-3 text-left">Type</th>
+                              <th className="px-6 py-3 text-right">Gross Income</th>
+                              <th className="px-6 py-3 text-right">Expenses</th>
+                              <th className="px-6 py-3 text-right">Net Income</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {partnerships.map((entry, i) => (
+                              <tr key={i} className="hover:bg-slate-50 transition">
+                                <td className="px-6 py-4 font-semibold text-slate-700">{entry.source}</td>
+                                <td className="px-6 py-4">
+                                  <span className="px-2.5 py-1 rounded-md bg-purple-100 text-purple-700 border border-purple-200 text-xs font-medium">{entry.type}</span>
+                                </td>
+                                <td className="px-6 py-4 text-right font-mono">${entry.gross.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-mono text-red-600">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
+                                <td className="px-6 py-4 text-right font-bold font-mono text-slate-900">${entry.netProfit.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Other Income Section */}
+                    {other.length > 0 && (
+                      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                          <div>
+                            <h4 className="font-bold text-slate-800 text-lg">Other Schedule X Income</h4>
+                            <p className="text-xs text-slate-500 mt-1">Additional supplemental income sources</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-slate-400 uppercase">Subtotal</div>
+                            <div className="font-bold text-slate-600 text-xl">${other.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
+                          </div>
+                        </div>
+                        <table className="w-full text-sm">
+                          <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="px-6 py-3 text-left">Source</th>
+                              <th className="px-6 py-3 text-left">Type</th>
+                              <th className="px-6 py-3 text-right">Gross Income</th>
+                              <th className="px-6 py-3 text-right">Expenses</th>
+                              <th className="px-6 py-3 text-right">Net Income</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {other.map((entry, i) => (
+                              <tr key={i} className="hover:bg-slate-50 transition">
+                                <td className="px-6 py-4 font-semibold text-slate-700">{entry.source}</td>
+                                <td className="px-6 py-4">
+                                  <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">{entry.type}</span>
+                                </td>
+                                <td className="px-6 py-4 text-right font-mono">${entry.gross.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-mono text-red-600">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
+                                <td className="px-6 py-4 text-right font-bold font-mono text-slate-900">${entry.netProfit.toLocaleString()}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* No entries message */}
+                    {result.scheduleX.entries.length === 0 && (
+                      <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm">
+                        <div className="text-slate-400 mb-2">
+                          <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <p className="text-slate-500 font-medium">No Schedule X income sources reported</p>
+                        <p className="text-slate-400 text-sm mt-1">This section includes rental real estate, partnerships, S corporations, and trusts</p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 
           {activeTab === 'scheduley' && (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                <h3 className="font-bold text-slate-800">Schedule Y Credits</h3>
-                <div className="text-right"><div className="text-xs text-slate-400 uppercase">Total Credit</div><div className="font-bold text-green-600 text-lg">${result.scheduleY.totalCredit.toLocaleString()}</div></div>
+            <div className="space-y-6">
+              {/* Professional Header */}
+              <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl p-6 shadow-lg">
+                <h3 className="text-2xl font-bold mb-2">Schedule Y - Local Tax Credits</h3>
+                <p className="text-green-100 text-sm">Credit for taxes paid to other Ohio municipalities</p>
+                <div className="mt-4 flex items-end justify-between">
+                  <div className="text-green-200 text-xs uppercase tracking-wide">Total Allowed Credit</div>
+                  <div className="text-3xl font-bold">${result.scheduleY.totalCredit.toLocaleString()}</div>
+                </div>
               </div>
-              <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-                  <tr><th className="px-6 py-3">City</th><th className="px-6 py-3 text-center">Rate</th><th className="px-6 py-3 text-right">Taxed Income</th><th className="px-6 py-3 text-right">Paid</th><th className="px-6 py-3 text-right">Allowed</th></tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {result.scheduleY.entries.length === 0 ? <tr><td colSpan={5} className="px-6 py-8 text-center text-slate-400 italic">No local tax credits found.</td></tr> :
-                    result.scheduleY.entries.map((entry, i) => (
-                      <tr key={i} className="hover:bg-slate-50">
-                        <td className="px-6 py-4 font-medium text-indigo-600">{entry.locality}</td>
-                        <td className="px-6 py-4 text-center text-xs font-mono bg-slate-50">{(entry.cityTaxRate * 100).toFixed(2)}%</td>
-                        <td className="px-6 py-4 text-right">${entry.incomeTaxedByOtherCity.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-right">${entry.taxPaidToOtherCity.toLocaleString()}</td>
-                        <td className="px-6 py-4 text-right font-bold text-green-600">${entry.creditAllowed.toLocaleString()}</td>
+
+              {/* Credits Table */}
+              {result.scheduleY.entries.length > 0 ? (
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                  <div className="px-6 py-4 border-b border-slate-100 bg-green-50">
+                    <h4 className="font-bold text-slate-800 text-lg">Municipal Tax Credit Details</h4>
+                    <p className="text-xs text-slate-500 mt-1">Credits reduce your Dublin tax liability dollar-for-dollar</p>
+                  </div>
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-3 text-left">Municipality</th>
+                        <th className="px-6 py-3 text-center">Tax Rate</th>
+                        <th className="px-6 py-3 text-right">Income Taxed</th>
+                        <th className="px-6 py-3 text-right">Tax Paid</th>
+                        <th className="px-6 py-3 text-right">Credit Allowed</th>
                       </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {result.scheduleY.entries.map((entry, i) => (
+                        <tr key={i} className="hover:bg-green-50/30 transition">
+                          <td className="px-6 py-4 font-semibold text-slate-700">{entry.locality}</td>
+                          <td className="px-6 py-4 text-center">
+                            <span className="px-3 py-1 rounded-md bg-slate-100 text-slate-700 font-mono text-xs font-bold">{(entry.cityTaxRate * 100).toFixed(2)}%</span>
+                          </td>
+                          <td className="px-6 py-4 text-right font-mono">${entry.incomeTaxedByOtherCity.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-right font-mono">${entry.taxPaidToOtherCity.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-right font-bold font-mono text-green-700">${entry.creditAllowed.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                      <tr className="bg-green-50 font-bold">
+                        <td colSpan={4} className="px-6 py-4 text-right text-slate-700">Total Credits Applied:</td>
+                        <td className="px-6 py-4 text-right font-mono text-green-700 text-lg">${result.scheduleY.totalCredit.toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm">
+                  <div className="text-slate-400 mb-2">
+                    <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-slate-500 font-medium">No local tax credits claimed</p>
+                  <p className="text-slate-400 text-sm mt-1">You may claim credits for taxes paid to other Ohio municipalities</p>
+                </div>
+              )}
             </div>
           )}
         </div>

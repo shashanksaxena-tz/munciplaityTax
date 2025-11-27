@@ -5,7 +5,7 @@ import { ProfileSwitcher } from './profile/ProfileSwitcher';
 import { UserMenu } from './UserMenu';
 
 export const Header: React.FC = () => {
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
 
     return (
         <header className="bg-white shadow-sm border-b border-gray-200">
@@ -69,6 +69,23 @@ export const Header: React.FC = () => {
 
                                 {/* User Menu */}
                                 <UserMenu />
+                                
+                                {/* Logout Button */}
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm('Are you sure you want to logout?')) {
+                                            const { logout } = require('../contexts/AuthContext');
+                                            logout();
+                                            window.location.href = '/login';
+                                        }
+                                    }}
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-2"
+                                >
+                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                    Logout
+                                </button>
                             </>
                         ) : (
                             <div className="flex items-center space-x-4">

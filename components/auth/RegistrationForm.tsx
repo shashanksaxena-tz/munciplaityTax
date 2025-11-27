@@ -187,19 +187,19 @@ export const RegistrationForm: React.FC = () => {
                     <div className="flex justify-center mb-6">
                         <div className="rounded-full bg-green-100 p-4">
                             <svg className="h-16 w-16 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created Successfully!</h2>
                     <p className="text-gray-600 mb-6">
-                        We've sent a verification link to <strong>{formData.email}</strong>. Please check your inbox to activate your account.
+                        Your account has been created with <strong>{formData.email}</strong>. You can now log in and start using MuniTax.
                     </p>
                     <Link
                         to="/login"
                         className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
                     >
-                        Back to Login
+                        Go to Login
                     </Link>
                 </div>
             </div>

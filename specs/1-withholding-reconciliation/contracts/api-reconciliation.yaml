@@ -1,0 +1,780 @@
+openapi: 3.0.3
+info:
+  title: Withholding Reconciliation API
+  description: |
+    API for year-end withholding reconciliation comparing W-1 cumulative totals to W-2 totals.
+    
+    **Features**:
+    - Initiate year-end reconciliation (upload W-2 PDFs)
+    - Compare W-1 cumulative totals to W-2 totals (Box 18, Box 19)
+    - Detect and resolve discrepancies
+    - Generate reconciliation report
+    - Track ignored W-2s (not matched to business EIN)
+    
+    **Authentication**: Bearer JWT token required for all endpoints.
+    **Multi-Tenant**: All requests scoped to tenant from JWT claims.
+  version: 1.0.0
+  contact:
+    name: MuniTax Engineering
+    email: engineering@munitax.com
+
+servers:
+  - url: https://api.munitax.com/v1
+    description: Production
+  - url: https://api.staging.munitax.com/v1
+    description: Staging
+  - url: http://localhost:8080/api/v1
+    description: Local Development
+
+tags:
+  - name: Reconciliation
+    description: Year-end reconciliation operations
+  - name: W-2 Upload
+    description: W-2 PDF upload and extraction
+
+paths:
+  /reconciliations:
+    post:
+      tags:
+        - Reconciliation
+      summary: Initiate year-end reconciliation
+      description: |
+        Start year-end reconciliation for a business. System automatically:
+        - Calculates cumulative W-1 totals for the year
+        - Extracts W-2 totals from uploaded PDFs (via extraction-service)
+        - Compares W-1 vs W-2 totals
+        - Detects discrepancies (>2% variance triggers warning)
+        - Generates reconciliation report
+        
+        **Functional Requirements**: FR-006 (Reconciliation), FR-014 (W-2 Extraction Integration)
+      operationId: initiateReconciliation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - businessId
+                - taxYear
+                - w2Files
+              properties:
+                businessId:
+                  type: string
+                  format: uuid
+                  description: Business ID
+                taxYear:
+                  type: integer
+                  minimum: 2020
+                  description: Tax year to reconcile
+                w2Files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  minItems: 1
+                  maxItems: 100
+                  description: W-2 PDF files (max 100 files, 10MB each)
+            encoding:
+              w2Files:
+                contentType: application/pdf
+      responses:
+        '202':
+          description: Reconciliation initiated (async processing)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reconciliationId:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [IN_PROGRESS]
+                  message:
+                    type: string
+                    example: "Reconciliation initiated. Processing 15 W-2 PDFs..."
+                  estimatedCompletionTime:
+                    type: string
+                    format: date-time
+                    description: Estimated completion (extraction + reconciliation)
+              example:
+                reconciliationId: "750e8400-e29b-41d4-a716-446655440000"
+                status: "IN_PROGRESS"
+                message: "Reconciliation initiated. Processing 15 W-2 PDFs..."
+                estimatedCompletionTime: "2024-01-15T14:35:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Conflict - reconciliation already exists for this year
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "DUPLICATE_RECONCILIATION"
+                message: "Reconciliation already exists for business 550e8400 in 2024"
+                timestamp: "2024-01-15T14:30:00Z"
+                path: "/api/v1/reconciliations"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                error: "VALIDATION_ERROR"
+                message: "Cannot reconcile - no W-1 filings found for 2024"
+                errors:
+                  - field: "taxYear"
+                    message: "No W-1 filings exist for 2024"
+                timestamp: "2024-01-15T14:30:00Z"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    get:
+      tags:
+        - Reconciliation
+      summary: List reconciliations for a business
+      description: |
+        Retrieve reconciliation history for a business.
+        
+        **Functional Requirements**: FR-010 (Filing History)
+      operationId: listReconciliations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          description: Business ID
+          schema:
+            type: string
+            format: uuid
+        - name: taxYear
+          in: query
+          required: false
+          description: Filter by tax year
+          schema:
+            type: integer
+        - name: status
+          in: query
+          required: false
+          description: Filter by status
+          schema:
+            type: string
+            enum: [NOT_STARTED, IN_PROGRESS, DISCREPANCY, RECONCILED]
+      responses:
+        '200':
+          description: List of reconciliations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reconciliations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReconciliationSummary'
+              example:
+                reconciliations:
+                  - id: "750e8400-e29b-41d4-a716-446655440000"
+                    taxYear: 2024
+                    status: "RECONCILED"
+                    variancePercentage: 0.5
+                    reconciliationDate: "2024-01-15T15:00:00Z"
+                  - id: "760e8400-e29b-41d4-a716-446655440001"
+                    taxYear: 2023
+                    status: "RECONCILED"
+                    variancePercentage: 0.0
+                    reconciliationDate: "2023-01-20T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /reconciliations/{id}:
+    get:
+      tags:
+        - Reconciliation
+      summary: Get reconciliation report
+      description: |
+        Retrieve detailed reconciliation report showing:
+        - W-1 cumulative totals (wages, tax)
+        - W-2 cumulative totals (Box 18, Box 19)
+        - Variance (amount and percentage)
+        - Ignored W-2s (not matched to business EIN)
+        - Resolution status and notes
+        
+        **Functional Requirements**: FR-007 (Reconciliation Report), FR-015 (Dashboard)
+      operationId: getReconciliationReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reconciliation ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reconciliation report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationReport'
+              example:
+                id: "750e8400-e29b-41d4-a716-446655440000"
+                businessId: "550e8400-e29b-41d4-a716-446655440000"
+                businessName: "Acme Corp"
+                businessEin: "12-3456789"
+                taxYear: 2024
+                w1Totals:
+                  totalWages: 500000.00
+                  totalTax: 11250.00
+                  periodsFiled: 4
+                w2Totals:
+                  totalWages: 502500.00
+                  totalTax: 11306.25
+                  w2Count: 15
+                  employeeCount: 15
+                variance:
+                  wagesVariance: -2500.00
+                  wagesVariancePercentage: -0.50
+                  taxVariance: -56.25
+                  taxVariancePercentage: -0.50
+                  explanation: "W-2 totals $2,500 higher than W-1 filings (0.5% variance)"
+                status: "DISCREPANCY"
+                discrepancyThresholdExceeded: false
+                ignoredW2s:
+                  count: 2
+                  details:
+                    - employerName: "XYZ Inc"
+                      employerEin: "98-7654321"
+                      reason: "WRONG_EIN"
+                    - employerName: "Acme Corp"
+                      reason: "DUPLICATE"
+                resolutionNotes: null
+                approvedBy: null
+                approvedAt: null
+                createdAt: "2024-01-15T14:30:00Z"
+                reconciliationDate: null
+                updatedAt: "2024-01-15T15:00:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /reconciliations/{id}/resolve:
+    patch:
+      tags:
+        - Reconciliation
+      summary: Resolve reconciliation discrepancy
+      description: |
+        Accept or reject reconciliation discrepancy with explanation.
+        System updates status to RECONCILED and logs resolution to audit trail.
+        
+        **Functional Requirements**: FR-008 (Discrepancy Resolution)
+      operationId: resolveDiscrepancy
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reconciliation ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveDiscrepancyRequest'
+            examples:
+              acceptDiscrepancy:
+                summary: Accept minor discrepancy
+                value:
+                  action: "ACCEPT"
+                  resolutionNotes: "Variance due to mid-year employee relocation (different locality). Confirmed with payroll records."
+              rejectDiscrepancy:
+                summary: Reject and reopen
+                value:
+                  action: "REJECT"
+                  resolutionNotes: "Need to re-upload W-2s - extraction errors detected"
+      responses:
+        '200':
+          description: Discrepancy resolved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationReport'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Cannot resolve - invalid state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                error: "INVALID_STATE"
+                message: "Cannot resolve - reconciliation status must be DISCREPANCY"
+                errors:
+                  - field: "status"
+                    message: "Current status is RECONCILED - cannot resolve again"
+                timestamp: "2024-01-15T15:00:00Z"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /reconciliations/{id}/ignored-w2s:
+    get:
+      tags:
+        - Reconciliation
+      summary: Get ignored W-2s report
+      description: |
+        Retrieve list of W-2 PDFs uploaded but not included in reconciliation totals.
+        Shows reason for exclusion (wrong EIN, duplicate, extraction error, incomplete data).
+        
+        **Functional Requirements**: Constitution IV (AI Transparency), FR-015 (Dashboard)
+      operationId: getIgnoredW2s
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Reconciliation ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ignored W-2s report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reconciliationId:
+                    type: string
+                    format: uuid
+                  ignoredW2Count:
+                    type: integer
+                  ignoredW2s:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IgnoredW2Detail'
+              example:
+                reconciliationId: "750e8400-e29b-41d4-a716-446655440000"
+                ignoredW2Count: 3
+                ignoredW2s:
+                  - id: "850e8400-e29b-41d4-a716-446655440000"
+                    employerEin: "98-7654321"
+                    employerName: "XYZ Inc"
+                    reason: "WRONG_EIN"
+                    reasonDescription: "Employer EIN does not match business profile (expected 12-3456789)"
+                    uploadedFilePath: "/uploads/w2s/2024/w2_xyz_inc.pdf"
+                    extractionConfidence: 0.95
+                    uploadedAt: "2024-01-15T14:35:00Z"
+                    resolutionAction: null
+                  - id: "860e8400-e29b-41d4-a716-446655440001"
+                    employerEin: "12-3456789"
+                    employerName: "Acme Corp"
+                    reason: "DUPLICATE"
+                    reasonDescription: "Employee SSN XXX-XX-1234 already exists in reconciliation"
+                    uploadedFilePath: "/uploads/w2s/2024/w2_duplicate.pdf"
+                    extractionConfidence: 0.98
+                    uploadedAt: "2024-01-15T14:36:00Z"
+                    resolutionAction: "DELETED"
+                  - id: "870e8400-e29b-41d4-a716-446655440002"
+                    employerEin: null
+                    employerName: null
+                    reason: "EXTRACTION_ERROR"
+                    reasonDescription: "Failed to extract employer EIN from PDF (corrupted or unsupported format)"
+                    uploadedFilePath: "/uploads/w2s/2024/w2_corrupted.pdf"
+                    extractionConfidence: 0.0
+                    uploadedAt: "2024-01-15T14:37:00Z"
+                    resolutionAction: "REUPLOADED"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /w2-upload:
+    post:
+      tags:
+        - W-2 Upload
+      summary: Upload additional W-2s to existing reconciliation
+      description: |
+        Upload additional W-2 PDFs to an existing reconciliation.
+        Useful if user forgot some W-2s or needs to re-upload corrected versions.
+        
+        **Functional Requirements**: FR-006, FR-014 (W-2 Extraction Integration)
+      operationId: uploadAdditionalW2s
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - reconciliationId
+                - w2Files
+              properties:
+                reconciliationId:
+                  type: string
+                  format: uuid
+                  description: Existing reconciliation ID
+                w2Files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  minItems: 1
+                  maxItems: 50
+                  description: W-2 PDF files
+            encoding:
+              w2Files:
+                contentType: application/pdf
+      responses:
+        '202':
+          description: W-2s uploaded successfully (async extraction)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  uploadedCount:
+                    type: integer
+                  estimatedCompletionTime:
+                    type: string
+                    format: date-time
+              example:
+                message: "Uploaded 3 additional W-2s. Processing..."
+                uploadedCount: 3
+                estimatedCompletionTime: "2024-01-15T15:05:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ReconciliationSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        taxYear:
+          type: integer
+        status:
+          type: string
+          enum: [NOT_STARTED, IN_PROGRESS, DISCREPANCY, RECONCILED]
+        variancePercentage:
+          type: number
+          format: decimal
+          description: Wage variance percentage (w1 vs w2)
+        reconciliationDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    ReconciliationReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        businessName:
+          type: string
+        businessEin:
+          type: string
+        taxYear:
+          type: integer
+        w1Totals:
+          $ref: '#/components/schemas/W1Totals'
+        w2Totals:
+          $ref: '#/components/schemas/W2Totals'
+        variance:
+          $ref: '#/components/schemas/VarianceDetail'
+        status:
+          type: string
+          enum: [NOT_STARTED, IN_PROGRESS, DISCREPANCY, RECONCILED]
+        discrepancyThresholdExceeded:
+          type: boolean
+          description: True if variance > 2% (FR-006 threshold)
+        ignoredW2s:
+          type: object
+          properties:
+            count:
+              type: integer
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  employerName:
+                    type: string
+                    nullable: true
+                  employerEin:
+                    type: string
+                    nullable: true
+                  reason:
+                    type: string
+                    enum: [WRONG_EIN, DUPLICATE, EXTRACTION_ERROR, INCOMPLETE_DATA]
+        resolutionNotes:
+          type: string
+          nullable: true
+        approvedBy:
+          type: string
+          format: uuid
+          nullable: true
+        approvedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        reconciliationDate:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+
+    W1Totals:
+      type: object
+      properties:
+        totalWages:
+          type: number
+          format: decimal
+          description: Sum of gross wages from all W-1 filings
+        totalTax:
+          type: number
+          format: decimal
+          description: Sum of tax due from all W-1 filings
+        periodsFiled:
+          type: integer
+          description: Number of W-1 filings for the year
+
+    W2Totals:
+      type: object
+      properties:
+        totalWages:
+          type: number
+          format: decimal
+          description: Sum of Box 18 (local wages) from all W-2s
+        totalTax:
+          type: number
+          format: decimal
+          description: Sum of Box 19 (local tax withheld) from all W-2s
+        w2Count:
+          type: integer
+          description: Number of W-2s processed
+        employeeCount:
+          type: integer
+          description: Distinct employee count from W-2s
+
+    VarianceDetail:
+      type: object
+      properties:
+        wagesVariance:
+          type: number
+          format: decimal
+          description: w1_total_wages - w2_total_wages
+        wagesVariancePercentage:
+          type: number
+          format: decimal
+          description: (wagesVariance / w2_total_wages) × 100
+        taxVariance:
+          type: number
+          format: decimal
+          description: w1_total_tax - w2_total_tax
+        taxVariancePercentage:
+          type: number
+          format: decimal
+          description: (taxVariance / w2_total_tax) × 100
+        explanation:
+          type: string
+          description: Human-readable variance explanation
+
+    ResolveDiscrepancyRequest:
+      type: object
+      required:
+        - action
+        - resolutionNotes
+      properties:
+        action:
+          type: string
+          enum: [ACCEPT, REJECT]
+          description: ACCEPT = Mark reconciled, REJECT = Reopen for investigation
+        resolutionNotes:
+          type: string
+          minLength: 20
+          maxLength: 2000
+          description: Required explanation for resolution
+
+    IgnoredW2Detail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        employerEin:
+          type: string
+          nullable: true
+        employerName:
+          type: string
+          nullable: true
+        employeeSsnLast4:
+          type: string
+          nullable: true
+          description: Last 4 digits of SSN (for duplicate detection)
+        reason:
+          type: string
+          enum: [WRONG_EIN, DUPLICATE, EXTRACTION_ERROR, INCOMPLETE_DATA]
+        reasonDescription:
+          type: string
+          description: Human-readable reason
+        uploadedFilePath:
+          type: string
+        extractionConfidence:
+          type: number
+          format: decimal
+          description: AI confidence score (0.0 - 1.0)
+        uploadedAt:
+          type: string
+          format: date-time
+        reviewedBy:
+          type: string
+          format: uuid
+          nullable: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+        resolutionAction:
+          type: string
+          enum: [REUPLOADED, EIN_OVERRIDDEN, DELETED, KEPT_DUPLICATE]
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    Unauthorized:
+      description: Unauthorized - missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    NotFound:
+      description: Not found - resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

@@ -50,9 +50,8 @@ public class UserManagementService {
         // Set tenant
         user.setTenantId(request.tenantId());
 
-        // Generate email verification token
-        user.setEmailVerificationToken(UUID.randomUUID().toString());
-        user.setEmailVerificationExpiry(LocalDateTime.now().plusHours(24));
+        // Set email as verified (no email verification required)
+        user.setEmailVerified(true);
 
         // Save user
         user = userRepository.save(user);
@@ -73,9 +72,7 @@ public class UserManagementService {
 
         userProfileRepository.save(primaryProfile);
 
-        // TODO: Send verification email
-
-        return new RegistrationResult(true, "Registration successful. Please check your email to verify your account.",
+        return new RegistrationResult(true, "Registration successful. You can now log in.",
                 user.getId());
     }
 

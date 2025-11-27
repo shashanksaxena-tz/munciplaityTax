@@ -6,7 +6,7 @@ have user management for registyrations ,
 I want this system to hav seeprate logins for a business - files returns for 1 or multiple business. 
 
 
-a individual - files for individual 
+a individual - files for individual or businesses 
 
 a auditor - vieews submited records for a county both business and individual.
 
@@ -37,3 +37,8 @@ add a reporting engine for generating reports for the audior based on your under
 the upload pdf for xxtraction should also appear to the auditor to review the data, for the audior to approve the returns. (whole pdf)
 
 can we have real time updates while the extraction is happening, i.e you pdf had these many files, were able to identiy that tax forms are for the user and were able to extract the data from the forms and were able to identify the forms which were not extracted and were able to identify the forms which were not relevant to the user or were not needed for tax filling something hooks the user and doesn't stress the AI too much if possible
+
+login broken compleetely which blocks the application - highest priority.
+
+add more business fields as per this doc:
+https://loop.cloud.microsoft/p/eyJ1IjoiaHR0cHM6Ly90YWF6YWExLnNoYXJlcG9pbnQuY29tL2NvbnRlbnRzdG9yYWdlL0NTUF85N2Y2YTI4MC1hOGY2LTRkNzItODAwMC1iNjQ2MTBjZmUyMTk%2FbmF2PWN6MGxNa1pqYjI1MFpXNTBjM1J2Y21GblpTVXlSa05UVUY4NU4yWTJZVEk0TUMxaE9HWTJMVFJrTnpJdE9EQXdNQzFpTmpRMk1UQmpabVV5TVRrbVpEMWlKVEl4WjB0TU1teGZZVzlqYXpKQlFVeGFSMFZOWDJsSFkwdHBOVEJaZGtsdWFFNXBTRkpSYlZrM2NIUXRaRFV3ZWtSdVNHZHZVVkpNYWpWcU16SjVkemRUU0NabVBUQXhOemRKVUZCRVdqYzJOMEUzVlRaRlIwWTFSRmxPTjBKUlNqUklRVGRhV2pJbVl6MGxNa1ltWVQxTWIyOXdRWEJ3Sm5BOUpUUXdabXgxYVdSNEpUSkdiRzl2Y0Mxd1lXZGxMV052Ym5SaGFXNWxjaVo0UFNVM1FpVXlNbmNsTWpJbE0wRWxNakpVTUZKVVZVaDRNRmxYUmpaWlYwVjRURzVPYjFsWVNteGpSemx3WW01UmRWa3lPWFJtUjBsb1dqQjBUVTF0ZUdaWlZ6bHFZWHBLUWxGVmVHRlNNRlpPV0RKc1NGa3dkSEJPVkVKYVpHdHNkV0ZGTlhCVFJrcFNZbFpyTTJOSVVYUmFSRlYzWld0U2RWTkhaSFpWVmtwTllXcFdjVTE2U2pWa2VtUlVVMGgzZDAxVVl6TlRWa0pSVWtSS1JsUlZkM3BYUlZaUFRsVkZlbEpyUlhwVWEyUmhWbFpGZVZWR1ZrNVVNR2N5SlRJeUpUSkRKVEl5YVNVeU1pVXpRU1V5TWpSa00yVXpPVEpoTFdWaU0yVXROR1kyTlMxaE5tSm1MV1ZrWWpNd056aG1PVEE0WXlVeU1pVTNSQT09In0%3D 

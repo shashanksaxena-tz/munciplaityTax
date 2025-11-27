@@ -1,0 +1,955 @@
+openapi: 3.0.3
+info:
+  title: W-1 Withholding Filing API
+  description: |
+    API for filing municipal W-1 withholding returns, managing amendments, and querying filing history.
+    
+    **Features**:
+    - File new W-1 returns (quarterly, monthly, semi-monthly, daily)
+    - Amend previously filed W-1 returns
+    - Query filing history with cumulative totals
+    - Calculate penalties (late filing, underpayment)
+    
+    **Authentication**: Bearer JWT token required for all endpoints.
+    **Multi-Tenant**: All requests scoped to tenant from JWT claims.
+  version: 1.0.0
+  contact:
+    name: MuniTax Engineering
+    email: engineering@munitax.com
+
+servers:
+  - url: https://api.munitax.com/v1
+    description: Production
+  - url: https://api.staging.munitax.com/v1
+    description: Staging
+  - url: http://localhost:8080/api/v1
+    description: Local Development
+
+tags:
+  - name: W1 Filing
+    description: W-1 withholding return filing operations
+  - name: Cumulative Totals
+    description: Year-to-date cumulative totals and projections
+
+paths:
+  /w1-filings:
+    post:
+      tags:
+        - W1 Filing
+      summary: File a new W-1 withholding return
+      description: |
+        Submit a new W-1 withholding return for a business. System automatically:
+        - Calculates tax due based on wages and municipality rate
+        - Determines due date based on filing frequency
+        - Calculates late filing penalty if past due date
+        - Triggers cumulative totals update (event-driven)
+        - Logs filing to audit trail
+        
+        **Functional Requirements**: FR-001, FR-011, FR-013
+      operationId: fileW1Return
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/W1FilingRequest'
+            examples:
+              quarterlyFiling:
+                summary: Quarterly W-1 filing (Q1 2024)
+                value:
+                  businessId: "550e8400-e29b-41d4-a716-446655440000"
+                  taxYear: 2024
+                  filingFrequency: "QUARTERLY"
+                  period: "Q1"
+                  periodStartDate: "2024-01-01"
+                  periodEndDate: "2024-03-31"
+                  grossWages: 125000.00
+                  taxableWages: 125000.00
+                  adjustments: 0.00
+                  employeeCount: 15
+              monthlyFiling:
+                summary: Monthly W-1 filing (January 2024)
+                value:
+                  businessId: "550e8400-e29b-41d4-a716-446655440000"
+                  taxYear: 2024
+                  filingFrequency: "MONTHLY"
+                  period: "M01"
+                  periodStartDate: "2024-01-01"
+                  periodEndDate: "2024-01-31"
+                  grossWages: 42000.00
+                  taxableWages: 42000.00
+                  adjustments: -500.00
+                  employeeCount: 15
+      responses:
+        '201':
+          description: W-1 filing created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/W1FilingResponse'
+              example:
+                id: "650e8400-e29b-41d4-a716-446655440000"
+                businessId: "550e8400-e29b-41d4-a716-446655440000"
+                taxYear: 2024
+                filingFrequency: "QUARTERLY"
+                period: "Q1"
+                periodStartDate: "2024-01-01"
+                periodEndDate: "2024-03-31"
+                dueDate: "2024-04-30"
+                filingDate: "2024-04-25T14:30:00Z"
+                grossWages: 125000.00
+                taxableWages: 125000.00
+                taxRate: 0.0225
+                taxDue: 2812.50
+                adjustments: 0.00
+                totalAmountDue: 2812.50
+                isAmended: false
+                employeeCount: 15
+                status: "FILED"
+                lateFilingPenalty: 0.00
+                underpaymentPenalty: 0.00
+                cumulativeTotals:
+                  periodsFiled: 1
+                  cumulativeWagesYtd: 125000.00
+                  cumulativeTaxYtd: 2812.50
+                  projectedAnnualWages: 500000.00
+                  onTrackIndicator: true
+                createdAt: "2024-04-25T14:30:00Z"
+                createdBy: "750e8400-e29b-41d4-a716-446655440000"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Conflict - W-1 already filed for this period
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "DUPLICATE_FILING"
+                message: "W-1 already filed for Q1 2024. Use amendment endpoint to modify."
+                timestamp: "2024-04-25T14:30:00Z"
+                path: "/api/v1/w1-filings"
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+              example:
+                error: "VALIDATION_ERROR"
+                message: "Request validation failed"
+                errors:
+                  - field: "periodEndDate"
+                    message: "Period end date must be after period start date"
+                  - field: "grossWages"
+                    message: "Gross wages must be positive"
+                timestamp: "2024-04-25T14:30:00Z"
+                path: "/api/v1/w1-filings"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    get:
+      tags:
+        - W1 Filing
+      summary: List W-1 filings for a business
+      description: |
+        Retrieve all W-1 filings for a business, optionally filtered by tax year.
+        Results include cumulative totals for each filing period.
+        
+        **Functional Requirements**: FR-001, FR-010 (Filing History)
+      operationId: listW1Filings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          description: Business ID (UUID)
+          schema:
+            type: string
+            format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: taxYear
+          in: query
+          required: false
+          description: Tax year filter (defaults to current year)
+          schema:
+            type: integer
+            minimum: 2020
+            maximum: 2099
+          example: 2024
+        - name: includeAmended
+          in: query
+          required: false
+          description: Include amended filings (default: false, only show latest)
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          required: false
+          description: Page number (0-indexed)
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          description: Page size
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of W-1 filings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  filings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/W1FilingResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+              example:
+                filings:
+                  - id: "650e8400-e29b-41d4-a716-446655440000"
+                    period: "Q1"
+                    periodEndDate: "2024-03-31"
+                    dueDate: "2024-04-30"
+                    filingDate: "2024-04-25T14:30:00Z"
+                    taxDue: 2812.50
+                    status: "FILED"
+                    isAmended: false
+                  - id: "660e8400-e29b-41d4-a716-446655440001"
+                    period: "Q2"
+                    periodEndDate: "2024-06-30"
+                    dueDate: "2024-07-30"
+                    filingDate: "2024-07-20T10:15:00Z"
+                    taxDue: 3150.00
+                    status: "PAID"
+                    isAmended: false
+                pagination:
+                  page: 0
+                  size: 20
+                  totalElements: 2
+                  totalPages: 1
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /w1-filings/{id}:
+    get:
+      tags:
+        - W1 Filing
+      summary: Get W-1 filing details
+      description: |
+        Retrieve detailed information for a specific W-1 filing, including:
+        - Full filing data (wages, tax, adjustments)
+        - Cumulative totals as of this filing
+        - Payment history
+        - Audit trail
+        
+        **Functional Requirements**: FR-001, FR-002
+      operationId: getW1Filing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: W-1 filing ID (UUID)
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: W-1 filing details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/W1FilingDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /w1-filings/{id}/amend:
+    post:
+      tags:
+        - W1 Filing
+      summary: File an amended W-1 return
+      description: |
+        Submit an amended W-1 return to correct a previously filed return.
+        System automatically:
+        - Creates new W1Filing record (preserves original per Constitution III)
+        - Recalculates cumulative totals for all subsequent periods (research R3)
+        - Logs cascade update to audit trail
+        - Marks original filing as status = AMENDED
+        
+        **Functional Requirements**: FR-003 (Amended W-1), Constitution III (Immutable Audit Trail)
+      operationId: amendW1Filing
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Original W-1 filing ID to amend
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/W1AmendmentRequest'
+            example:
+              grossWages: 135000.00
+              taxableWages: 135000.00
+              adjustments: 0.00
+              employeeCount: 16
+              amendmentReason: "Discovered payroll processing error - missed employee bonus payments"
+      responses:
+        '201':
+          description: Amended W-1 filing created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amendedFiling:
+                    $ref: '#/components/schemas/W1FilingResponse'
+                  cascadeUpdateCount:
+                    type: integer
+                    description: Number of subsequent periods recalculated
+                    example: 3
+                  cascadeUpdateSummary:
+                    type: string
+                    description: Human-readable summary of cascade update
+                    example: "Recalculated cumulative totals for Q2, Q3, Q4 (3 periods)"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /w1-filings/{id}/penalties:
+    get:
+      tags:
+        - W1 Filing
+      summary: Calculate penalties for a W-1 filing
+      description: |
+        Calculate late filing and underpayment penalties for a W-1 filing.
+        Useful for previewing penalties before filing or reviewing penalty breakdown.
+        
+        **Functional Requirements**: FR-011 (Late Filing Penalty), FR-012 (Underpayment Penalty)
+      operationId: calculatePenalties
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: W-1 filing ID
+          schema:
+            type: string
+            format: uuid
+        - name: asOfDate
+          in: query
+          required: false
+          description: Calculate penalties as of this date (defaults to current date)
+          schema:
+            type: string
+            format: date
+          example: "2024-05-15"
+      responses:
+        '200':
+          description: Penalty calculation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PenaltyCalculationResponse'
+              example:
+                filingId: "650e8400-e29b-41d4-a716-446655440000"
+                dueDate: "2024-04-30"
+                filingDate: "2024-05-15"
+                daysLate: 15
+                lateFilingPenalty:
+                  amount: 140.63
+                  rate: 0.05
+                  monthsLate: 1
+                  calculation: "$2,812.50 tax due × 5% = $140.63 (1 month late)"
+                  minimumPenaltyApplied: false
+                underpaymentPenalty:
+                  amount: 0.00
+                  calculation: "No underpayment penalty - payments meet safe harbor threshold"
+                  safeHarborThreshold: 2531.25
+                  cumulativePayments: 2600.00
+                totalPenalties: 140.63
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /cumulative-totals:
+    get:
+      tags:
+        - Cumulative Totals
+      summary: Get cumulative YTD totals for a business
+      description: |
+        Retrieve year-to-date cumulative totals for a business. Used for dashboard display.
+        Returns cached totals updated event-driven on W-1 filing (research R2: Option B).
+        
+        **Performance**: <80ms average query time (research R2 benchmark)
+        
+        **Functional Requirements**: FR-002 (Cumulative Totals), FR-004 (Annual Projection), FR-005 (On-Track Indicator)
+      operationId: getCumulativeTotals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          description: Business ID (UUID)
+          schema:
+            type: string
+            format: uuid
+        - name: taxYear
+          in: query
+          required: false
+          description: Tax year (defaults to current year)
+          schema:
+            type: integer
+          example: 2024
+      responses:
+        '200':
+          description: Cumulative YTD totals
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CumulativeTotalsResponse'
+              example:
+                businessId: "550e8400-e29b-41d4-a716-446655440000"
+                taxYear: 2024
+                periodsFiled: 3
+                cumulativeWagesYtd: 375000.00
+                cumulativeTaxYtd: 8437.50
+                cumulativeAdjustmentsYtd: -500.00
+                lastFilingDate: "2024-09-20T10:15:00Z"
+                estimatedAnnualWages: 500000.00
+                projectedAnnualWages: 500000.00
+                onTrackIndicator: true
+                onTrackExplanation: "Wages on pace with estimate (75% of year, 75% of estimate)"
+                updatedAt: "2024-09-20T10:15:05Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: No cumulative totals found for business + year
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "NOT_FOUND"
+                message: "No W-1 filings found for business 550e8400-e29b-41d4-a716-446655440000 in 2024"
+                timestamp: "2024-09-20T10:15:00Z"
+                path: "/api/v1/cumulative-totals"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    W1FilingRequest:
+      type: object
+      required:
+        - businessId
+        - taxYear
+        - filingFrequency
+        - period
+        - periodStartDate
+        - periodEndDate
+        - grossWages
+        - taxableWages
+      properties:
+        businessId:
+          type: string
+          format: uuid
+          description: Business filing the W-1
+        taxYear:
+          type: integer
+          minimum: 2020
+          description: Tax year (e.g., 2024)
+        filingFrequency:
+          type: string
+          enum: [DAILY, SEMI_MONTHLY, MONTHLY, QUARTERLY]
+          description: Filing frequency
+        period:
+          type: string
+          description: Period identifier (Q1, Q2, M01, M02, D20240115)
+          pattern: "^(Q[1-4]|M(0[1-9]|1[0-2])|D\\d{8})$"
+        periodStartDate:
+          type: string
+          format: date
+          description: First day of filing period
+        periodEndDate:
+          type: string
+          format: date
+          description: Last day of filing period
+        grossWages:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Total gross wages subject to tax
+          example: 125000.00
+        taxableWages:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Wages after deductions (usually = grossWages)
+          example: 125000.00
+        adjustments:
+          type: number
+          format: decimal
+          description: Manual adjustments (prior overpayments, credits)
+          default: 0.00
+          example: -500.00
+        employeeCount:
+          type: integer
+          minimum: 0
+          description: Number of employees paid (optional)
+          example: 15
+
+    W1FilingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        taxYear:
+          type: integer
+        filingFrequency:
+          type: string
+          enum: [DAILY, SEMI_MONTHLY, MONTHLY, QUARTERLY]
+        period:
+          type: string
+        periodStartDate:
+          type: string
+          format: date
+        periodEndDate:
+          type: string
+          format: date
+        dueDate:
+          type: string
+          format: date
+          description: Calculated due date (stored immutably)
+        filingDate:
+          type: string
+          format: date-time
+        grossWages:
+          type: number
+          format: decimal
+        taxableWages:
+          type: number
+          format: decimal
+        taxRate:
+          type: number
+          format: decimal
+          description: Municipality tax rate (e.g., 0.0225 = 2.25%)
+        taxDue:
+          type: number
+          format: decimal
+        adjustments:
+          type: number
+          format: decimal
+        totalAmountDue:
+          type: number
+          format: decimal
+        isAmended:
+          type: boolean
+        amendsFilingId:
+          type: string
+          format: uuid
+          nullable: true
+        amendmentReason:
+          type: string
+          nullable: true
+        employeeCount:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [FILED, PAID, OVERDUE, AMENDED]
+        lateFilingPenalty:
+          type: number
+          format: decimal
+        underpaymentPenalty:
+          type: number
+          format: decimal
+        cumulativeTotals:
+          $ref: '#/components/schemas/CumulativeTotalsEmbedded'
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        updatedAt:
+          type: string
+          format: date-time
+
+    W1FilingDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/W1FilingResponse'
+        - type: object
+          properties:
+            payments:
+              type: array
+              items:
+                $ref: '#/components/schemas/PaymentSummary'
+            auditTrail:
+              type: array
+              items:
+                $ref: '#/components/schemas/AuditLogEntry'
+
+    W1AmendmentRequest:
+      type: object
+      required:
+        - grossWages
+        - taxableWages
+        - amendmentReason
+      properties:
+        grossWages:
+          type: number
+          format: decimal
+          minimum: 0
+        taxableWages:
+          type: number
+          format: decimal
+          minimum: 0
+        adjustments:
+          type: number
+          format: decimal
+          default: 0.00
+        employeeCount:
+          type: integer
+          minimum: 0
+          nullable: true
+        amendmentReason:
+          type: string
+          minLength: 10
+          maxLength: 1000
+          description: Required explanation for amendment
+          example: "Discovered payroll processing error"
+
+    CumulativeTotalsResponse:
+      type: object
+      properties:
+        businessId:
+          type: string
+          format: uuid
+        taxYear:
+          type: integer
+        periodsFiled:
+          type: integer
+        cumulativeWagesYtd:
+          type: number
+          format: decimal
+        cumulativeTaxYtd:
+          type: number
+          format: decimal
+        cumulativeAdjustmentsYtd:
+          type: number
+          format: decimal
+        lastFilingDate:
+          type: string
+          format: date-time
+          nullable: true
+        estimatedAnnualWages:
+          type: number
+          format: decimal
+          nullable: true
+        projectedAnnualWages:
+          type: number
+          format: decimal
+          nullable: true
+        onTrackIndicator:
+          type: boolean
+        onTrackExplanation:
+          type: string
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+
+    CumulativeTotalsEmbedded:
+      type: object
+      description: Lightweight cumulative totals embedded in W1FilingResponse
+      properties:
+        periodsFiled:
+          type: integer
+        cumulativeWagesYtd:
+          type: number
+          format: decimal
+        cumulativeTaxYtd:
+          type: number
+          format: decimal
+        projectedAnnualWages:
+          type: number
+          format: decimal
+          nullable: true
+        onTrackIndicator:
+          type: boolean
+
+    PenaltyCalculationResponse:
+      type: object
+      properties:
+        filingId:
+          type: string
+          format: uuid
+        dueDate:
+          type: string
+          format: date
+        filingDate:
+          type: string
+          format: date
+        daysLate:
+          type: integer
+        lateFilingPenalty:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: decimal
+            rate:
+              type: number
+              format: decimal
+            monthsLate:
+              type: integer
+            calculation:
+              type: string
+            minimumPenaltyApplied:
+              type: boolean
+        underpaymentPenalty:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: decimal
+            calculation:
+              type: string
+            safeHarborThreshold:
+              type: number
+              format: decimal
+              nullable: true
+            cumulativePayments:
+              type: number
+              format: decimal
+              nullable: true
+        totalPenalties:
+          type: number
+          format: decimal
+
+    PaymentSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentDate:
+          type: string
+          format: date-time
+        paymentAmount:
+          type: number
+          format: decimal
+        paymentMethod:
+          type: string
+          enum: [ACH, CHECK, CREDIT_CARD, WIRE_TRANSFER]
+        transactionId:
+          type: string
+        confirmationNumber:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED, REFUNDED]
+
+    AuditLogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum: [FILED, AMENDED, RECONCILED, PAYMENT_RECEIVED, CUMULATIVE_UPDATED]
+        description:
+          type: string
+        actorId:
+          type: string
+          format: uuid
+        actorRole:
+          type: string
+          enum: [BUSINESS, AUDITOR, SYSTEM]
+        createdAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page (0-indexed)
+        size:
+          type: integer
+          description: Page size
+        totalElements:
+          type: integer
+          description: Total number of elements
+        totalPages:
+          type: integer
+          description: Total number of pages
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code (e.g., VALIDATION_ERROR, NOT_FOUND)
+        message:
+          type: string
+          description: Human-readable error message
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+          description: Request path that generated error
+
+    ValidationErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorResponse'
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "BAD_REQUEST"
+            message: "Invalid request parameters"
+            timestamp: "2024-04-25T14:30:00Z"
+            path: "/api/v1/w1-filings"
+    
+    Unauthorized:
+      description: Unauthorized - missing or invalid JWT token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "UNAUTHORIZED"
+            message: "Missing or invalid authentication token"
+            timestamp: "2024-04-25T14:30:00Z"
+            path: "/api/v1/w1-filings"
+    
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "FORBIDDEN"
+            message: "Insufficient permissions to access this resource"
+            timestamp: "2024-04-25T14:30:00Z"
+            path: "/api/v1/w1-filings"
+    
+    NotFound:
+      description: Not found - resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "NOT_FOUND"
+            message: "W-1 filing not found"
+            timestamp: "2024-04-25T14:30:00Z"
+            path: "/api/v1/w1-filings/650e8400-e29b-41d4-a716-446655440000"
+    
+    UnprocessableEntity:
+      description: Unprocessable entity - validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "INTERNAL_SERVER_ERROR"
+            message: "An unexpected error occurred"
+            timestamp: "2024-04-25T14:30:00Z"
+            path: "/api/v1/w1-filings"

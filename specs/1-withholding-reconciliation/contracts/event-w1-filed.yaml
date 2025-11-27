@@ -1,0 +1,696 @@
+asyncapi: 2.6.0
+info:
+  title: Withholding Events API
+  version: 1.0.0
+  description: |
+    Asynchronous events for withholding reconciliation system.
+    
+    **Event-Driven Architecture**:
+    - W-1 filing triggers cumulative totals update (research R2: Option B)
+    - Reconciliation completion triggers notifications
+    - Audit trail events for all withholding actions
+    
+    **Message Broker**: Redis Pub/Sub (development), Kafka (production)
+  contact:
+    name: MuniTax Engineering
+    email: engineering@munitax.com
+
+servers:
+  production:
+    url: kafka.munitax.com:9092
+    protocol: kafka
+    description: Production Kafka cluster
+  staging:
+    url: kafka.staging.munitax.com:9092
+    protocol: kafka
+    description: Staging Kafka cluster
+  development:
+    url: localhost:6379
+    protocol: redis
+    description: Local Redis Pub/Sub
+
+channels:
+  withholding/w1-filed:
+    description: |
+      Published when a W-1 return is filed (new or amended).
+      Consumed by CumulativeCalculationService to update YTD totals.
+      
+      **Functional Requirements**: FR-001, FR-002 (Cumulative Totals)
+    publish:
+      summary: W-1 filing submitted
+      operationId: onW1Filed
+      message:
+        $ref: '#/components/messages/W1FiledEvent'
+      bindings:
+        kafka:
+          topic: withholding.w1-filed
+          partitionBy: businessId
+          retention: 604800000  # 7 days in milliseconds
+        redis:
+          channel: withholding:w1-filed
+
+  withholding/w1-amended:
+    description: |
+      Published when an amended W-1 return is filed.
+      Consumed by CumulativeCalculationService to trigger cascade update of subsequent periods.
+      
+      **Functional Requirements**: FR-003 (Amended W-1)
+    publish:
+      summary: Amended W-1 filing submitted
+      operationId: onW1Amended
+      message:
+        $ref: '#/components/messages/W1AmendedEvent'
+      bindings:
+        kafka:
+          topic: withholding.w1-amended
+          partitionBy: businessId
+          retention: 604800000
+        redis:
+          channel: withholding:w1-amended
+
+  withholding/reconciliation-completed:
+    description: |
+      Published when year-end reconciliation completes (W-2 extraction + comparison).
+      Consumed by NotificationService to send email to business owner.
+      
+      **Functional Requirements**: FR-006 (Reconciliation), FR-015 (Dashboard)
+    publish:
+      summary: Reconciliation completed
+      operationId: onReconciliationCompleted
+      message:
+        $ref: '#/components/messages/ReconciliationCompletedEvent'
+      bindings:
+        kafka:
+          topic: withholding.reconciliation-completed
+          partitionBy: businessId
+          retention: 2592000000  # 30 days
+        redis:
+          channel: withholding:reconciliation-completed
+
+  withholding/discrepancy-detected:
+    description: |
+      Published when reconciliation detects variance > 2% between W-1 and W-2 totals.
+      Consumed by NotificationService to alert business owner + auditor.
+      
+      **Functional Requirements**: FR-006 (Reconciliation), FR-008 (Discrepancy Resolution)
+    publish:
+      summary: Discrepancy detected in reconciliation
+      operationId: onDiscrepancyDetected
+      message:
+        $ref: '#/components/messages/DiscrepancyDetectedEvent'
+      bindings:
+        kafka:
+          topic: withholding.discrepancy-detected
+          partitionBy: businessId
+          retention: 2592000000
+        redis:
+          channel: withholding:discrepancy-detected
+
+  withholding/payment-received:
+    description: |
+      Published when payment is received for W-1 filing.
+      Consumed by W1FilingService to update filing status to PAID.
+      
+      **Functional Requirements**: FR-020 (Payment Tracking)
+    publish:
+      summary: Payment received for W-1 filing
+      operationId: onPaymentReceived
+      message:
+        $ref: '#/components/messages/PaymentReceivedEvent'
+      bindings:
+        kafka:
+          topic: withholding.payment-received
+          partitionBy: businessId
+          retention: 2592000000
+        redis:
+          channel: withholding:payment-received
+
+  withholding/audit-log:
+    description: |
+      Published for all withholding actions (filing, amendment, reconciliation, payment).
+      Consumed by AuditLogService to persist to withholding_audit_log table.
+      
+      **Functional Requirements**: Constitution III (Audit Trail Immutability)
+    publish:
+      summary: Audit log entry created
+      operationId: onAuditLogCreated
+      message:
+        $ref: '#/components/messages/AuditLogEvent'
+      bindings:
+        kafka:
+          topic: withholding.audit-log
+          partitionBy: tenantId
+          retention: 31536000000  # 365 days (1 year)
+        redis:
+          channel: withholding:audit-log
+
+components:
+  messages:
+    W1FiledEvent:
+      name: W1FiledEvent
+      title: W-1 Filing Event
+      summary: Published when a W-1 return is filed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/W1FiledPayload'
+      correlationId:
+        description: Business ID for message routing
+        location: $message.payload#/businessId
+      examples:
+        - name: quarterlyFiling
+          summary: Quarterly W-1 filing (Q1 2024)
+          payload:
+            eventId: "950e8400-e29b-41d4-a716-446655440000"
+            eventType: "W1_FILED"
+            timestamp: "2024-04-25T14:30:00Z"
+            tenantId: "100e8400-e29b-41d4-a716-446655440000"
+            businessId: "550e8400-e29b-41d4-a716-446655440000"
+            filingId: "650e8400-e29b-41d4-a716-446655440000"
+            taxYear: 2024
+            filingFrequency: "QUARTERLY"
+            period: "Q1"
+            periodEndDate: "2024-03-31"
+            grossWages: 125000.00
+            taxDue: 2812.50
+            adjustments: 0.00
+            isAmended: false
+            createdBy: "750e8400-e29b-41d4-a716-446655440000"
+
+    W1AmendedEvent:
+      name: W1AmendedEvent
+      title: Amended W-1 Filing Event
+      summary: Published when an amended W-1 return is filed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/W1AmendedPayload'
+      correlationId:
+        description: Business ID for message routing
+        location: $message.payload#/businessId
+      examples:
+        - name: amendedQuarterly
+          summary: Amended Q1 W-1 (wage correction)
+          payload:
+            eventId: "960e8400-e29b-41d4-a716-446655440000"
+            eventType: "W1_AMENDED"
+            timestamp: "2024-06-10T09:15:00Z"
+            tenantId: "100e8400-e29b-41d4-a716-446655440000"
+            businessId: "550e8400-e29b-41d4-a716-446655440000"
+            amendedFilingId: "660e8400-e29b-41d4-a716-446655440001"
+            originalFilingId: "650e8400-e29b-41d4-a716-446655440000"
+            taxYear: 2024
+            period: "Q1"
+            originalWages: 125000.00
+            amendedWages: 135000.00
+            wagesDelta: 10000.00
+            originalTax: 2812.50
+            amendedTax: 3037.50
+            taxDelta: 225.00
+            amendmentReason: "Payroll processing error - missed bonus payments"
+            subsequentPeriodsCount: 3
+            createdBy: "750e8400-e29b-41d4-a716-446655440000"
+
+    ReconciliationCompletedEvent:
+      name: ReconciliationCompletedEvent
+      title: Reconciliation Completed Event
+      summary: Published when year-end reconciliation completes
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ReconciliationCompletedPayload'
+      correlationId:
+        description: Business ID for message routing
+        location: $message.payload#/businessId
+      examples:
+        - name: reconciledSuccess
+          summary: Reconciliation completed with minor variance
+          payload:
+            eventId: "970e8400-e29b-41d4-a716-446655440000"
+            eventType: "RECONCILIATION_COMPLETED"
+            timestamp: "2024-01-15T15:00:00Z"
+            tenantId: "100e8400-e29b-41d4-a716-446655440000"
+            businessId: "550e8400-e29b-41d4-a716-446655440000"
+            reconciliationId: "750e8400-e29b-41d4-a716-446655440000"
+            taxYear: 2024
+            w1TotalWages: 500000.00
+            w2TotalWages: 502500.00
+            wagesVariance: -2500.00
+            wagesVariancePercentage: -0.50
+            w1TotalTax: 11250.00
+            w2TotalTax: 11306.25
+            taxVariance: -56.25
+            taxVariancePercentage: -0.50
+            status: "DISCREPANCY"
+            w2Count: 15
+            ignoredW2Count: 2
+            createdBy: "750e8400-e29b-41d4-a716-446655440000"
+
+    DiscrepancyDetectedEvent:
+      name: DiscrepancyDetectedEvent
+      title: Discrepancy Detected Event
+      summary: Published when reconciliation detects variance > 2%
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/DiscrepancyDetectedPayload'
+      correlationId:
+        description: Business ID for message routing
+        location: $message.payload#/businessId
+      examples:
+        - name: majorDiscrepancy
+          summary: Major discrepancy (5% variance)
+          payload:
+            eventId: "980e8400-e29b-41d4-a716-446655440000"
+            eventType: "DISCREPANCY_DETECTED"
+            timestamp: "2024-01-15T15:00:00Z"
+            tenantId: "100e8400-e29b-41d4-a716-446655440000"
+            businessId: "550e8400-e29b-41d4-a716-446655440000"
+            reconciliationId: "750e8400-e29b-41d4-a716-446655440000"
+            taxYear: 2024
+            wagesVariance: -25000.00
+            wagesVariancePercentage: -5.00
+            thresholdExceeded: true
+            severity: "HIGH"
+            notificationRecipients:
+              - "business-owner@acmecorp.com"
+              - "auditor@dublin.gov"
+
+    PaymentReceivedEvent:
+      name: PaymentReceivedEvent
+      title: Payment Received Event
+      summary: Published when payment is received for W-1 filing
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/PaymentReceivedPayload'
+      correlationId:
+        description: Business ID for message routing
+        location: $message.payload#/businessId
+      examples:
+        - name: achPayment
+          summary: ACH payment received
+          payload:
+            eventId: "990e8400-e29b-41d4-a716-446655440000"
+            eventType: "PAYMENT_RECEIVED"
+            timestamp: "2024-04-26T08:00:00Z"
+            tenantId: "100e8400-e29b-41d4-a716-446655440000"
+            businessId: "550e8400-e29b-41d4-a716-446655440000"
+            w1FilingId: "650e8400-e29b-41d4-a716-446655440000"
+            paymentId: "850e8400-e29b-41d4-a716-446655440000"
+            paymentAmount: 2812.50
+            paymentMethod: "ACH"
+            transactionId: "TXN-20240426-000123"
+            confirmationNumber: "CONF-123456"
+            paymentDate: "2024-04-26T08:00:00Z"
+
+    AuditLogEvent:
+      name: AuditLogEvent
+      title: Audit Log Event
+      summary: Published for all withholding actions
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/AuditLogPayload'
+      correlationId:
+        description: Tenant ID for message routing
+        location: $message.payload#/tenantId
+      examples:
+        - name: w1Filed
+          summary: W-1 filing audit log
+          payload:
+            eventId: "a00e8400-e29b-41d4-a716-446655440000"
+            eventType: "AUDIT_LOG"
+            timestamp: "2024-04-25T14:30:00Z"
+            tenantId: "100e8400-e29b-41d4-a716-446655440000"
+            entityType: "W1_FILING"
+            entityId: "650e8400-e29b-41d4-a716-446655440000"
+            action: "FILED"
+            actorId: "750e8400-e29b-41d4-a716-446655440000"
+            actorRole: "BUSINESS"
+            description: "Filed Q1 2024 W-1 return ($125,000 wages, $2,812.50 tax)"
+            newValue:
+              filingId: "650e8400-e29b-41d4-a716-446655440000"
+              period: "Q1"
+              wages: 125000.00
+              tax: 2812.50
+            ipAddress: "192.168.1.100"
+            userAgent: "Mozilla/5.0..."
+
+  schemas:
+    W1FiledPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - businessId
+        - filingId
+        - taxYear
+        - period
+        - grossWages
+        - taxDue
+        - isAmended
+      properties:
+        eventId:
+          type: string
+          format: uuid
+          description: Unique event ID
+        eventType:
+          type: string
+          enum: [W1_FILED]
+        timestamp:
+          type: string
+          format: date-time
+          description: Event generation timestamp
+        tenantId:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        filingId:
+          type: string
+          format: uuid
+          description: W1Filing record ID
+        taxYear:
+          type: integer
+        filingFrequency:
+          type: string
+          enum: [DAILY, SEMI_MONTHLY, MONTHLY, QUARTERLY]
+        period:
+          type: string
+          description: Period identifier (Q1, M01, etc.)
+        periodEndDate:
+          type: string
+          format: date
+        grossWages:
+          type: number
+          format: decimal
+        taxDue:
+          type: number
+          format: decimal
+        adjustments:
+          type: number
+          format: decimal
+          default: 0.00
+        isAmended:
+          type: boolean
+        createdBy:
+          type: string
+          format: uuid
+
+    W1AmendedPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - businessId
+        - amendedFilingId
+        - originalFilingId
+        - taxYear
+        - period
+        - wagesDelta
+        - taxDelta
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+          enum: [W1_AMENDED]
+        timestamp:
+          type: string
+          format: date-time
+        tenantId:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        amendedFilingId:
+          type: string
+          format: uuid
+          description: New amended W1Filing record ID
+        originalFilingId:
+          type: string
+          format: uuid
+          description: Original W1Filing record ID
+        taxYear:
+          type: integer
+        period:
+          type: string
+        originalWages:
+          type: number
+          format: decimal
+        amendedWages:
+          type: number
+          format: decimal
+        wagesDelta:
+          type: number
+          format: decimal
+          description: amendedWages - originalWages (can be negative)
+        originalTax:
+          type: number
+          format: decimal
+        amendedTax:
+          type: number
+          format: decimal
+        taxDelta:
+          type: number
+          format: decimal
+        amendmentReason:
+          type: string
+        subsequentPeriodsCount:
+          type: integer
+          description: Number of periods after amended period (for cascade update)
+        createdBy:
+          type: string
+          format: uuid
+
+    ReconciliationCompletedPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - businessId
+        - reconciliationId
+        - taxYear
+        - w1TotalWages
+        - w2TotalWages
+        - wagesVariance
+        - status
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+          enum: [RECONCILIATION_COMPLETED]
+        timestamp:
+          type: string
+          format: date-time
+        tenantId:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        reconciliationId:
+          type: string
+          format: uuid
+        taxYear:
+          type: integer
+        w1TotalWages:
+          type: number
+          format: decimal
+        w2TotalWages:
+          type: number
+          format: decimal
+        wagesVariance:
+          type: number
+          format: decimal
+        wagesVariancePercentage:
+          type: number
+          format: decimal
+        w1TotalTax:
+          type: number
+          format: decimal
+        w2TotalTax:
+          type: number
+          format: decimal
+        taxVariance:
+          type: number
+          format: decimal
+        taxVariancePercentage:
+          type: number
+          format: decimal
+        status:
+          type: string
+          enum: [RECONCILED, DISCREPANCY]
+        w2Count:
+          type: integer
+        ignoredW2Count:
+          type: integer
+        createdBy:
+          type: string
+          format: uuid
+
+    DiscrepancyDetectedPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - businessId
+        - reconciliationId
+        - taxYear
+        - wagesVariance
+        - wagesVariancePercentage
+        - thresholdExceeded
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+          enum: [DISCREPANCY_DETECTED]
+        timestamp:
+          type: string
+          format: date-time
+        tenantId:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        reconciliationId:
+          type: string
+          format: uuid
+        taxYear:
+          type: integer
+        wagesVariance:
+          type: number
+          format: decimal
+        wagesVariancePercentage:
+          type: number
+          format: decimal
+        thresholdExceeded:
+          type: boolean
+          description: True if variance > 2%
+        severity:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+          description: LOW = <2%, MEDIUM = 2-5%, HIGH = >5%
+        notificationRecipients:
+          type: array
+          items:
+            type: string
+            format: email
+
+    PaymentReceivedPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - businessId
+        - w1FilingId
+        - paymentId
+        - paymentAmount
+        - paymentMethod
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+          enum: [PAYMENT_RECEIVED]
+        timestamp:
+          type: string
+          format: date-time
+        tenantId:
+          type: string
+          format: uuid
+        businessId:
+          type: string
+          format: uuid
+        w1FilingId:
+          type: string
+          format: uuid
+        paymentId:
+          type: string
+          format: uuid
+        paymentAmount:
+          type: number
+          format: decimal
+        paymentMethod:
+          type: string
+          enum: [ACH, CHECK, CREDIT_CARD, WIRE_TRANSFER]
+        transactionId:
+          type: string
+        confirmationNumber:
+          type: string
+        paymentDate:
+          type: string
+          format: date-time
+
+    AuditLogPayload:
+      type: object
+      required:
+        - eventId
+        - eventType
+        - timestamp
+        - tenantId
+        - entityType
+        - entityId
+        - action
+        - actorId
+        - actorRole
+        - description
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        eventType:
+          type: string
+          enum: [AUDIT_LOG]
+        timestamp:
+          type: string
+          format: date-time
+        tenantId:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+          enum: [W1_FILING, RECONCILIATION, CUMULATIVE_TOTALS, PAYMENT]
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+          enum: [FILED, AMENDED, RECONCILED, PAYMENT_RECEIVED, CUMULATIVE_UPDATED, DISCREPANCY_RESOLVED]
+        actorId:
+          type: string
+          format: uuid
+        actorRole:
+          type: string
+          enum: [BUSINESS, AUDITOR, SYSTEM]
+        description:
+          type: string
+          description: Human-readable action description
+        oldValue:
+          type: object
+          nullable: true
+          description: Previous state (if update)
+        newValue:
+          type: object
+          nullable: true
+          description: New state (if create/update)
+        ipAddress:
+          type: string
+          nullable: true
+        userAgent:
+          type: string
+          nullable: true
