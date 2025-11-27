@@ -1,0 +1,7 @@
+{
+  "name": "MuniTax - Dublin Municipality Tax Calculator",
+  "description": "An intelligent, AI-powered tax calculator for Dublin Municipality residents. Upload your tax forms (W-2, 1099) to automatically extract data, calculate Federal, State, and specific Municipal taxes with a comprehensive rule engine.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: tax-engine
+          uri: lb://tax-engine-service
+          predicates:
+            - Path=/api/v1/tax-engine/**
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/auth/**
+        - id: extraction-service
+          uri: lb://extraction-service
+          predicates:
+            - Path=/api/v1/extraction/**
+        - id: pdf-service
+          uri: lb://pdf-service
+          predicates:
+            - Path=/api/v1/pdf/**
+        - id: submission-service
+          uri: lb://submission-service
+          predicates:
+            - Path=/api/v1/submissions/**
+        - id: user-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/v1/users/**
+        - id: tenant-service
+          uri: lb://tenant-service
+          predicates:
+            - Path=/api/v1/tenants/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

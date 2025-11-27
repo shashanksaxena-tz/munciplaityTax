@@ -1,0 +1,191 @@
+version: '3.8'
+
+services:
+  # --- Infrastructure ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: munitax-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: munitax_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - munitax-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: munitax-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - munitax-network
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: munitax-zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - munitax-network
+
+  # --- Microservices ---
+  discovery-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: discovery-service
+    container_name: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - munitax-network
+    depends_on:
+      - zipkin
+
+  gateway-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: gateway-service
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    networks:
+      - munitax-network
+    depends_on:
+      - discovery-service
+      - zipkin
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+
+  auth-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: auth-service
+    container_name: auth-service
+    networks:
+      - munitax-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      JWT_SECRET: munitax-secret-key-for-jwt-tokens-must-be-at-least-256-bits-long
+
+  tenant-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: tenant-service
+    container_name: tenant-service
+    networks:
+      - munitax-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+
+  tax-engine-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: tax-engine-service
+    container_name: tax-engine-service
+    networks:
+      - munitax-network
+    depends_on:
+      - discovery-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+
+  extraction-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: extraction-service
+    container_name: extraction-service
+    networks:
+      - munitax-network
+    depends_on:
+      - discovery-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      GEMINI_API_KEY: AIzaSyBeSnWAPWvR_ShBti6dsL0zkXLMpDoSKjQ
+      GEMINI_API_MODEL: gemini-1.5-flash-latest
+
+  submission-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: submission-service
+    container_name: submission-service
+    networks:
+      - munitax-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery-service:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+
+  pdf-service:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: pdf-service
+    container_name: pdf-service
+    networks:
+      - munitax-network
+    depends_on:
+      - discovery-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+
+  # --- Frontend ---
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: munitax-frontend
+    ports:
+      - "3000:80"
+    networks:
+      - munitax-network
+    depends_on:
+      - gateway-service
+
+networks:
+  munitax-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

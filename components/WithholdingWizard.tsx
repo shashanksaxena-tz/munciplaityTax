@@ -1,0 +1,208 @@
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { BusinessProfile, WithholdingPeriod, WithholdingReturnData, FilingFrequency } from '../types';
+import { calculateWithholding, reconcilePayroll, getAvailablePeriods, getDailyPeriod } from '../utils/businessUtils';
+import { ArrowRight, Upload, DollarSign, ChevronLeft } from 'lucide-react';
+import { DiscrepancyView } from './DiscrepancyView';
+import { PaymentGateway } from './PaymentGateway';
+
+interface WithholdingWizardProps {
+  profile: BusinessProfile;
+  onBack: () => void;
+  onComplete: (data: WithholdingReturnData) => void;
+}
+
+export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, onBack, onComplete }) => {
+  const [step, setStep] = useState(1);
+  
+  // Step 1
+  const [selectedPeriod, setSelectedPeriod] = useState<WithholdingPeriod | null>(null);
+  const [dailyDate, setDailyDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  // Step 2
+  const [wages, setWages] = useState<number>(0);
+  const [adjustments, setAdjustments] = useState<number>(0);
+  const [uploadedWages, setUploadedWages] = useState<number | null>(null);
+  
+  const [calculation, setCalculation] = useState<WithholdingReturnData | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+
+  const availablePeriods = useMemo(() => {
+     if (profile.filingFrequency === FilingFrequency.DAILY) return [];
+     return getAvailablePeriods(profile.filingFrequency, new Date().getFullYear());
+  }, [profile.filingFrequency]);
+
+  useEffect(() => {
+    if (wages > 0 && selectedPeriod) {
+      setCalculation(calculateWithholding(wages, adjustments, selectedPeriod));
+    }
+  }, [wages, adjustments, selectedPeriod]);
+
+  const handleDailyDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setDailyDate(val);
+    setSelectedPeriod(getDailyPeriod(val));
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTimeout(() => setUploadedWages(wages + 150.00), 800);
+  };
+
+  const discrepancy = (uploadedWages !== null && calculation) 
+    ? reconcilePayroll(calculation.grossWages, uploadedWages) 
+    : null;
+
+  return (
+    <div className="max-w-3xl mx-auto py-8 animate-fadeIn">
+      {showPayment && calculation && (
+        <PaymentGateway 
+          amount={calculation.totalAmountDue} 
+          recipient="City of Dublin Tax Division"
+          onCancel={() => setShowPayment(false)}
+          onSuccess={(record) => {
+             setShowPayment(false);
+             const finalData: WithholdingReturnData = {
+               ...calculation,
+               paymentStatus: 'PAID',
+               confirmationNumber: record.confirmationNumber
+             };
+             onComplete(finalData);
+          }}
+        />
+      )}
+
+      <div className="flex items-center gap-4 mb-8">
+        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full"><ChevronLeft className="w-5 h-5 text-slate-500"/></button>
+        <div>
+           <h2 className="text-xl font-bold text-slate-900">File Withholding (Form W-1)</h2>
+           <p className="text-sm text-slate-500">Frequency: {profile.filingFrequency}</p>
+        </div>
+      </div>
+
+      <div className="flex gap-2 mb-6">
+         {[1, 2, 3].map(s => (
+            <div key={s} className={`h-2 flex-1 rounded-full transition-all ${s <= step ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+         ))}
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        
+        {step === 1 && (
+           <div className="p-8">
+              <h3 className="font-bold text-slate-800 mb-4">1. Select Filing Period</h3>
+              
+              {profile.filingFrequency === FilingFrequency.DAILY ? (
+                 <div className="space-y-4">
+                    <label className="block text-sm font-medium text-slate-700">Select Date of Wages</label>
+                    <input 
+                      type="date" 
+                      value={dailyDate}
+                      onChange={handleDailyDateChange}
+                      className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <div className="p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+                       Daily filers must remit taxes by the next banking day.
+                    </div>
+                 </div>
+              ) : (
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto pr-2">
+                    {availablePeriods.map((p) => {
+                       const isSelected = selectedPeriod?.period === p.period;
+                       return (
+                         <button 
+                           key={p.period}
+                           onClick={() => setSelectedPeriod(p)}
+                           className={`text-left p-4 rounded-xl border transition-all ${isSelected ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600' : 'border-slate-200 hover:border-indigo-300'}`}
+                         >
+                            <div className={`font-bold ${isSelected ? 'text-indigo-700' : 'text-slate-800'}`}>{p.period}</div>
+                            <div className="text-xs text-slate-500 mt-1">Due: {p.dueDate}</div>
+                         </button>
+                       )
+                    })}
+                 </div>
+              )}
+
+              <div className="flex justify-end pt-8">
+                <button 
+                  onClick={() => setStep(2)}
+                  disabled={!selectedPeriod}
+                  className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 disabled:opacity-50 hover:bg-indigo-700 transition-all flex items-center gap-2"
+                >
+                  Next: Enter Data <ArrowRight className="w-4 h-4" />
+                </button>
+             </div>
+           </div>
+        )}
+        
+        {step === 2 && (
+          <div className="p-8 space-y-6 animate-slideLeft">
+             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+               <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-bold text-slate-800">2. Enter Payroll Data</h3>
+                  <span className="text-xs font-mono bg-white border border-slate-200 px-2 py-1 rounded text-slate-600">{selectedPeriod?.period}</span>
+               </div>
+               <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Total Gross Wages</label>
+                    <div className="relative">
+                       <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                       <input 
+                         type="number" 
+                         value={wages || ''} onChange={e => setWages(parseFloat(e.target.value))}
+                         className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg"
+                         placeholder="0.00"
+                       />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Adjustments (+/-)</label>
+                    <input 
+                         type="number" 
+                         value={adjustments || ''} onChange={e => setAdjustments(parseFloat(e.target.value))}
+                         className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                         placeholder="0.00"
+                       />
+                  </div>
+               </div>
+             </div>
+             <div className="border-t border-slate-100 pt-6">
+               <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Upload className="w-4 h-4 text-indigo-600" /> Reconcile (Optional)</h3>
+               <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition-colors relative">
+                  <input type="file" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                  <p className="text-sm text-slate-600 font-medium">Drop Payroll File</p>
+               </div>
+               {discrepancy && discrepancy.hasDiscrepancies && <div className="mt-4"><DiscrepancyView report={discrepancy} /></div>}
+             </div>
+             <div className="flex justify-between pt-4">
+                <button onClick={() => setStep(1)} className="text-slate-500 font-medium hover:text-slate-800">Change Period</button>
+                <button onClick={() => setStep(3)} disabled={!wages} className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 disabled:opacity-50 hover:bg-indigo-700 transition-all flex items-center gap-2">
+                  Calculate & Review <ArrowRight className="w-4 h-4" />
+                </button>
+             </div>
+          </div>
+        )}
+
+        {step === 3 && calculation && (
+           <div className="p-8 animate-slideLeft">
+              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 mb-6 text-center">
+                 <h3 className="text-sm font-bold uppercase text-indigo-400 tracking-wider mb-2">Total Amount Due</h3>
+                 <div className="text-4xl font-bold text-indigo-900 mb-4">${calculation.totalAmountDue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                 <div className="inline-block text-left space-y-1 text-sm text-indigo-800 bg-white/50 p-4 rounded-lg">
+                    <div className="flex justify-between gap-8"><span>Gross Wages:</span><span className="font-mono">${calculation.grossWages.toLocaleString()}</span></div>
+                    <div className="flex justify-between gap-8"><span>Tax Due (2.0%):</span><span className="font-mono">${calculation.taxDue.toLocaleString()}</span></div>
+                    {calculation.penalty > 0 && <div className="flex justify-between gap-8 text-red-600"><span>Penalty:</span><span className="font-mono">+${calculation.penalty.toLocaleString()}</span></div>}
+                    {calculation.interest > 0 && <div className="flex justify-between gap-8 text-red-600"><span>Interest:</span><span className="font-mono">+${calculation.interest.toLocaleString()}</span></div>}
+                 </div>
+              </div>
+              <div className="flex gap-4">
+                 <button onClick={() => setStep(2)} className="flex-1 py-3 border border-slate-300 rounded-xl font-medium text-slate-600 hover:bg-slate-50">Back to Edit</button>
+                 <button onClick={() => setShowPayment(true)} className="flex-[2] py-3 bg-green-600 text-white rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-700 flex items-center justify-center gap-2">
+                    <DollarSign className="w-4 h-4" /> Pay Now
+                 </button>
+              </div>
+           </div>
+        )}
+      </div>
+    </div>
+  );
+};

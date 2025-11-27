@@ -1,0 +1,39 @@
+Split the exsistig features and improves documents seprate add the following features too on top of your suggestions, 
+priorotis these features and add them to the document. "Improvements md" and Current features md
+
+have user management for registyrations ,
+
+I want this system to hav seeprate logins for a business - files returns for 1 or multiple business. 
+
+
+a individual - files for individual 
+
+a auditor - vieews submited records for a county both business and individual.
+
+auditor can reject and approve the flow based on data and submitted forms.
+
+auditor can mention the reason for rejection and user should see this as well.
+
+consider that this application should be one for all user (business, individual, business withholdings, business year filling), user should seee his past records based on profile)
+
+user can create multiple profiles for filling for oneself and other members.
+
+as a muncipality tax expert
+do a comprehensive research for business and user tax fillings which might b missing in the rule engine, use flows, UI , rule engine, configurations make it multi tenant,
+allow addition of rules test them versionise and apply to the tenant, also do a research on reconsiliation of business and individual based on entries of both.
+
+add database for all stages, i.e extrcation , changes while filling, auditor changes on the return, submissons payments extrcation
+
+add a ledger mangement for fillings payments, withholdings etc.
+
+Add feature around lining back the extraction to the file basically on a click usere should be able to see where the value in the form came from i was thinking to open the pdf to that page from where the value was extracted from the pdf itslef.
+
+add a feature show which form were ignored and why basically right now we are focusing on which forms are relevant and which forms were extracted but we should also mention about the fields which were not extracted and why.
+
+add a feature to show the history of the return basically user should be able to see the history of the return and the changes made to the return and the reason for the changes.
+
+add a reporting engine for generating reports for the audior based on your understanding create reports as well as add a feature to genrate custome reports based on the requirmnts and data available in the system.
+
+the upload pdf for xxtraction should also appear to the auditor to review the data, for the audior to approve the returns. (whole pdf)
+
+can we have real time updates while the extraction is happening, i.e you pdf had these many files, were able to identiy that tax forms are for the user and were able to extract the data from the forms and were able to identify the forms which were not extracted and were able to identify the forms which were not relevant to the user or were not needed for tax filling something hooks the user and doesn't stress the AI too much if possible

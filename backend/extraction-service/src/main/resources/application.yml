@@ -1,0 +1,16 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: extraction-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_API_MODEL:gemini-1.5-flash}

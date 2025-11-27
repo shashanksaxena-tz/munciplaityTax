@@ -1,0 +1,345 @@
+
+export enum TaxFormType {
+  W2 = 'W-2',
+  FORM_1099_NEC = '1099-NEC',
+  FORM_1099_MISC = '1099-MISC',
+  W2G = 'W-2G',
+  SCHEDULE_C = 'Schedule C',
+  SCHEDULE_E = 'Schedule E',
+  SCHEDULE_F = 'Schedule F',
+  LOCAL_1040 = 'Dublin 1040',
+  LOCAL_1040_EZ = 'Dublin 1040EZ',
+  FORM_R = 'Form R',
+  FEDERAL_1040 = 'Federal 1040',
+  
+  // Business Specific
+  FORM_W1 = 'Form W-1 (Withholding)',
+  FORM_W3 = 'Form W-3 (Reconciliation)',
+  FORM_27 = 'Form 27 (Net Profits)',
+  FORM_1120 = 'Federal 1120 (Corp)',
+  FORM_1065 = 'Federal 1065 (Partnership)',
+  PAYROLL_SUMMARY = 'Payroll Summary'
+}
+
+export enum TaxReturnStatus {
+  DRAFT = 'DRAFT',
+  SUBMITTED = 'SUBMITTED',
+  AMENDED = 'AMENDED',
+  PAID = 'PAID',
+  LATE = 'LATE'
+}
+
+export enum FilingFrequency {
+  DAILY = 'DAILY',
+  SEMI_MONTHLY = 'SEMI_MONTHLY',
+  MONTHLY = 'MONTHLY',
+  QUARTERLY = 'QUARTERLY'
+}
+
+export enum AppStep {
+  DASHBOARD = 'DASHBOARD',
+  REGISTER_BUSINESS = 'REGISTER_BUSINESS',
+  BUSINESS_DASHBOARD = 'BUSINESS_DASHBOARD',
+  WITHHOLDING_WIZARD = 'WITHHOLDING_WIZARD',
+  NET_PROFITS_WIZARD = 'NET_PROFITS_WIZARD',
+  RECONCILIATION_WIZARD = 'RECONCILIATION_WIZARD',
+  BUSINESS_HISTORY = 'BUSINESS_HISTORY',
+  BUSINESS_RULES = 'BUSINESS_RULES',
+  UPLOAD = 'UPLOAD',
+  SUMMARY = 'SUMMARY',
+  REVIEW = 'REVIEW',
+  CALCULATING = 'CALCULATING',
+  RESULTS = 'RESULTS'
+}
+
+export enum FilingStatus {
+  SINGLE = 'SINGLE',
+  MARRIED_FILING_JOINTLY = 'MARRIED_FILING_JOINTLY',
+  MARRIED_FILING_SEPARATELY = 'MARRIED_FILING_SEPARATELY',
+  HEAD_OF_HOUSEHOLD = 'HEAD_OF_HOUSEHOLD',
+  QUALIFYING_WIDOWER = 'QUALIFYING_WIDOWER'
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  country?: string;
+  verificationStatus?: 'UNVERIFIED' | 'VERIFIED_IN_DISTRICT' | 'VERIFIED_OUT_DISTRICT' | 'JEDD';
+}
+
+export interface TaxPayerProfile {
+  name: string;
+  ssn?: string; 
+  address?: Address;
+  filingStatus?: FilingStatus;
+  spouse?: {
+    name: string;
+    ssn?: string;
+  };
+}
+
+export interface BusinessProfile {
+  businessName: string;
+  fein: string;
+  accountNumber: string; 
+  address: Address;
+  filingFrequency: FilingFrequency;
+  fiscalYearEnd: string; 
+}
+
+export interface TaxReturnSettings {
+  taxYear: number;
+  isAmendment: boolean;
+  amendmentReason?: string;
+}
+
+export interface WithholdingPeriod {
+  year: number;
+  period: string; 
+  startDate: string;
+  endDate: string;
+  dueDate: string;
+}
+
+export interface WithholdingReturnData {
+  id: string;
+  dateFiled: string;
+  period: WithholdingPeriod;
+  grossWages: number; 
+  taxDue: number;
+  adjustments: number;
+  penalty: number;
+  interest: number;
+  totalAmountDue: number;
+  isReconciled: boolean;
+  paymentStatus: 'PAID' | 'UNPAID';
+  confirmationNumber?: string;
+}
+
+// Business Schedule X: Reconciliation
+export interface BusinessScheduleXDetails {
+  fedTaxableIncome: number;
+  addBacks: {
+    interestAndStateTaxes: number; // Income Taxes paid to states/cities
+    wagesCredit: number; // Wages deducted for federal credits
+    losses1231: number; // Capital Losses / 1231 Losses
+    guaranteedPayments: number; // Payments to partners (Line 10 1065)
+    expensesOnIntangibleIncome: number; // 5% Rule: Expenses incurred to earn non-taxable income
+    other: number;
+  };
+  deductions: {
+    interestIncome: number;
+    dividends: number;
+    capitalGains: number; // Capital Gains / 1231 Gains
+    section179Excess: number;
+    other: number;
+  };
+}
+
+// Business Schedule Y: Allocation
+export interface BusinessAllocation {
+  property: { dublin: number; everywhere: number; pct: number };
+  payroll: { dublin: number; everywhere: number; pct: number };
+  sales: { dublin: number; everywhere: number; pct: number };
+  totalPct: number;
+  averagePct: number;
+}
+
+export interface NetProfitReturnData {
+  id: string;
+  dateFiled: string;
+  taxYear: number;
+  
+  // New granular details
+  reconciliation: BusinessScheduleXDetails;
+  allocation: BusinessAllocation;
+  
+  adjustedFedTaxableIncome: number; // From Sch X
+  allocatedTaxableIncome: number; // Adjusted * Allocation%
+  
+  // NOL Logic
+  nolAvailable: number;
+  nolApplied: number;
+  taxableIncomeAfterNOL: number;
+
+  taxDue: number;
+  estimatedPayments: number;
+  priorYearCredit: number;
+  
+  // Penalty Details
+  penaltyUnderpayment: number;
+  penaltyLateFiling: number;
+  interest: number;
+
+  balanceDue: number;
+  
+  paymentStatus: 'PAID' | 'UNPAID';
+  confirmationNumber?: string;
+}
+
+export interface ReconciliationReturnData {
+  id: string;
+  dateFiled: string;
+  taxYear: number;
+  totalW1Tax: number;
+  totalW2Tax: number;
+  discrepancy: number;
+  status: 'BALANCED' | 'UNBALANCED';
+  confirmationNumber?: string;
+}
+
+// --- FORM INTERFACES ---
+
+export interface BaseTaxForm {
+  id: string;
+  fileName: string;
+  taxYear: number;
+  confidenceScore?: number; 
+  fieldConfidence?: Record<string, number>;
+  sourcePage?: number;
+  extractionReason?: string;
+  formType: TaxFormType;
+  owner?: 'PRIMARY' | 'SPOUSE';
+}
+
+export interface W2Form extends BaseTaxForm { formType: TaxFormType.W2; employer: string; employerEin: string; employerAddress: Address; employerCounty?: string; totalMonthsInCity?: number; employee: string; employeeInfo?: TaxPayerProfile; federalWages: number; medicareWages: number; localWages: number; localWithheld: number; locality: string; taxDue?: number; lowConfidenceFields?: string[]; }
+export interface W2GForm extends BaseTaxForm { formType: TaxFormType.W2G; payer: string; payerEin: string; payerAddress: Address; recipient: string; recipientTin?: string; grossWinnings: number; dateWon: string; typeOfWager: string; federalWithheld: number; stateWithheld: number; localWinnings: number; localWithheld: number; locality: string; lowConfidenceFields?: string[]; }
+export interface Form1099 extends BaseTaxForm { formType: TaxFormType.FORM_1099_NEC | TaxFormType.FORM_1099_MISC; payer: string; payerTin?: string; payerAddress?: Address; recipient: string; incomeAmount: number; federalWithheld: number; stateWithheld: number; localWithheld: number; locality: string; lowConfidenceFields?: string[]; }
+export interface ScheduleC extends BaseTaxForm { formType: TaxFormType.SCHEDULE_C; principalBusiness: string; businessCode: string; businessName: string; businessEin: string; businessAddress: Address; grossReceipts: number; totalExpenses: number; netProfit: number; lowConfidenceFields?: string[]; }
+export interface ScheduleE extends BaseTaxForm { formType: TaxFormType.SCHEDULE_E; rentals: RentalProperty[]; partnerships: PartnershipEntity[]; totalNetIncome: number; lowConfidenceFields?: string[]; }
+export interface ScheduleF extends BaseTaxForm { formType: TaxFormType.SCHEDULE_F; principalProduct: string; businessName: string; businessCode: string; ein: string; grossIncome: number; totalExpenses: number; netFarmProfit: number; lowConfidenceFields?: string[]; }
+
+export interface LocalTaxForm extends BaseTaxForm { 
+  formType: TaxFormType.LOCAL_1040 | TaxFormType.LOCAL_1040_EZ | TaxFormType.FORM_R; 
+  qualifyingWages: number; // Line 1
+  otherIncome: number;     // Line 2
+  totalIncome: number;     // Line 3
+  taxDue: number;          // Line 6
+  credits: number;         // Line 7
+  overpayment: number;     // Line 13
+  reportedTaxableIncome: number; // Line 5 (Legacy prop)
+  reportedTaxDue: number; // Legacy prop
+}
+
+export interface FederalTaxForm extends BaseTaxForm {
+  formType: TaxFormType.FEDERAL_1040;
+  wages: number; // 1z
+  qualifiedDividends: number; // 3a
+  pensions: number; // 5b
+  socialSecurity: number; // 6b
+  capitalGains: number; // 7
+  otherIncome: number; // 8
+  totalIncome: number; // 9
+  adjustedGrossIncome: number; // 11
+  tax: number; // 24
+}
+
+export interface BusinessFederalForm extends BaseTaxForm {
+  formType: TaxFormType.FORM_1120 | TaxFormType.FORM_1065 | TaxFormType.FORM_27;
+  businessName: string;
+  ein: string;
+  fedTaxableIncome: number;
+  reconciliation?: BusinessScheduleXDetails;
+  allocation?: BusinessAllocation;
+}
+
+export interface RentalProperty { id: string; streetAddress: string; city: string; state: string; zip: string; rentalType: string; line21_FairRentalDays_or_Income: number; line22_DeductibleLoss: number; calculatedNetIncome: number; }
+export interface PartnershipEntity { id: string; name: string; ein: string; netProfit: number; }
+
+export type TaxFormData = W2Form | W2GForm | Form1099 | ScheduleC | ScheduleE | ScheduleF | LocalTaxForm | FederalTaxForm | BusinessFederalForm;
+
+// --- CONFIG ---
+
+export enum W2QualifyingWagesRule {
+  HIGHEST_OF_ALL = 'HIGHEST_OF_ALL',
+  BOX_5_MEDICARE = 'BOX_5_MEDICARE',
+  BOX_18_LOCAL = 'BOX_18_LOCAL',
+  BOX_1_FEDERAL = 'BOX_1_FEDERAL'
+}
+
+export interface TaxRulesConfig {
+  municipalRate: number;
+  municipalCreditLimitRate: number;
+  municipalRates: Record<string, number>;
+  w2QualifyingWagesRule: W2QualifyingWagesRule;
+  incomeInclusion: {
+    scheduleC: boolean;
+    scheduleE: boolean;
+    scheduleF: boolean;
+    w2g: boolean;
+    form1099: boolean;
+  };
+  enableRounding: boolean;
+}
+
+export interface BusinessTaxRulesConfig {
+  municipalRate: number;
+  minimumTax: number;
+  allocationMethod: '3_FACTOR' | 'GROSS_RECEIPTS_ONLY';
+  allocationSalesFactorWeight: number; 
+  enableNOL: boolean;
+  nolOffsetCapPercent: number; 
+  intangibleExpenseRate: number; // 5% Rule
+  safeHarborPercent: number;
+  penaltyRateLateFiling: number;
+  penaltyRateUnderpayment: number;
+  interestRateAnnual: number;
+}
+
+// --- SESSION ---
+
+export interface TaxReturnSession {
+  id: string;
+  createdDate: string;
+  lastModifiedDate: string;
+  status: TaxReturnStatus;
+  type: 'INDIVIDUAL' | 'BUSINESS';
+  profile: TaxPayerProfile | BusinessProfile; 
+  settings: TaxReturnSettings;
+  forms: TaxFormData[];
+  
+  // Results
+  lastCalculationResult?: TaxCalculationResult;
+  
+  // Business History
+  businessFilings?: WithholdingReturnData[]; 
+  netProfitFilings?: NetProfitReturnData[];
+  reconciliations?: ReconciliationReturnData[];
+}
+
+export interface TaxBreakdownRule { category: string; ruleName: string; description: string; calculation: string; amount: number; }
+
+export interface TaxCalculationResult {
+  settings: TaxReturnSettings;
+  profile: TaxPayerProfile;
+  totalGrossIncome: number;
+  totalLocalWithheld: number;
+  w2TaxableIncome: number;
+  scheduleX: { entries: ScheduleXEntry[], totalNetProfit: number };
+  scheduleY: { entries: ScheduleYEntry[], totalCredit: number };
+  totalTaxableIncome: number;
+  municipalLiability: number;
+  municipalLiabilityAfterCredits: number;
+  municipalBalance: number;
+  breakdown: TaxBreakdownRule[];
+  discrepancyReport?: DiscrepancyReport;
+}
+
+export interface ScheduleXEntry { source: string; type: string; gross: number; expenses: number; netProfit: number; }
+export interface ScheduleYEntry { source: string; locality: string; cityTaxRate: number; incomeTaxedByOtherCity: number; taxPaidToOtherCity: number; creditAllowed: number; }
+
+export interface DiscrepancyReport { hasDiscrepancies: boolean; issues: DiscrepancyIssue[]; }
+export interface DiscrepancyIssue { field: string; sourceValue: number; formValue: number; difference: number; severity: 'HIGH'|'MEDIUM'|'LOW'; message: string; }
+
+export interface PaymentRecord { id: string; date: string; amount: number; confirmationNumber: string; method: 'CREDIT_CARD' | 'ACH'; status: 'SUCCESS' | 'FAILED'; }
+
+export interface RealTimeExtractionUpdate {
+  status: 'SCANNING' | 'ANALYZING' | 'EXTRACTING' | 'COMPLETE';
+  progress: number;
+  log: string[];
+  detectedForms: string[];
+  currentProfile?: { name: string; ssn: string };
+  confidence: number;
+}
