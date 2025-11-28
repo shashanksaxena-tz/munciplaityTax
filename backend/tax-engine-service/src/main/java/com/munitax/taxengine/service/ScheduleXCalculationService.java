@@ -81,9 +81,9 @@ public class ScheduleXCalculationService {
             return 0.0;
         }
         
-        Double fedTaxableIncome = safeDouble(scheduleX.fedTaxableIncome());
-        Double totalAddBacks = calculateTotalAddBacks(scheduleX.addBacks());
-        Double totalDeductions = calculateTotalDeductions(scheduleX.deductions());
+        double fedTaxableIncome = safeDouble(scheduleX.fedTaxableIncome());
+        double totalAddBacks = calculateTotalAddBacks(scheduleX.addBacks());
+        double totalDeductions = calculateTotalDeductions(scheduleX.deductions());
         
         return fedTaxableIncome + totalAddBacks - totalDeductions;
     }

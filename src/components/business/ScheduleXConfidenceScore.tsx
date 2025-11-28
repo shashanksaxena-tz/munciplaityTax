@@ -19,7 +19,7 @@ export const ScheduleXConfidenceScore: React.FC<ScheduleXConfidenceScoreProps> =
   onViewBoundingBox,
   className = '',
 }) => {
-  const { formatted, colorClass, badgeVariant } = formatConfidenceScore(score);
+  const { formatted, badgeVariant } = formatConfidenceScore(score);
 
   const bgColor = {
     success: 'bg-green-100 text-green-800',

@@ -42,16 +42,13 @@ export const ScheduleXFieldInput: React.FC<ScheduleXFieldInputProps> = ({
   const [displayValue, setDisplayValue] = React.useState<string>(
     value ? formatCurrency(value) : ''
   );
-  const [isFocused, setIsFocused] = React.useState(false);
 
   const handleFocus = () => {
-    setIsFocused(true);
     // Show raw number when focused for easier editing
     setDisplayValue(value ? value.toString() : '');
   };
 
   const handleBlur = () => {
-    setIsFocused(false);
     // Parse and format currency on blur
     const numericValue = parseCurrency(displayValue);
     onChange(numericValue);

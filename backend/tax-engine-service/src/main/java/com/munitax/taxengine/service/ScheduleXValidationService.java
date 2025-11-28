@@ -192,8 +192,8 @@ public class ScheduleXValidationService {
             return;
         }
         
-        Double fedIncome = safeDouble(scheduleX.fedTaxableIncome());
-        Double adjustedIncome = safeDouble(scheduleX.calculatedFields().adjustedMunicipalIncome());
+        double fedIncome = safeDouble(scheduleX.fedTaxableIncome());
+        double adjustedIncome = safeDouble(scheduleX.calculatedFields().adjustedMunicipalIncome());
         
         if (fedIncome == 0) {
             return; // Skip variance check if federal income is zero

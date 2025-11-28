@@ -68,7 +68,7 @@ public class BusinessScheduleXService {
         }
         
         // Old format detected - convert to new structure
-        Double fedTaxableIncome = json.has("fedTaxableIncome") ? 
+        double fedTaxableIncome = json.has("fedTaxableIncome") ? 
             json.get("fedTaxableIncome").asDouble() : 0.0;
         
         // Migrate old fields to new nested structure
@@ -114,10 +114,10 @@ public class BusinessScheduleXService {
         );
         
         // Calculate totals
-        Double totalAddBacks = addBacks.interestAndStateTaxes() + addBacks.otherAddBacks();
-        Double totalDeductions = deductions.interestIncome() + deductions.dividends() + 
+        double totalAddBacks = addBacks.interestAndStateTaxes() + addBacks.otherAddBacks();
+        double totalDeductions = deductions.interestIncome() + deductions.dividends() + 
                                 deductions.capitalGains() + deductions.otherDeductions();
-        Double adjustedIncome = fedTaxableIncome + totalAddBacks - totalDeductions;
+        double adjustedIncome = fedTaxableIncome + totalAddBacks - totalDeductions;
         
         BusinessScheduleXDetails.CalculatedFields calculatedFields = 
             new BusinessScheduleXDetails.CalculatedFields(totalAddBacks, totalDeductions, adjustedIncome);

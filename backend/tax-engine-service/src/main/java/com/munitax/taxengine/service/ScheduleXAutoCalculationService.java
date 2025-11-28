@@ -75,7 +75,7 @@ public class ScheduleXAutoCalculationService {
         }
         
         // Federal deducted 50%, municipal allows 0%, so add back full expense (federalDeduction × 2)
-        Double totalExpense = federalDeduction * 2;
+        double totalExpense = federalDeduction * 2;
         
         Map<String, Object> details = new HashMap<>();
         details.put("federalDeduction", federalDeduction);
@@ -109,7 +109,7 @@ public class ScheduleXAutoCalculationService {
         Double dividends = inputs.getOrDefault("dividends", 0.0);
         Double capitalGains = inputs.getOrDefault("capitalGains", 0.0);
         
-        Double totalIntangibleIncome = interestIncome + dividends + capitalGains;
+        double totalIntangibleIncome = interestIncome + dividends + capitalGains;
         
         if (totalIntangibleIncome <= 0) {
             return new AutoCalcResponse(
@@ -119,7 +119,7 @@ public class ScheduleXAutoCalculationService {
             );
         }
         
-        Double fivePercentAddBack = totalIntangibleIncome * 0.05;
+        double fivePercentAddBack = totalIntangibleIncome * 0.05;
         
         Map<String, Object> details = new HashMap<>();
         details.put("interestIncome", interestIncome);
@@ -168,7 +168,7 @@ public class ScheduleXAutoCalculationService {
             );
         }
         
-        Double excess = paidAmount - fairMarketValue;
+        double excess = paidAmount - fairMarketValue;
         
         Map<String, Object> details = new HashMap<>();
         details.put("paidAmount", paidAmount);
@@ -210,19 +210,19 @@ public class ScheduleXAutoCalculationService {
         }
         
         // 10% limit
-        Double tenPercentLimit = taxableIncomeBeforeContributions * 0.10;
+        double tenPercentLimit = taxableIncomeBeforeContributions * 0.10;
         
         // Total available to deduct (current year + prior carryforward)
-        Double totalAvailable = contributionsThisYear + priorYearCarryforward;
+        double totalAvailable = contributionsThisYear + priorYearCarryforward;
         
         // Current year deduction (cannot exceed 10% limit)
-        Double currentYearDeduction = Math.min(totalAvailable, tenPercentLimit);
+        double currentYearDeduction = Math.min(totalAvailable, tenPercentLimit);
         
         // New carryforward (excess over 10% limit)
-        Double newCarryforward = Math.max(0.0, totalAvailable - tenPercentLimit);
+        double newCarryforward = Math.max(0.0, totalAvailable - tenPercentLimit);
         
         // If federal incorrectly deducted more than 10% limit, add back the excess
-        Double municipalAddBack = 0.0;
+        double municipalAddBack = 0.0;
         if (contributionsThisYear > tenPercentLimit) {
             municipalAddBack = contributionsThisYear - tenPercentLimit;
         }
@@ -286,7 +286,7 @@ public class ScheduleXAutoCalculationService {
             );
         }
         
-        Double compensationPct = (officerCompensation / netIncome) * 100;
+        double compensationPct = (officerCompensation / netIncome) * 100;
         
         Map<String, Object> details = new HashMap<>();
         details.put("officerCompensation", officerCompensation);
