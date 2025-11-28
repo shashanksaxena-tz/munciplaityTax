@@ -171,17 +171,17 @@ This is a web application with:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T072 [P] [US2] Create ThrowbackServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/ThrowbackServiceTest.java (test throwback rule application, throwout alternative)
-- [ ] T073 [P] [US2] Create NexusServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/NexusServiceTest.java (test nexus determination: physical, employee, economic, factor presence)
+- [X] T072 [P] [US2] Create ThrowbackServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/ThrowbackServiceTest.java (test throwback rule application, throwout alternative)
+- [X] T073 [P] [US2] Create NexusServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/NexusServiceTest.java (test nexus determination: physical, employee, economic, factor presence)
 
 ### Backend Implementation for User Story 2
 
-- [ ] T074 [US2] Implement ThrowbackService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ThrowbackService.java (apply throwback/throwout rules per transaction)
-- [ ] T075 [US2] Enhance NexusService with economic nexus threshold logic (check sales > $500K, 200 transactions)
-- [ ] T076 [US2] Update SalesFactorService to integrate throwback adjustments (call ThrowbackService for each sale)
-- [ ] T077 [US2] Create NexusController in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/NexusController.java (GET /api/nexus/{businessId} endpoint)
-- [ ] T078 [US2] Add POST /api/nexus/{businessId}/update endpoint in NexusController (update nexus status for states)
-- [ ] T079 [US2] Add throwback adjustment display to ScheduleYResponse DTO (line items showing thrown back amounts)
+- [X] T074 [US2] Implement ThrowbackService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ThrowbackService.java (apply throwback/throwout rules per transaction)
+- [X] T075 [US2] Enhance NexusService with economic nexus threshold logic (check sales > $500K, 200 transactions)
+- [X] T076 [US2] Update SalesFactorService to integrate throwback adjustments (call ThrowbackService for each sale)
+- [X] T077 [US2] Create NexusController in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/NexusController.java (GET /api/nexus/{businessId} endpoint)
+- [X] T078 [US2] Add POST /api/nexus/{businessId}/update endpoint in NexusController (update nexus status for states)
+- [X] T079 [US2] Add throwback adjustment display to ScheduleYResponse DTO (line items showing thrown back amounts)
 - [ ] T080 [US2] Implement nexus caching in NexusService (Redis cache with 15-minute TTL for performance)
 
 ### Backend Integration Tests for User Story 2
@@ -190,8 +190,8 @@ This is a web application with:
 
 ### Frontend Implementation for User Story 2
 
-- [ ] T082 [P] [US2] Create nexusService API client in src/services/nexusService.ts (GET /nexus/{businessId}, POST /nexus/{businessId}/update)
-- [ ] T083 [P] [US2] Create useNexus hook in src/hooks/useNexus.ts (React Query hook for nexus status)
+- [X] T082 [P] [US2] Create nexusService API client in src/services/nexusService.ts (GET /nexus/{businessId}, POST /nexus/{businessId}/update)
+- [X] T083 [P] [US2] Create useNexus hook in src/hooks/useNexus.ts (React Query hook for nexus status)
 - [ ] T084 [US2] Create ThrowbackElectionPanel component in src/components/apportionment/ThrowbackElectionPanel.tsx (throwback vs throwout radio buttons)
 - [ ] T085 [US2] Create NexusTrackingPanel component in src/components/apportionment/NexusTrackingPanel.tsx (table showing nexus status by state with reasons)
 - [ ] T086 [US2] Update SalesFactorForm component in src/components/apportionment/SalesFactorForm.tsx (add destination state field, show throwback indicator)

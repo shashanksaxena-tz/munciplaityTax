@@ -101,9 +101,11 @@ public class SalesFactorService {
 
     /**
      * Apply sourcing and throwback rules to all sale transactions.
+     * Task: T076 [US2] - Updated to integrate throwback adjustments
      *
      * @param salesFactorId          the sales factor ID
      * @param sourcingMethodElection the sourcing method election
+     * @param throwbackElection      the throwback election (THROWBACK or THROWOUT)
      * @param businessId             the business ID
      * @param tenantId               the tenant ID for multi-tenant isolation
      * @return updated sales factor with sourcing applied
@@ -111,10 +113,11 @@ public class SalesFactorService {
     @Transactional
     public SalesFactor applySourcingRules(UUID salesFactorId,
                                          SourcingMethodElection sourcingMethodElection,
+                                         com.munitax.taxengine.domain.apportionment.ThrowbackElection throwbackElection,
                                          UUID businessId,
                                          UUID tenantId) {
-        log.info("Applying sourcing rules to sales factor: {}, method: {}",
-                salesFactorId, sourcingMethodElection);
+        log.info("Applying sourcing rules to sales factor: {}, sourcing method: {}, throwback: {}",
+                salesFactorId, sourcingMethodElection, throwbackElection);
 
         SalesFactor salesFactor = salesFactorRepository.findById(salesFactorId)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -133,22 +136,40 @@ public class SalesFactorService {
             boolean hasNexus = nexusService.hasNexus(businessId, transaction.getDestinationState(), tenantId);
 
             if (!hasNexus) {
-                // Apply throwback rule
-                BigDecimal throwbackAmount = throwbackService.applyThrowbackRule(
+                // Apply throwback rule with election
+                BigDecimal adjustedAmount = throwbackService.applyThrowbackRule(
                         transaction.getAmount(),
                         transaction.getOriginState(),
                         transaction.getDestinationState(),
-                        businessId);
+                        businessId,
+                        tenantId,
+                        throwbackElection
+                );
 
                 transaction.setThrowbackApplied(true);
-                transaction.setThrowbackAmount(throwbackAmount);
-                transaction.setOhioSourcedAmount(throwbackAmount);
-
-                totalThrowbackAmount = totalThrowbackAmount.add(throwbackAmount);
+                
+                if (throwbackElection == com.munitax.taxengine.domain.apportionment.ThrowbackElection.THROWBACK) {
+                    // Throwback: Add to origin state (Ohio) numerator
+                    transaction.setThrowbackAmount(adjustedAmount);
+                    transaction.setOhioSourcedAmount(adjustedAmount);
+                    totalThrowbackAmount = totalThrowbackAmount.add(adjustedAmount);
+                } else {
+                    // Throwout: Exclude from both numerator and denominator
+                    transaction.setThrowbackAmount(BigDecimal.ZERO);
+                    transaction.setOhioSourcedAmount(BigDecimal.ZERO);
+                }
+                
                 throwbackCount++;
             } else if (transaction.getDestinationState().equals("OH")) {
                 // Sale to Ohio (has nexus by definition)
+                transaction.setThrowbackApplied(false);
+                transaction.setThrowbackAmount(BigDecimal.ZERO);
                 transaction.setOhioSourcedAmount(transaction.getAmount());
+            } else {
+                // Sale to state with nexus (not Ohio)
+                transaction.setThrowbackApplied(false);
+                transaction.setThrowbackAmount(BigDecimal.ZERO);
+                transaction.setOhioSourcedAmount(BigDecimal.ZERO);
             }
 
             totalOhioSourcedAmount = totalOhioSourcedAmount.add(transaction.getOhioSourcedAmount());
@@ -162,7 +183,7 @@ public class SalesFactorService {
         // Calculate and set sales factor percentage
         BigDecimal percentage = calculateSalesFactorPercentage(
                 salesFactor.getScheduleY().getScheduleYId(),
-                Map.of(businessId.toString(), salesFactor.getTotalSalesEverywhere()), // Simplified
+                Map.of(businessId.toString(), salesFactor.getTotalSalesEverywhere()),
                 Map.of(businessId.toString(), true),
                 sourcingMethodElection,
                 tenantId

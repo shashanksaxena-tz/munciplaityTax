@@ -185,4 +185,67 @@ public class NexusService {
 
         log.info("Completed batch nexus update for business: {}", businessId);
     }
+
+    /**
+     * Determine and update nexus status based on economic thresholds.
+     * Task: T075 [US2] - Enhanced economic nexus logic
+     *
+     * @param businessId        the business ID
+     * @param state             the state code
+     * @param totalSales        total sales to the state for the period
+     * @param transactionCount  number of transactions to the state
+     * @param tenantId          the tenant ID for multi-tenant isolation
+     * @return the updated nexus tracking record
+     */
+    @Transactional
+    public NexusTracking determineAndUpdateEconomicNexus(UUID businessId, String state,
+                                                         BigDecimal totalSales, int transactionCount,
+                                                         UUID tenantId) {
+        log.info("Determining economic nexus for business: {} in state: {}, sales: {}, transactions: {}",
+                businessId, state, totalSales, transactionCount);
+
+        boolean meetsEconomicThreshold = hasEconomicNexus(state, totalSales, transactionCount);
+
+        if (meetsEconomicThreshold) {
+            log.info("Economic nexus threshold met for state: {}", state);
+            return updateNexusStatus(businessId, state, true, NexusReason.ECONOMIC_NEXUS, tenantId);
+        } else {
+            // Check if existing nexus record exists with non-economic reasons
+            Optional<NexusTracking> existing = nexusTrackingRepository
+                    .findByBusinessIdAndStateAndTenantId(businessId, state, tenantId);
+
+            if (existing.isPresent() && existing.get().getHasNexus()) {
+                // Keep existing nexus if established for other reasons
+                log.debug("Economic threshold not met, but nexus exists for other reasons: {}",
+                        existing.get().getNexusReasons());
+                return existing.get();
+            } else {
+                // No nexus established
+                log.debug("Economic threshold not met, no nexus in state: {}", state);
+                return updateNexusStatus(businessId, state, false, NexusReason.FACTOR_PRESENCE, tenantId);
+            }
+        }
+    }
+
+    /**
+     * Get state-specific economic nexus thresholds.
+     * This method can be enhanced to support state-specific thresholds from configuration.
+     * Task: T075 [US2]
+     *
+     * @param state the state code
+     * @return map with sales_threshold and transaction_threshold
+     */
+    public java.util.Map<String, Object> getEconomicNexusThresholds(String state) {
+        // Default thresholds - can be extended to support state-specific rules
+        // from configuration or database in future enhancements
+        java.util.Map<String, Object> thresholds = new java.util.HashMap<>();
+        thresholds.put("sales_threshold", ECONOMIC_NEXUS_SALES_THRESHOLD);
+        thresholds.put("transaction_threshold", ECONOMIC_NEXUS_TRANSACTION_THRESHOLD);
+        thresholds.put("state", state);
+
+        log.debug("Economic nexus thresholds for {}: ${} or {} transactions",
+                state, ECONOMIC_NEXUS_SALES_THRESHOLD, ECONOMIC_NEXUS_TRANSACTION_THRESHOLD);
+
+        return thresholds;
+    }
 }

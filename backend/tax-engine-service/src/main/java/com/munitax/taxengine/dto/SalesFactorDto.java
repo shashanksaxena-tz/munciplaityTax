@@ -84,6 +84,12 @@ public class SalesFactorDto {
     private Integer throwbackTransactionCount;
 
     /**
+     * List of throwback adjustment line items showing detailed breakdown.
+     * Task: T079 [US2]
+     */
+    private List<ThrowbackAdjustmentDto> throwbackAdjustments;
+
+    /**
      * Notes about sales factor calculation or adjustments.
      */
     @Size(max = 1000, message = "Notes cannot exceed 1000 characters")

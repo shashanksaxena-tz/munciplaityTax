@@ -9,16 +9,38 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * DTO for nexus status information across states.
  * Tracks where the business has nexus and why.
+ * Enhanced for T077-T078 [US2]
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NexusStatusDto {
+
+    /**
+     * The business ID.
+     */
+    private UUID businessId;
+
+    /**
+     * The state code (e.g., "OH", "CA", "NY").
+     */
+    private String state;
+
+    /**
+     * Whether the business has nexus in this state.
+     */
+    private Boolean hasNexus;
+
+    /**
+     * List of reasons for nexus determination.
+     */
+    private List<NexusReason> nexusReasons;
 
     /**
      * Map of state code to nexus status (true = has nexus, false = no nexus).
