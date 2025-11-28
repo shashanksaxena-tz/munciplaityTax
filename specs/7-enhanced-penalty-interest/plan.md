@@ -1,6 +1,6 @@
 # Implementation Plan: Enhanced Penalty & Interest Calculation
 
-**Branch**: `7-enhanced-penalty-interest` | **Date**: 2025-11-28 | **Spec**: [spec.md](./spec.md)  
+**Branch**: `7-enhanced-penalty-interest` | **Date**: 2024-11-28 | **Spec**: [spec.md](./spec.md)  
 **Input**: Feature specification from `/specs/7-enhanced-penalty-interest/spec.md`
 
 ## Summary

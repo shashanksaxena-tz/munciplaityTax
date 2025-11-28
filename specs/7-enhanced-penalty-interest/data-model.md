@@ -188,7 +188,7 @@ ALTER TABLE penalties ADD CONSTRAINT check_penalty_cap
 
 -- Maximum penalty is 25% of unpaid tax
 ALTER TABLE penalties ADD CONSTRAINT check_maximum_penalty
-    CHECK (maximum_penalty = unpaid_tax_amount * 0.25);
+    CHECK (maximum_penalty = unpaid_tax_amount * 0.25::DECIMAL(5,4));
 
 -- Actual date must be after or equal to due date
 ALTER TABLE penalties ADD CONSTRAINT check_late_date
@@ -199,10 +199,11 @@ ALTER TABLE penalties ADD CONSTRAINT check_abatement_fields
     CHECK ((is_abated = FALSE) OR 
            (is_abated = TRUE AND abatement_reason IS NOT NULL AND abatement_date IS NOT NULL));
 
--- Months late calculation is performed in application logic to handle varying month lengths
--- This constraint ensures months_late is reasonable (not negative, not exceeding reasonable limits)
+-- Months late calculation is performed in application logic to handle varying month lengths.
+-- This constraint ensures months_late is not negative and does not exceed 120 months (10 years),
+-- which is the maximum period allowed for late filing penalties per business rules.
 ALTER TABLE penalties ADD CONSTRAINT check_months_late_reasonable
-    CHECK (months_late >= 0 AND months_late <= 1200);  -- Max 100 years (sanity check)
+    CHECK (months_late >= 0 AND months_late <= 120);  -- Max 10 years (business rule)
 ```
 
 ### 1.4 Java Entity
@@ -325,7 +326,7 @@ ALTER TABLE estimated_tax_penalties ADD CONSTRAINT check_total_penalty_calculati
 
 -- If either safe harbor met, total penalty should be 0
 ALTER TABLE estimated_tax_penalties ADD CONSTRAINT check_safe_harbor_no_penalty
-    CHECK ((safe_harbor_1_met = FALSE AND safe_harbor_2_met = FALSE) OR total_penalty = 0);
+    CHECK (NOT (safe_harbor_1_met = TRUE OR safe_harbor_2_met = TRUE) OR total_penalty = 0);
 
 -- Prior year tax must be non-negative
 ALTER TABLE estimated_tax_penalties ADD CONSTRAINT check_prior_year_tax
@@ -433,8 +434,9 @@ CREATE INDEX idx_quarterly_underpayment_due_date ON quarterly_underpayments(due_
 
 ```sql
 -- Underpayment must equal required - actual
+-- Note: Underpayment is calculated in application layer with proper rounding
 ALTER TABLE quarterly_underpayments ADD CONSTRAINT check_underpayment_calculation
-    CHECK (ABS(underpayment - (required_payment - actual_payment)) < 0.01);
+    CHECK (underpayment = (required_payment - actual_payment));
 
 -- Penalty amount must match formula (if underpayment > 0)
 ALTER TABLE quarterly_underpayments ADD CONSTRAINT check_penalty_calculation
@@ -543,7 +545,7 @@ ALTER TABLE interests ADD CONSTRAINT check_interest_dates
 
 -- Total days must match date difference
 ALTER TABLE interests ADD CONSTRAINT check_total_days_calculation
-    CHECK (total_days = EXTRACT(DAY FROM (end_date - start_date)));
+    CHECK (total_days = (end_date - start_date));
 
 -- Total interest must be sum of quarterly interest
 ALTER TABLE interests ADD CONSTRAINT check_total_interest_non_negative
@@ -654,7 +656,7 @@ ALTER TABLE quarterly_interests ADD CONSTRAINT check_ending_balance_calculation
 
 -- Days must match date difference
 ALTER TABLE quarterly_interests ADD CONSTRAINT check_days_calculation
-    CHECK (days = EXTRACT(DAY FROM (end_date - start_date)) + 1);
+    CHECK (days = (end_date - start_date + 1));
 
 -- End date must be after start date
 ALTER TABLE quarterly_interests ADD CONSTRAINT check_quarter_dates
