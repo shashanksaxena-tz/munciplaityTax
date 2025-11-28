@@ -17,6 +17,7 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -174,7 +175,7 @@ class NOLServiceTest {
             createMockNOLWithBalance(2022, new BigDecimal("200000.00"))
         );
         
-        when(nolRepository.findAvailableNOLsByBusinessId(testBusinessId))
+        when(nolRepository.findAvailableNOLsByBusinessId(eq(testBusinessId), any(LocalDate.class)))
             .thenReturn(availableNOLs);
 
         // When
@@ -182,7 +183,7 @@ class NOLServiceTest {
 
         // Then
         assertThat(result).isEqualByComparingTo(new BigDecimal("450000.00"));
-        verify(nolRepository).findAvailableNOLsByBusinessId(testBusinessId);
+        verify(nolRepository).findAvailableNOLsByBusinessId(eq(testBusinessId), any(LocalDate.class));
     }
 
     @Test
@@ -260,7 +261,7 @@ class NOLServiceTest {
         
         List<NOL> availableNOLs = Arrays.asList(nol2020, nol2021);
         
-        when(nolRepository.findAvailableNOLsByBusinessId(testBusinessId))
+        when(nolRepository.findAvailableNOLsByBusinessId(eq(testBusinessId), any(LocalDate.class)))
             .thenReturn(availableNOLs);
         when(nolUsageRepository.save(any(NOLUsage.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));

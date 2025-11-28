@@ -237,9 +237,12 @@ public class NOLScheduleService {
             nolRepository.findByBusinessIdAndJurisdictionOrderByTaxYearAsc(businessId, jurisdiction) :
             nolRepository.findByBusinessIdOrderByTaxYearAsc(businessId);
         
+        LocalDate taxYearStart = LocalDate.of(taxYear, 1, 1);
+        LocalDate taxYearEnd = LocalDate.of(taxYear, 12, 31);
+        
         return allNOLs.stream()
             .filter(nol -> nol.getExpirationDate() != null)
-            .filter(nol -> nol.getExpirationDate().getYear() == taxYear)
+            .filter(nol -> !nol.getExpirationDate().isBefore(taxYearStart) && !nol.getExpirationDate().isAfter(taxYearEnd))
             .filter(nol -> nol.getCurrentNOLBalance().compareTo(BigDecimal.ZERO) > 0)
             .map(NOL::getCurrentNOLBalance)
             .reduce(BigDecimal.ZERO, BigDecimal::add);

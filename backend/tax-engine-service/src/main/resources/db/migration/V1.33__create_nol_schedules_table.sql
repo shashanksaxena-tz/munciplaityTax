@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS dublin.nol_schedules (
     expired_nol DECIMAL(15,2) NOT NULL DEFAULT 0 CHECK (expired_nol >= 0),
     total_ending_balance DECIMAL(15,2) NOT NULL CHECK (total_ending_balance >= 0),
     limitation_percentage DECIMAL(5,2) NOT NULL CHECK (limitation_percentage > 0 AND limitation_percentage <= 100),
-    taxable_income_before_nol DECIMAL(15,2) NOT NULL CHECK (taxable_income_before_nol >= 0),
-    taxable_income_after_nol DECIMAL(15,2) NOT NULL CHECK (taxable_income_after_nol >= 0),
+    taxable_income_before_nol DECIMAL(15,2) NOT NULL,
+    taxable_income_after_nol DECIMAL(15,2) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     

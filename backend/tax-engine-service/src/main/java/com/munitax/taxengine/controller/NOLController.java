@@ -49,8 +49,8 @@ public class NOLController {
      * POST /api/nol
      * 
      * @param request Create NOL request
-     * @param userId User ID from JWT (header)
-     * @param tenantId Tenant ID from JWT (header)
+     * @param userId User ID from JWT (header) - NOTE: In production, extract from validated JWT token via Spring Security
+     * @param tenantId Tenant ID from JWT (header) - NOTE: In production, extract from validated JWT token via Spring Security
      * @return Created NOL response
      */
     @PostMapping

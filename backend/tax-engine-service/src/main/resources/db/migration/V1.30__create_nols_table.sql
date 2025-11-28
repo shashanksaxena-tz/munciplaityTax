@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS dublin.nols (
         (is_carried_back = TRUE AND carryback_amount > 0)
     ),
     CONSTRAINT check_apportionment CHECK (
-        (jurisdiction = 'STATE_OHIO' AND apportionment_percentage IS NOT NULL) OR
-        (jurisdiction != 'STATE_OHIO' AND apportionment_percentage IS NULL)
+        (jurisdiction IN ('STATE_OHIO', 'MUNICIPALITY') AND apportionment_percentage IS NOT NULL) OR
+        (jurisdiction = 'FEDERAL' AND apportionment_percentage IS NULL)
     ),
     CONSTRAINT check_municipality_code CHECK (
         (jurisdiction = 'MUNICIPALITY' AND municipality_code IS NOT NULL) OR

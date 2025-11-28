@@ -26,10 +26,9 @@ CREATE TABLE IF NOT EXISTS dublin.nol_usages (
     CONSTRAINT check_ordering_override CHECK (
         (ordering_method = 'FIFO' AND override_reason IS NULL) OR
         (ordering_method = 'MANUAL_OVERRIDE' AND override_reason IS NOT NULL)
-    ),
-    CONSTRAINT check_income_after_nol CHECK (
-        taxable_income_after_nol = taxable_income_before_nol - actual_nol_deduction
     )
+    -- Note: Removed exact equality constraint on taxable_income_after_nol to avoid rounding issues
+    -- Application layer ensures: taxable_income_after_nol = taxable_income_before_nol - actual_nol_deduction
 );
 
 -- Create indexes for performance

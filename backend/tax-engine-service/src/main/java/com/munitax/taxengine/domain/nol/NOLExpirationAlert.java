@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
@@ -125,12 +126,14 @@ public class NOLExpirationAlert {
     
     /**
      * Helper method to calculate years until expiration.
+     * Uses UTC timezone for consistent calculations across different server timezones.
      * 
      * @param expirationDate the expiration date
      * @return years until expiration as BigDecimal
      */
     public static BigDecimal calculateYearsUntilExpiration(LocalDate expirationDate) {
-        long daysUntilExpiration = ChronoUnit.DAYS.between(LocalDate.now(), expirationDate);
+        LocalDate currentDate = LocalDate.now(ZoneId.of("UTC"));
+        long daysUntilExpiration = ChronoUnit.DAYS.between(currentDate, expirationDate);
         return BigDecimal.valueOf(daysUntilExpiration).divide(BigDecimal.valueOf(365), 1, RoundingMode.HALF_UP);
     }
     

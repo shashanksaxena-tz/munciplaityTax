@@ -61,10 +61,11 @@ public interface NOLRepository extends JpaRepository<NOL, UUID> {
      * - FIFO ordering (FR-022)
      * 
      * @param businessId Business profile ID
+     * @param currentDate Current date for expiration check (passed as parameter for query plan caching)
      * @return List of NOLs with current_nol_balance > 0
      */
-    @Query("SELECT n FROM NOL n WHERE n.businessId = :businessId AND n.currentNOLBalance > 0 AND (n.expirationDate IS NULL OR n.expirationDate > CURRENT_DATE) ORDER BY n.taxYear ASC")
-    List<NOL> findAvailableNOLsByBusinessId(@Param("businessId") UUID businessId);
+    @Query("SELECT n FROM NOL n WHERE n.businessId = :businessId AND n.currentNOLBalance > 0 AND (n.expirationDate IS NULL OR n.expirationDate > :currentDate) ORDER BY n.taxYear ASC")
+    List<NOL> findAvailableNOLsByBusinessId(@Param("businessId") UUID businessId, @Param("currentDate") LocalDate currentDate);
     
     /**
      * Find all NOLs for a business by jurisdiction.

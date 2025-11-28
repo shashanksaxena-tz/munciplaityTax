@@ -160,11 +160,12 @@ public class NOLService {
      */
     public BigDecimal calculateAvailableNOLBalance(UUID businessId, Jurisdiction jurisdiction) {
         List<NOL> nols;
+        LocalDate currentDate = LocalDate.now();
         
         if (jurisdiction != null) {
             nols = nolRepository.findByBusinessIdAndJurisdictionOrderByTaxYearAsc(businessId, jurisdiction);
         } else {
-            nols = nolRepository.findAvailableNOLsByBusinessId(businessId);
+            nols = nolRepository.findAvailableNOLsByBusinessId(businessId, currentDate);
         }
         
         BigDecimal totalBalance = nols.stream()
@@ -252,9 +253,10 @@ public class NOLService {
         }
         
         // Get available NOLs in FIFO order
+        LocalDate currentDate = LocalDate.now();
         List<NOL> availableNOLs = jurisdiction != null ?
             nolRepository.findByBusinessIdAndJurisdictionOrderByTaxYearAsc(businessId, jurisdiction) :
-            nolRepository.findAvailableNOLsByBusinessId(businessId);
+            nolRepository.findAvailableNOLsByBusinessId(businessId, currentDate);
         
         availableNOLs = availableNOLs.stream()
             .filter(NOL::hasRemainingBalance)
@@ -263,16 +265,20 @@ public class NOLService {
         // Apply NOLs oldest first
         List<NOLUsage> usages = new ArrayList<>();
         BigDecimal remainingDeduction = nolDeductionAmount;
-        BigDecimal limitationPercentage = taxYear >= TCJA_EFFECTIVE_YEAR ?
-                                         POST_TCJA_LIMITATION : PRE_TCJA_LIMITATION;
+        BigDecimal totalActualDeduction = BigDecimal.ZERO;
         
         for (NOL nol : availableNOLs) {
             if (remainingDeduction.compareTo(BigDecimal.ZERO) <= 0) {
                 break;
             }
             
+            // Determine limitation percentage based on NOL's generation year (not usage year)
+            BigDecimal limitationPercentage = nol.getTaxYear() >= TCJA_EFFECTIVE_YEAR ?
+                                             POST_TCJA_LIMITATION : PRE_TCJA_LIMITATION;
+            
             // Use up to remaining balance of this NOL
             BigDecimal amountToUse = remainingDeduction.min(nol.getCurrentNOLBalance());
+            totalActualDeduction = totalActualDeduction.add(amountToUse);
             
             // Create usage record
             NOLUsage usage = NOLUsage.builder()
@@ -284,7 +290,7 @@ public class NOLService {
                 .nolLimitationPercentage(limitationPercentage)
                 .maximumNOLDeduction(maxDeduction)
                 .actualNOLDeduction(amountToUse)
-                .taxableIncomeAfterNOL(taxableIncomeBeforeNOL.subtract(nolDeductionAmount))
+                .taxableIncomeAfterNOL(taxableIncomeBeforeNOL.subtract(totalActualDeduction))
                 .taxSavings(amountToUse.multiply(taxRate).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP))
                 .orderingMethod(NOLOrderingMethod.FIFO)
                 .build();

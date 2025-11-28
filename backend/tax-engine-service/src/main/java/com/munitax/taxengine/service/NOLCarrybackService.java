@@ -108,7 +108,7 @@ public class NOLCarrybackService {
                 break; // All NOL has been used
             }
             
-            // Validate year is within 5-year carryback period
+            // Validate year is within 5-year carryback period (up to and including 5 years prior)
             if (nol.getTaxYear() - priorYear > CARES_ACT_CARRYBACK_YEARS) {
                 log.warn("Skipping year {} - beyond 5-year carryback period for NOL year {}",
                         priorYear, nol.getTaxYear());
