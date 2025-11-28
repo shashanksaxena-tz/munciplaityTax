@@ -185,7 +185,7 @@ public class NOLController {
         
         Optional<NOLSchedule> scheduleOpt = nolScheduleService.getScheduleForReturn(returnId);
         
-        if (!scheduleOpt.isPresent()) {
+        if (scheduleOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         

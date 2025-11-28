@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -130,7 +131,7 @@ public class NOLExpirationAlert {
      */
     public static BigDecimal calculateYearsUntilExpiration(LocalDate expirationDate) {
         long daysUntilExpiration = ChronoUnit.DAYS.between(LocalDate.now(), expirationDate);
-        return BigDecimal.valueOf(daysUntilExpiration).divide(BigDecimal.valueOf(365), 1, BigDecimal.ROUND_HALF_UP);
+        return BigDecimal.valueOf(daysUntilExpiration).divide(BigDecimal.valueOf(365), 1, RoundingMode.HALF_UP);
     }
     
     /**

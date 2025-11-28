@@ -188,7 +188,7 @@ public class NOLScheduleService {
         Optional<NOLSchedule> priorYear = nolScheduleRepository.findPriorYearSchedule(businessId, taxYear);
         Optional<NOLSchedule> currentYear = nolScheduleRepository.findByBusinessIdAndTaxYear(businessId, taxYear);
         
-        if (!priorYear.isPresent() || !currentYear.isPresent()) {
+        if (priorYear.isEmpty() || currentYear.isEmpty()) {
             return true; // Cannot validate without both years
         }
         
