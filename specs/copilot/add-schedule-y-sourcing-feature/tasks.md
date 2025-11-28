@@ -74,36 +74,36 @@ This is a web application with:
 
 ### Repositories
 
-- [ ] T029 [P] Create ScheduleYRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/ScheduleYRepository.java
-- [ ] T030 [P] Create PropertyFactorRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/PropertyFactorRepository.java
-- [ ] T031 [P] Create PayrollFactorRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/PayrollFactorRepository.java
-- [ ] T032 [P] Create SalesFactorRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/SalesFactorRepository.java
-- [ ] T033 [P] Create SaleTransactionRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/SaleTransactionRepository.java
-- [ ] T034 [P] Create NexusTrackingRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/NexusTrackingRepository.java
-- [ ] T035 [P] Create ApportionmentAuditLogRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/ApportionmentAuditLogRepository.java
+- [X] T029 [P] Create ScheduleYRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/ScheduleYRepository.java
+- [X] T030 [P] Create PropertyFactorRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/PropertyFactorRepository.java
+- [X] T031 [P] Create PayrollFactorRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/PayrollFactorRepository.java
+- [X] T032 [P] Create SalesFactorRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/SalesFactorRepository.java
+- [X] T033 [P] Create SaleTransactionRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/SaleTransactionRepository.java
+- [X] T034 [P] Create NexusTrackingRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/NexusTrackingRepository.java
+- [X] T035 [P] Create ApportionmentAuditLogRepository interface in backend/tax-engine-service/src/main/java/com/munitax/taxengine/repository/ApportionmentAuditLogRepository.java
 
 ### DTOs
 
-- [ ] T036 [P] Create ScheduleYRequest DTO in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/ScheduleYRequest.java
-- [ ] T037 [P] Create ScheduleYResponse DTO in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/ScheduleYResponse.java
-- [ ] T038 [P] Create ApportionmentBreakdownDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/ApportionmentBreakdownDto.java
-- [ ] T039 [P] Create NexusStatusDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/NexusStatusDto.java
-- [ ] T040 [P] Create PropertyFactorDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/PropertyFactorDto.java
-- [ ] T041 [P] Create PayrollFactorDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/PayrollFactorDto.java
-- [ ] T042 [P] Create SalesFactorDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/SalesFactorDto.java
-- [ ] T043 [P] Create SaleTransactionDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/SaleTransactionDto.java
+- [X] T036 [P] Create ScheduleYRequest DTO in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/ScheduleYRequest.java
+- [X] T037 [P] Create ScheduleYResponse DTO in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/ScheduleYResponse.java
+- [X] T038 [P] Create ApportionmentBreakdownDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/ApportionmentBreakdownDto.java
+- [X] T039 [P] Create NexusStatusDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/NexusStatusDto.java
+- [X] T040 [P] Create PropertyFactorDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/PropertyFactorDto.java
+- [X] T041 [P] Create PayrollFactorDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/PayrollFactorDto.java
+- [X] T042 [P] Create SalesFactorDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/SalesFactorDto.java
+- [X] T043 [P] Create SaleTransactionDto in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/SaleTransactionDto.java
 
 ### Core Services (Foundational)
 
-- [ ] T044 Create FormulaConfigService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/FormulaConfigService.java (integration with rule-engine-service)
-- [ ] T045 Create WithholdingIntegrationService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/WithholdingIntegrationService.java (integration with Spec 1 payroll data)
-- [ ] T046 Create NexusService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/NexusService.java (nexus determination logic)
+- [X] T044 Create FormulaConfigService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/FormulaConfigService.java (integration with rule-engine-service)
+- [X] T045 Create WithholdingIntegrationService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/WithholdingIntegrationService.java (integration with Spec 1 payroll data)
+- [X] T046 Create NexusService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/NexusService.java (nexus determination logic)
 
 ### Frontend Types
 
-- [ ] T047 [P] Create apportionment types in src/types/apportionment.ts (ScheduleY, PropertyFactor, PayrollFactor, SalesFactor interfaces)
-- [ ] T048 [P] Create sourcing types in src/types/sourcing.ts (SourcingMethodElection, ThrowbackElection, ServiceSourcingMethod enums)
-- [ ] T049 [P] Create nexus types in src/types/nexus.ts (NexusStatus, NexusReason interfaces)
+- [X] T047 [P] Create apportionment types in src/types/apportionment.ts (ScheduleY, PropertyFactor, PayrollFactor, SalesFactor interfaces)
+- [X] T048 [P] Create sourcing types in src/types/sourcing.ts (SourcingMethodElection, ThrowbackElection, ServiceSourcingMethod enums)
+- [X] T049 [P] Create nexus types in src/types/nexus.ts (NexusStatus, NexusReason interfaces)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
