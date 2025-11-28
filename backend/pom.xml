@@ -24,6 +24,7 @@
         <module>extraction-service</module>
         <module>submission-service</module>
         <module>pdf-service</module>
+        <module>ledger-service</module>
     </modules>
 
     <properties>
