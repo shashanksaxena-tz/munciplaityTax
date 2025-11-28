@@ -1,0 +1,867 @@
+openapi: 3.0.3
+info:
+  title: Rule Service API
+  description: |
+    REST API for dynamic tax rule configuration system. Supports CRUD operations on tax rules,
+    temporal queries (effective dating), approval workflow, version history, and what-if analysis.
+  version: 1.0.0
+  contact:
+    name: MuniTax Development Team
+    email: dev@munitax.com
+
+servers:
+  - url: http://localhost:8084/api
+    description: Local development
+  - url: https://api.munitax.com/rules/api
+    description: Production
+
+tags:
+  - name: Rules Management
+    description: CRUD operations for tax rules (admin only)
+  - name: Rules Query
+    description: Read-only queries for active rules (used by tax calculators)
+  - name: Rules History
+    description: Version history and audit trail
+  - name: Rules Approval
+    description: Approval workflow operations
+
+security:
+  - BearerAuth: []
+
+paths:
+  /rules:
+    get:
+      tags:
+        - Rules Management
+      summary: List all rules (with filters)
+      description: |
+        Returns paginated list of tax rules. Supports filtering by tenant, category, 
+        approval status, and date range.
+      parameters:
+        - name: tenantId
+          in: query
+          schema:
+            type: string
+            example: dublin
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [TaxRates, IncomeInclusion, Deductions, Penalties, Filing, Allocation, Withholding, Validation]
+        - name: approvalStatus
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, REJECTED, VOIDED]
+            default: APPROVED
+        - name: effectiveDateFrom
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+        - name: effectiveDateTo
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-12-31"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: "effectiveDate,desc"
+            example: "ruleName,asc"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleListResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+    post:
+      tags:
+        - Rules Management
+      summary: Create new rule
+      description: |
+        Creates a new tax rule with status PENDING. Requires TAX_ADMINISTRATOR role.
+      security:
+        - BearerAuth: [TAX_ADMINISTRATOR]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRuleRequest"
+      responses:
+        "201":
+          description: Rule created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+        "409":
+          description: Conflict - overlapping rule exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /rules/{ruleId}:
+    get:
+      tags:
+        - Rules Management
+      summary: Get rule by ID
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+    put:
+      tags:
+        - Rules Management
+      summary: Update existing rule
+      description: |
+        Updates a rule. Only PENDING rules can be modified. 
+        APPROVED rules cannot be changed (must create new version with future effective date).
+      security:
+        - BearerAuth: [TAX_ADMINISTRATOR]
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRuleRequest"
+      responses:
+        "200":
+          description: Rule updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          description: Cannot modify APPROVED rule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+    delete:
+      tags:
+        - Rules Management
+      summary: Soft-delete rule (set status to VOIDED)
+      security:
+        - BearerAuth: [TAX_ADMINISTRATOR]
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Rule voided successfully
+        "403":
+          description: Cannot void rule after effective date
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /rules/active:
+    get:
+      tags:
+        - Rules Query
+      summary: Get active rules for tax calculation
+      description: |
+        Returns all APPROVED rules active for specified tenant, tax year, and entity type.
+        This is the primary endpoint used by tax calculators. Results are cached in Redis.
+      parameters:
+        - name: tenantId
+          in: query
+          required: true
+          schema:
+            type: string
+            example: dublin
+        - name: taxYear
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2025
+        - name: entityType
+          in: query
+          schema:
+            type: string
+            enum: [INDIVIDUAL, C_CORP, S_CORP, PARTNERSHIP, LLC]
+            default: INDIVIDUAL
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActiveRulesResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+
+  /rules/{ruleId}/approve:
+    post:
+      tags:
+        - Rules Approval
+      summary: Approve pending rule
+      description: |
+        Approves a PENDING rule, changing status to APPROVED. 
+        User cannot approve their own rule (prevents single-user fraud).
+      security:
+        - BearerAuth: [TAX_ADMINISTRATOR]
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvalReason:
+                  type: string
+                  example: "Approved per Ordinance 2025-12"
+              required:
+                - approvalReason
+      responses:
+        "200":
+          description: Rule approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleResponse"
+        "403":
+          description: Cannot approve own rule or already approved
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /rules/{ruleId}/reject:
+    post:
+      tags:
+        - Rules Approval
+      summary: Reject pending rule
+      security:
+        - BearerAuth: [TAX_ADMINISTRATOR]
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rejectionReason:
+                  type: string
+                  example: "Incorrect rate - should be 2.25% not 2.5%"
+              required:
+                - rejectionReason
+      responses:
+        "200":
+          description: Rule rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /rules/{ruleId}/history:
+    get:
+      tags:
+        - Rules History
+      summary: Get version history for rule
+      description: |
+        Returns all versions of a rule, ordered by version number descending (newest first).
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RuleHistoryResponse"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /rules/changes:
+    get:
+      tags:
+        - Rules History
+      summary: Get rule change log (audit trail)
+      description: |
+        Returns audit trail of all rule changes, filtered by date range and/or user.
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-01-01"
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+            example: "2025-12-31"
+        - name: changedBy
+          in: query
+          schema:
+            type: string
+            example: "admin@munitax.com"
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangeLogResponse"
+
+  /rules/what-if:
+    post:
+      tags:
+        - Rules Management
+      summary: What-if analysis tool
+      description: |
+        Tests proposed rule change on sample tax returns. Returns calculated tax 
+        using both old and new rule values, showing impact per return.
+      security:
+        - BearerAuth: [TAX_ADMINISTRATOR]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WhatIfAnalysisRequest"
+      responses:
+        "200":
+          description: Analysis complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhatIfAnalysisResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+
+  /rules/compare:
+    get:
+      tags:
+        - Rules Query
+      summary: Compare rules across tenants
+      description: |
+        Returns side-by-side comparison of rule values for specified tenants.
+      parameters:
+        - name: tenantIds
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+            example: ["dublin", "columbus", "cleveland"]
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [TaxRates, IncomeInclusion, Deductions, Penalties, Filing, Allocation, Withholding, Validation]
+        - name: taxYear
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2025
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantComparisonResponse"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RuleResponse:
+      type: object
+      properties:
+        ruleId:
+          type: string
+          format: uuid
+        ruleCode:
+          type: string
+          example: "MUNICIPAL_RATE"
+        ruleName:
+          type: string
+          example: "Municipal Tax Rate"
+        category:
+          type: string
+          enum: [TaxRates, IncomeInclusion, Deductions, Penalties, Filing, Allocation, Withholding, Validation]
+        valueType:
+          type: string
+          enum: [NUMBER, PERCENTAGE, ENUM, BOOLEAN, FORMULA, CONDITIONAL]
+        value:
+          type: object
+          example: {"scalar": 2.0, "unit": "percent"}
+        effectiveDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        tenantId:
+          type: string
+        entityTypes:
+          type: array
+          items:
+            type: string
+          example: ["ALL"]
+        appliesTo:
+          type: string
+          nullable: true
+        version:
+          type: integer
+        previousVersionId:
+          type: string
+          format: uuid
+          nullable: true
+        dependsOn:
+          type: array
+          items:
+            type: string
+            format: uuid
+        approvalStatus:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, VOIDED]
+        approvedBy:
+          type: string
+          nullable: true
+        approvalDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdBy:
+          type: string
+        createdDate:
+          type: string
+          format: date-time
+        modifiedBy:
+          type: string
+          nullable: true
+        modifiedDate:
+          type: string
+          format: date-time
+          nullable: true
+        changeReason:
+          type: string
+        ordinanceReference:
+          type: string
+          nullable: true
+
+    CreateRuleRequest:
+      type: object
+      required:
+        - ruleCode
+        - ruleName
+        - category
+        - valueType
+        - value
+        - effectiveDate
+        - tenantId
+        - entityTypes
+        - changeReason
+      properties:
+        ruleCode:
+          type: string
+          example: "MUNICIPAL_RATE"
+        ruleName:
+          type: string
+          example: "Municipal Tax Rate"
+        category:
+          type: string
+          enum: [TaxRates, IncomeInclusion, Deductions, Penalties, Filing, Allocation, Withholding, Validation]
+        valueType:
+          type: string
+          enum: [NUMBER, PERCENTAGE, ENUM, BOOLEAN, FORMULA, CONDITIONAL]
+        value:
+          type: object
+          example: {"scalar": 2.25, "unit": "percent"}
+        effectiveDate:
+          type: string
+          format: date
+          example: "2026-01-01"
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        tenantId:
+          type: string
+          example: "dublin"
+        entityTypes:
+          type: array
+          items:
+            type: string
+          example: ["ALL"]
+        appliesTo:
+          type: string
+          nullable: true
+        dependsOn:
+          type: array
+          items:
+            type: string
+            format: uuid
+        changeReason:
+          type: string
+          example: "Ordinance 2025-45 increases rate to 2.25%"
+        ordinanceReference:
+          type: string
+          example: "Ordinance 2025-45"
+
+    UpdateRuleRequest:
+      type: object
+      properties:
+        value:
+          type: object
+        effectiveDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        entityTypes:
+          type: array
+          items:
+            type: string
+        appliesTo:
+          type: string
+          nullable: true
+        changeReason:
+          type: string
+        ordinanceReference:
+          type: string
+
+    RuleListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleResponse"
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        page:
+          type: integer
+        size:
+          type: integer
+
+    ActiveRulesResponse:
+      type: object
+      properties:
+        tenantId:
+          type: string
+        taxYear:
+          type: integer
+        entityType:
+          type: string
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleResponse"
+        cachedAt:
+          type: string
+          format: date-time
+          description: "Timestamp when rules were cached in Redis"
+
+    RuleHistoryResponse:
+      type: object
+      properties:
+        ruleId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        value:
+          type: object
+        effectiveDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        approvalStatus:
+          type: string
+        createdBy:
+          type: string
+        createdDate:
+          type: string
+          format: date-time
+        changeReason:
+          type: string
+
+    ChangeLogResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+            properties:
+              logId:
+                type: string
+                format: uuid
+              ruleId:
+                type: string
+                format: uuid
+              ruleName:
+                type: string
+              changeType:
+                type: string
+                enum: [CREATE, UPDATE, DELETE, APPROVE, REJECT, VOID, ROLLBACK]
+              oldValue:
+                type: object
+                nullable: true
+              newValue:
+                type: object
+              changedFields:
+                type: array
+                items:
+                  type: string
+              changedBy:
+                type: string
+              changeDate:
+                type: string
+                format: date-time
+              changeReason:
+                type: string
+              affectedReturnsCount:
+                type: integer
+              impactEstimate:
+                type: object
+                nullable: true
+        totalElements:
+          type: integer
+        page:
+          type: integer
+
+    WhatIfAnalysisRequest:
+      type: object
+      required:
+        - ruleId
+        - newValue
+        - sampleReturns
+      properties:
+        ruleId:
+          type: string
+          format: uuid
+          description: "Rule to test"
+        newValue:
+          type: object
+          description: "Proposed new rule value"
+        sampleReturns:
+          type: array
+          items:
+            type: object
+            properties:
+              returnId:
+                type: string
+              income:
+                type: number
+              wages:
+                type: number
+              # ... other return fields
+          description: "Sample tax returns to test against"
+
+    WhatIfAnalysisResponse:
+      type: object
+      properties:
+        ruleId:
+          type: string
+          format: uuid
+        oldValue:
+          type: object
+        newValue:
+          type: object
+        impactSummary:
+          type: object
+          properties:
+            totalReturnsAnalyzed:
+              type: integer
+            avgTaxIncrease:
+              type: number
+            avgTaxDecrease:
+              type: number
+            maxImpact:
+              type: number
+            minImpact:
+              type: number
+        returnImpacts:
+          type: array
+          items:
+            type: object
+            properties:
+              returnId:
+                type: string
+              oldTax:
+                type: number
+              newTax:
+                type: number
+              difference:
+                type: number
+              percentChange:
+                type: number
+
+    TenantComparisonResponse:
+      type: object
+      properties:
+        taxYear:
+          type: integer
+        category:
+          type: string
+        rules:
+          type: array
+          items:
+            type: object
+            properties:
+              ruleCode:
+                type: string
+              ruleName:
+                type: string
+              tenantValues:
+                type: object
+                additionalProperties:
+                  type: object
+                example:
+                  dublin: {"scalar": 2.0}
+                  columbus: {"scalar": 2.5}
+                  cleveland: {"scalar": 2.0}
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    ForbiddenError:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

@@ -1,0 +1,604 @@
+openapi: 3.0.3
+info:
+  title: Tax Engine Validation API
+  description: API for validating tax return data and detecting discrepancies across W-2s, Schedules, K-1s, credits, and carryforwards
+  version: 1.0.0
+  contact:
+    name: Municipal Tax API Support
+    email: api-support@munitax.com
+
+servers:
+  - url: http://localhost:8081/api/tax-engine
+    description: Local development server
+  - url: https://api.munitax.com/tax-engine
+    description: Production server
+
+tags:
+  - name: Validation
+    description: Tax return validation and discrepancy detection endpoints
+
+paths:
+  /validate:
+    post:
+      summary: Validate tax return and detect discrepancies
+      description: |
+        Runs comprehensive validation rules (FR-001 through FR-022) on tax return data to detect:
+        - W-2 box consistency issues (Box 1 vs 18, withholding rates)
+        - Schedule C/E/F estimated tax compliance
+        - K-1 allocation checks
+        - Municipal credit limits
+        - Federal/local reconciliation
+        - Duplicate form detection
+        - Cross-year carryforward verification
+        
+        Returns DiscrepancyReport with severity-categorized issues. HIGH severity issues block filing submission.
+      operationId: validateTaxReturn
+      tags:
+        - Validation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+            example:
+              taxReturnId: "123e4567-e89b-12d3-a456-426614174000"
+              taxYear: 2024
+              forms:
+                w2Forms:
+                  - employerEIN: "12-3456789"
+                    employeeSSN: "***-**-6789"
+                    employerName: "Acme Corp"
+                    federalWages: 75000.00
+                    localWages: 7500.00
+                    localWithheld: 187.50
+                scheduleCForms:
+                  - businessName: "Consulting LLC"
+                    grossReceipts: 120000.00
+                    totalExpenses: 20000.00
+                    netProfit: 100000.00
+                municipalCredits:
+                  - cityName: "Cleveland"
+                    creditAmount: 3000.00
+              priorYearTaxLiability: 2400.00
+      responses:
+        '200':
+          description: Validation completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancyReport'
+              examples:
+                noIssues:
+                  summary: Clean return with no discrepancies
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440000"
+                    taxReturnId: "123e4567-e89b-12d3-a456-426614174000"
+                    hasDiscrepancies: false
+                    issues: []
+                    summary:
+                      totalIssues: 0
+                      highSeverityCount: 0
+                      mediumSeverityCount: 0
+                      lowSeverityCount: 0
+                      acceptedIssuesCount: 0
+                      blocksFiling: false
+                    validationDate: "2025-11-27T14:30:00Z"
+                    validationRulesVersion: "1.0.0"
+                withIssues:
+                  summary: Return with HIGH severity issue blocking filing
+                  value:
+                    id: "550e8400-e29b-41d4-a716-446655440000"
+                    taxReturnId: "123e4567-e89b-12d3-a456-426614174000"
+                    hasDiscrepancies: true
+                    issues:
+                      - issueId: "issue-001"
+                        ruleId: "FR-001"
+                        category: "W-2"
+                        field: "W-2 Box 18 Local Wages"
+                        sourceValue: 75000.00
+                        formValue: 7500.00
+                        difference: 67500.00
+                        differencePercent: 90.0
+                        severity: "HIGH"
+                        message: "Box 18 is 90% lower than Box 1 - verify data entry"
+                        recommendedAction: "Verify you entered Box 18 correctly. For full-year Dublin employment, Box 18 should be similar to Box 1."
+                        isAccepted: false
+                        acceptanceNote: null
+                        acceptedDate: null
+                        acceptedBy: null
+                      - issueId: "issue-002"
+                        ruleId: "FR-014"
+                        category: "Municipal Credit"
+                        field: "Cleveland Municipal Credit"
+                        sourceValue: 2500.00
+                        formValue: 3000.00
+                        difference: -500.00
+                        differencePercent: -20.0
+                        severity: "HIGH"
+                        message: "Municipal credit ($3,000) exceeds Dublin tax liability ($2,500)"
+                        recommendedAction: "Credit will be limited to $2,500. Excess $500 cannot be applied this year."
+                        isAccepted: false
+                        acceptanceNote: null
+                        acceptedDate: null
+                        acceptedBy: null
+                    summary:
+                      totalIssues: 2
+                      highSeverityCount: 2
+                      mediumSeverityCount: 0
+                      lowSeverityCount: 0
+                      acceptedIssuesCount: 0
+                      blocksFiling: true
+                    validationDate: "2025-11-27T14:30:00Z"
+                    validationRulesVersion: "1.0.0"
+        '400':
+          description: Invalid request (missing required fields, invalid tax year)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "INVALID_REQUEST"
+                message: "taxYear must be between 2020 and 2025"
+                timestamp: "2025-11-27T14:30:00Z"
+        '401':
+          description: Unauthorized (missing or invalid JWT token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tax return not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "NOT_FOUND"
+                message: "Tax return with ID 123e4567-e89b-12d3-a456-426614174000 not found"
+                timestamp: "2025-11-27T14:30:00Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /validate/{discrepancyReportId}/issues/{issueId}/accept:
+    post:
+      summary: Accept a MEDIUM or LOW severity discrepancy issue
+      description: |
+        Allows user to acknowledge and accept a MEDIUM or LOW severity validation issue with explanation.
+        HIGH severity issues cannot be accepted—they must be fixed.
+        Once accepted, issue is immutable and will not block filing submission.
+      operationId: acceptDiscrepancyIssue
+      tags:
+        - Validation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: discrepancyReportId
+          in: path
+          required: true
+          description: UUID of the discrepancy report
+          schema:
+            type: string
+            format: uuid
+        - name: issueId
+          in: path
+          required: true
+          description: ID of the specific issue to accept
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - acceptanceNote
+              properties:
+                acceptanceNote:
+                  type: string
+                  maxLength: 1000
+                  description: User's explanation for accepting this discrepancy
+            example:
+              acceptanceNote: "Employee has Section 125 cafeteria plan reducing Box 1 but not Box 18. This variance is expected."
+      responses:
+        '200':
+          description: Issue accepted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancyIssue'
+              example:
+                issueId: "issue-003"
+                ruleId: "FR-001"
+                category: "W-2"
+                field: "W-2 Box 18 Local Wages"
+                sourceValue: 75000.00
+                formValue: 72000.00
+                difference: 3000.00
+                differencePercent: 4.0
+                severity: "MEDIUM"
+                message: "Box 18 is 4% lower than Box 1"
+                recommendedAction: "Verify this variance is expected (e.g., partial year employment, pre-tax benefits)"
+                isAccepted: true
+                acceptanceNote: "Employee has Section 125 cafeteria plan reducing Box 1 but not Box 18."
+                acceptedDate: "2025-11-27T14:35:00Z"
+                acceptedBy: "user-uuid-here"
+        '400':
+          description: Cannot accept HIGH severity issue or acceptanceNote missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "INVALID_OPERATION"
+                message: "HIGH severity issues cannot be accepted—must be fixed"
+                timestamp: "2025-11-27T14:30:00Z"
+        '401':
+          description: Unauthorized
+        '404':
+          description: Discrepancy report or issue not found
+        '409':
+          description: Issue already accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "CONFLICT"
+                message: "Issue issue-003 was already accepted on 2025-11-27T14:35:00Z"
+                timestamp: "2025-11-27T14:40:00Z"
+
+  /validate/{discrepancyReportId}/report:
+    get:
+      summary: Get discrepancy report by ID
+      description: Retrieve full validation report including all issues, summary, and acceptance status
+      operationId: getDiscrepancyReport
+      tags:
+        - Validation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: discrepancyReportId
+          in: path
+          required: true
+          description: UUID of the discrepancy report
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Report retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscrepancyReport'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Report not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from auth-service containing user ID and tenant ID
+
+  schemas:
+    ValidationRequest:
+      type: object
+      required:
+        - taxReturnId
+        - taxYear
+        - forms
+      properties:
+        taxReturnId:
+          type: string
+          format: uuid
+          description: ID of tax return being validated
+        taxYear:
+          type: integer
+          minimum: 2020
+          maximum: 2030
+          description: Tax year (e.g., 2024)
+        forms:
+          $ref: '#/components/schemas/TaxForms'
+        priorYearTaxLiability:
+          type: number
+          format: double
+          description: Prior year total tax liability for safe harbor calculation
+          example: 2400.00
+
+    TaxForms:
+      type: object
+      description: Collection of all tax forms for validation
+      properties:
+        w2Forms:
+          type: array
+          items:
+            $ref: '#/components/schemas/W2Form'
+        scheduleCForms:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleCForm'
+        scheduleEForms:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleEForm'
+        k1Forms:
+          type: array
+          items:
+            $ref: '#/components/schemas/K1Form'
+        municipalCredits:
+          type: array
+          items:
+            $ref: '#/components/schemas/MunicipalCredit'
+        form1040Data:
+          $ref: '#/components/schemas/Form1040Data'
+
+    W2Form:
+      type: object
+      required:
+        - employerEIN
+        - employeeSSN
+        - employerName
+        - federalWages
+      properties:
+        employerEIN:
+          type: string
+          pattern: '^\d{2}-\d{7}$'
+          example: "12-3456789"
+        employeeSSN:
+          type: string
+          description: Last 4 digits only (SSN encrypted at rest)
+          example: "***-**-6789"
+        employerName:
+          type: string
+          example: "Acme Corporation"
+        federalWages:
+          type: number
+          format: double
+          description: Box 1 - Federal wages
+        localWages:
+          type: number
+          format: double
+          description: Box 18 - Local wages
+        localWithheld:
+          type: number
+          format: double
+          description: Box 19 - Local tax withheld
+
+    ScheduleCForm:
+      type: object
+      required:
+        - businessName
+        - grossReceipts
+        - totalExpenses
+        - netProfit
+      properties:
+        businessName:
+          type: string
+        grossReceipts:
+          type: number
+          format: double
+        totalExpenses:
+          type: number
+          format: double
+        netProfit:
+          type: number
+          format: double
+
+    ScheduleEForm:
+      type: object
+      properties:
+        rentalProperties:
+          type: array
+          items:
+            type: object
+            properties:
+              address:
+                type: string
+              rentalIncome:
+                type: number
+              totalExpenses:
+                type: number
+              netIncome:
+                type: number
+
+    K1Form:
+      type: object
+      properties:
+        partnershipName:
+          type: string
+        ordinaryIncome:
+          type: number
+          description: Box 1
+        guaranteedPayments:
+          type: number
+          description: Box 4c
+        section179Deduction:
+          type: number
+          description: Box 12
+
+    MunicipalCredit:
+      type: object
+      required:
+        - cityName
+        - creditAmount
+      properties:
+        cityName:
+          type: string
+          example: "Cleveland"
+        creditAmount:
+          type: number
+          format: double
+          example: 3000.00
+
+    Form1040Data:
+      type: object
+      description: Federal Form 1040 key fields for reconciliation
+      properties:
+        adjustedGrossIncome:
+          type: number
+          description: Line 11 - AGI
+        totalWages:
+          type: number
+          description: Line 1 - Wages
+
+    DiscrepancyReport:
+      type: object
+      required:
+        - id
+        - taxReturnId
+        - hasDiscrepancies
+        - issues
+        - summary
+        - validationDate
+        - validationRulesVersion
+      properties:
+        id:
+          type: string
+          format: uuid
+        taxReturnId:
+          type: string
+          format: uuid
+        hasDiscrepancies:
+          type: boolean
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscrepancyIssue'
+        summary:
+          $ref: '#/components/schemas/DiscrepancySummary'
+        validationDate:
+          type: string
+          format: date-time
+        validationRulesVersion:
+          type: string
+          example: "1.0.0"
+        tenantId:
+          type: string
+          format: uuid
+        createdBy:
+          type: string
+          format: uuid
+
+    DiscrepancyIssue:
+      type: object
+      required:
+        - issueId
+        - ruleId
+        - category
+        - field
+        - severity
+        - message
+        - recommendedAction
+        - isAccepted
+      properties:
+        issueId:
+          type: string
+        ruleId:
+          type: string
+          pattern: '^FR-[0-9]{3}$'
+          example: "FR-001"
+        category:
+          type: string
+          enum: ["W-2", "Schedule C", "Schedule E", "K-1", "Municipal Credit", "Federal Reconciliation", "Carryforward"]
+        field:
+          type: string
+        sourceValue:
+          type: number
+          format: double
+          nullable: true
+        formValue:
+          type: number
+          format: double
+          nullable: true
+        difference:
+          type: number
+          format: double
+          nullable: true
+        differencePercent:
+          type: number
+          format: double
+          nullable: true
+        severity:
+          type: string
+          enum: ["HIGH", "MEDIUM", "LOW"]
+        message:
+          type: string
+          maxLength: 500
+        recommendedAction:
+          type: string
+          maxLength: 500
+        isAccepted:
+          type: boolean
+        acceptanceNote:
+          type: string
+          maxLength: 1000
+          nullable: true
+        acceptedDate:
+          type: string
+          format: date-time
+          nullable: true
+        acceptedBy:
+          type: string
+          format: uuid
+          nullable: true
+
+    DiscrepancySummary:
+      type: object
+      required:
+        - totalIssues
+        - highSeverityCount
+        - mediumSeverityCount
+        - lowSeverityCount
+        - acceptedIssuesCount
+        - blocksFiling
+      properties:
+        totalIssues:
+          type: integer
+          minimum: 0
+        highSeverityCount:
+          type: integer
+          minimum: 0
+        mediumSeverityCount:
+          type: integer
+          minimum: 0
+        lowSeverityCount:
+          type: integer
+          minimum: 0
+        acceptedIssuesCount:
+          type: integer
+          minimum: 0
+        blocksFiling:
+          type: boolean
+          description: True if any HIGH severity issues remain unresolved
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          enum: ["INVALID_REQUEST", "NOT_FOUND", "UNAUTHORIZED", "FORBIDDEN", "CONFLICT", "INTERNAL_ERROR", "INVALID_OPERATION"]
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        details:
+          type: object
+          additionalProperties: true
+          description: Optional additional error context
