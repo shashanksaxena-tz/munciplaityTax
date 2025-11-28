@@ -24,6 +24,10 @@ export enum TaxFormType {
 export enum TaxReturnStatus {
   DRAFT = 'DRAFT',
   SUBMITTED = 'SUBMITTED',
+  IN_REVIEW = 'IN_REVIEW',
+  AWAITING_DOCUMENTATION = 'AWAITING_DOCUMENTATION',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
   AMENDED = 'AMENDED',
   PAID = 'PAID',
   LATE = 'LATE'
@@ -45,6 +49,8 @@ export enum AppStep {
   RECONCILIATION_WIZARD = 'RECONCILIATION_WIZARD',
   BUSINESS_HISTORY = 'BUSINESS_HISTORY',
   BUSINESS_RULES = 'BUSINESS_RULES',
+  AUDITOR_DASHBOARD = 'AUDITOR_DASHBOARD',
+  AUDITOR_REVIEW = 'AUDITOR_REVIEW',
   UPLOAD = 'UPLOAD',
   SUMMARY = 'SUMMARY',
   REVIEW = 'REVIEW',
@@ -342,4 +348,200 @@ export interface RealTimeExtractionUpdate {
   detectedForms: string[];
   currentProfile?: { name: string; ssn: string };
   confidence: number;
+}
+
+// ===== AUDITOR WORKFLOW TYPES =====
+
+export enum AuditPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
+
+export enum AuditStatus {
+  PENDING = 'PENDING',
+  IN_REVIEW = 'IN_REVIEW',
+  AWAITING_DOCUMENTATION = 'AWAITING_DOCUMENTATION',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  AMENDED = 'AMENDED'
+}
+
+export enum AuditActionType {
+  ASSIGNED = 'ASSIGNED',
+  REVIEW_STARTED = 'REVIEW_STARTED',
+  REVIEW_COMPLETED = 'REVIEW_COMPLETED',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  DOCS_REQUESTED = 'DOCS_REQUESTED',
+  ANNOTATED = 'ANNOTATED',
+  ESCALATED = 'ESCALATED',
+  PRIORITY_CHANGED = 'PRIORITY_CHANGED',
+  REASSIGNED = 'REASSIGNED'
+}
+
+export enum DocumentType {
+  GENERAL_LEDGER = 'GENERAL_LEDGER',
+  BANK_STATEMENTS = 'BANK_STATEMENTS',
+  DEPRECIATION_SCHEDULE = 'DEPRECIATION_SCHEDULE',
+  CONTRACTS = 'CONTRACTS',
+  INVOICES = 'INVOICES',
+  RECEIPTS = 'RECEIPTS',
+  PAYROLL_RECORDS = 'PAYROLL_RECORDS',
+  TAX_RETURNS_PRIOR_YEAR = 'TAX_RETURNS_PRIOR_YEAR',
+  OTHER = 'OTHER'
+}
+
+export enum DocumentRequestStatus {
+  PENDING = 'PENDING',
+  RECEIVED = 'RECEIVED',
+  OVERDUE = 'OVERDUE',
+  WAIVED = 'WAIVED'
+}
+
+export enum RiskLevel {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH'
+}
+
+export enum AuditEventType {
+  SUBMISSION = 'SUBMISSION',
+  ASSIGNMENT = 'ASSIGNMENT',
+  REVIEW_STARTED = 'REVIEW_STARTED',
+  REVIEW_COMPLETED = 'REVIEW_COMPLETED',
+  APPROVAL = 'APPROVAL',
+  REJECTION = 'REJECTION',
+  AMENDMENT = 'AMENDMENT',
+  PAYMENT = 'PAYMENT',
+  COMMUNICATION = 'COMMUNICATION',
+  ESCALATION = 'ESCALATION',
+  DOCUMENT_REQUEST = 'DOCUMENT_REQUEST',
+  DOCUMENT_RECEIVED = 'DOCUMENT_RECEIVED',
+  PRIORITY_CHANGE = 'PRIORITY_CHANGE',
+  STATUS_CHANGE = 'STATUS_CHANGE',
+  ANNOTATION_ADDED = 'ANNOTATION_ADDED'
+}
+
+export interface AuditQueue {
+  queueId: string;
+  returnId: string;
+  priority: AuditPriority;
+  status: AuditStatus;
+  submissionDate: string;
+  assignedAuditorId?: string;
+  assignmentDate?: string;
+  reviewStartedDate?: string;
+  reviewCompletedDate?: string;
+  riskScore: number;
+  flaggedIssuesCount: number;
+  daysInQueue?: number;
+  tenantId?: string;
+  
+  // Additional display fields
+  taxpayerName?: string;
+  returnType?: string;
+  taxYear?: string;
+  taxDue?: number;
+}
+
+export interface AuditAction {
+  actionId: string;
+  returnId: string;
+  auditorId: string;
+  actionType: AuditActionType;
+  actionDate: string;
+  actionDetails?: string;
+  previousStatus?: string;
+  newStatus?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  tenantId?: string;
+}
+
+export interface DocumentRequest {
+  requestId: string;
+  returnId: string;
+  auditorId: string;
+  requestDate: string;
+  documentType: DocumentType;
+  description: string;
+  deadline: string;
+  status: DocumentRequestStatus;
+  receivedDate?: string;
+  uploadedFiles?: string[];
+  tenantId?: string;
+}
+
+export interface AuditReport {
+  reportId: string;
+  returnId: string;
+  generatedDate: string;
+  riskScore: number;
+  riskLevel: RiskLevel;
+  flaggedItems: string[]; // JSON strings
+  yearOverYearComparison?: string; // JSON
+  peerComparison?: string; // JSON
+  patternAnalysis?: string; // JSON
+  recommendedActions: string[];
+  auditorOverride: boolean;
+  overrideReason?: string;
+  tenantId?: string;
+}
+
+export interface AuditTrail {
+  trailId: string;
+  returnId: string;
+  eventType: AuditEventType;
+  userId: string;
+  timestamp: string;
+  ipAddress?: string;
+  eventDetails?: string;
+  digitalSignature?: string;
+  immutable: boolean;
+  tenantId?: string;
+}
+
+export interface AuditQueueFilters {
+  status?: AuditStatus;
+  priority?: AuditPriority;
+  auditorId?: string;
+  tenantId?: string;
+  fromDate?: number;
+  toDate?: number;
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  sortDirection?: 'ASC' | 'DESC';
+}
+
+export interface AuditQueueStats {
+  pending: number;
+  highPriority: number;
+  inReview?: number;
+  approved?: number;
+  rejected?: number;
+}
+
+export interface ApprovalRequest {
+  returnId: string;
+  auditorId: string;
+  eSignature: string;
+}
+
+export interface RejectionRequest {
+  returnId: string;
+  auditorId: string;
+  reason: string;
+  detailedExplanation: string;
+  resubmitDeadline: string;
+}
+
+export interface DocumentRequestPayload {
+  returnId: string;
+  auditorId: string;
+  documentType: DocumentType;
+  description: string;
+  deadline: string;
+  tenantId: string;
 }

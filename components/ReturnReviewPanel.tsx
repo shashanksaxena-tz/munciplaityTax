@@ -1,0 +1,446 @@
+import React, { useState, useEffect } from 'react';
+import {
+  AuditQueue,
+  AuditTrail,
+  AuditAction,
+  DocumentRequest,
+  AuditReport,
+  AuditStatus
+} from '../types';
+import {
+  FileText,
+  CheckCircle,
+  XCircle,
+  FileQuestion,
+  History,
+  AlertTriangle,
+  ArrowLeft
+} from 'lucide-react';
+
+interface ReturnReviewPanelProps {
+  returnId: string;
+  userId: string;
+  onBack: () => void;
+}
+
+export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPanelProps) {
+  const [queueEntry, setQueueEntry] = useState<AuditQueue | null>(null);
+  const [auditTrail, setAuditTrail] = useState<AuditTrail[]>([]);
+  const [auditReport, setAuditReport] = useState<AuditReport | null>(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Dialogs
+  const [showApproveDialog, setShowApproveDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [showDocRequestDialog, setShowDocRequestDialog] = useState(false);
+  
+  // Form states
+  const [eSignature, setESignature] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionDetails, setRejectionDetails] = useState('');
+  const [resubmitDeadline, setResubmitDeadline] = useState('');
+
+  useEffect(() => {
+    loadReturnData();
+  }, [returnId]);
+
+  const loadReturnData = async () => {
+    setLoading(true);
+    try {
+      // Load queue entry
+      const queueRes = await fetch(`/api/v1/audit/queue/${returnId}`);
+      if (queueRes.ok) {
+        const queueData = await queueRes.json();
+        setQueueEntry(queueData);
+      }
+      
+      // Load audit trail
+      const trailRes = await fetch(`/api/v1/audit/trail/${returnId}`);
+      if (trailRes.ok) {
+        const trailData = await trailRes.json();
+        setAuditTrail(trailData);
+      }
+      
+      // Load audit report
+      const reportRes = await fetch(`/api/v1/audit/report/${returnId}`);
+      if (reportRes.ok) {
+        const reportData = await reportRes.json();
+        setAuditReport(reportData);
+      }
+    } catch (error) {
+      console.error('Error loading return data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!eSignature) {
+      alert('Please enter your password for e-signature');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/v1/audit/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          returnId,
+          auditorId: userId,
+          eSignature: btoa(eSignature) // Simple base64 encoding
+        })
+      });
+      
+      if (response.ok) {
+        alert('Return approved successfully');
+        onBack();
+      } else {
+        alert('Failed to approve return');
+      }
+    } catch (error) {
+      console.error('Error approving return:', error);
+      alert('Error approving return');
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectionReason || !rejectionDetails || !resubmitDeadline) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/v1/audit/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          returnId,
+          auditorId: userId,
+          reason: rejectionReason,
+          detailedExplanation: rejectionDetails,
+          resubmitDeadline
+        })
+      });
+      
+      if (response.ok) {
+        alert('Return rejected successfully');
+        onBack();
+      } else {
+        alert('Failed to reject return');
+      }
+    } catch (error) {
+      console.error('Error rejecting return:', error);
+      alert('Error rejecting return');
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back to Queue
+        </button>
+        
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Return Review</h1>
+            <p className="text-gray-600 mt-1">
+              Taxpayer: {queueEntry?.taxpayerName || 'N/A'} | 
+              Tax Year: {queueEntry?.taxYear || 'N/A'} | 
+              Return ID: {returnId}
+            </p>
+          </div>
+          
+          {queueEntry?.status === AuditStatus.IN_REVIEW && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowApproveDialog(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Approve
+              </button>
+              <button
+                onClick={() => setShowRejectDialog(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                <XCircle className="w-5 h-5" />
+                Reject
+              </button>
+              <button
+                onClick={() => setShowDocRequestDialog(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <FileQuestion className="w-5 h-5" />
+                Request Docs
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Return Details */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Queue Info */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Return Information</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Status</p>
+                <p className="font-semibold">{queueEntry?.status}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Priority</p>
+                <p className="font-semibold">{queueEntry?.priority}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Risk Score</p>
+                <p className={`font-semibold ${
+                  (queueEntry?.riskScore || 0) >= 61 ? 'text-red-600' :
+                  (queueEntry?.riskScore || 0) >= 21 ? 'text-yellow-600' :
+                  'text-green-600'
+                }`}>
+                  {queueEntry?.riskScore || 0}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Flagged Issues</p>
+                <p className="font-semibold">{queueEntry?.flaggedIssuesCount || 0}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Submission Date</p>
+                <p className="font-semibold">
+                  {queueEntry?.submissionDate ? formatDate(queueEntry.submissionDate) : 'N/A'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Days in Queue</p>
+                <p className="font-semibold">{queueEntry?.daysInQueue || 0} days</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Audit Report */}
+          {auditReport && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <AlertTriangle className="w-6 h-6 text-yellow-500" />
+                Automated Audit Report
+              </h2>
+              
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Risk Level</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    auditReport.riskLevel === 'HIGH' ? 'bg-red-100 text-red-800' :
+                    auditReport.riskLevel === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {auditReport.riskLevel}
+                  </span>
+                </div>
+              </div>
+              
+              {auditReport.flaggedItems && auditReport.flaggedItems.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-semibold mb-2">Flagged Items:</h3>
+                  <ul className="list-disc list-inside space-y-1">
+                    {auditReport.flaggedItems.map((item, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {auditReport.recommendedActions && auditReport.recommendedActions.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-2">Recommended Actions:</h3>
+                  <ul className="list-disc list-inside space-y-1">
+                    {auditReport.recommendedActions.map((action, idx) => (
+                      <li key={idx} className="text-sm text-gray-700">{action}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Audit Trail */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <History className="w-6 h-6" />
+              Audit Trail
+            </h2>
+            
+            <div className="space-y-4">
+              {auditTrail.length === 0 ? (
+                <p className="text-gray-500 text-sm">No audit trail entries</p>
+              ) : (
+                auditTrail.map((entry) => (
+                  <div key={entry.trailId} className="border-l-2 border-gray-300 pl-4 pb-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-semibold text-sm">{entry.eventType}</p>
+                        <p className="text-xs text-gray-500">
+                          {formatDate(entry.timestamp)}
+                        </p>
+                        {entry.eventDetails && (
+                          <p className="text-sm text-gray-700 mt-1">{entry.eventDetails}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Approval Dialog */}
+      {showApproveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Approve Return</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to approve this return? This action cannot be undone.
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Enter Password for E-Signature *
+              </label>
+              <input
+                type="password"
+                value={eSignature}
+                onChange={(e) => setESignature(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Your password"
+              />
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleApprove}
+                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => {
+                  setShowApproveDialog(false);
+                  setESignature('');
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rejection Dialog */}
+      {showRejectDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Reject Return</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Rejection Reason *
+                </label>
+                <select
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select reason...</option>
+                  <option value="MISSING_SCHEDULES">Missing Schedules</option>
+                  <option value="CALCULATION_ERRORS">Calculation Errors</option>
+                  <option value="UNSUPPORTED_DEDUCTIONS">Unsupported Deductions</option>
+                  <option value="MISSING_DOCUMENTATION">Missing Documentation</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Detailed Explanation * (min 50 characters)
+                </label>
+                <textarea
+                  value={rejectionDetails}
+                  onChange={(e) => setRejectionDetails(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  rows={4}
+                  placeholder="Provide detailed explanation..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Resubmission Deadline *
+                </label>
+                <input
+                  type="date"
+                  value={resubmitDeadline}
+                  onChange={(e) => setResubmitDeadline(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 mt-6">
+              <button
+                onClick={handleReject}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Reject
+              </button>
+              <button
+                onClick={() => {
+                  setShowRejectDialog(false);
+                  setRejectionReason('');
+                  setRejectionDetails('');
+                  setResubmitDeadline('');
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
