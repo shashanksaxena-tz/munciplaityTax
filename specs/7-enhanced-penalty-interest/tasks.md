@@ -475,8 +475,8 @@ This is a web application with:
 - [ ] T176 Security hardening: Add file size validation to abatement document upload (max 10MB per file, 50MB total)
 - [ ] T177 Security hardening: Add virus scanning to document uploads (ClamAV integration)
 - [ ] T178 Generate OpenAPI documentation: Run springdoc-openapi-maven-plugin to generate api-docs.yaml
-- [ ] T179 Code cleanup: Run Checkstyle and fix violations
-- [ ] T180 Code cleanup: Run ESLint and fix violations
+- [ ] T179 Code cleanup: Run Checkstyle and fix violations (refer to /backend/checkstyle.xml for project configuration)
+- [ ] T180 Code cleanup: Run ESLint and fix violations (refer to /.eslintrc.json for project configuration)
 - [ ] T181 [P] Update README.md with enhanced penalty & interest calculation feature overview
 - [ ] T182 [P] Create PENALTY_CALCULATION_GUIDE.md in docs/ folder (explain penalty types, safe harbor rules, abatement process)
 

@@ -715,8 +715,31 @@ How should the system handle partial months when calculating late filing and lat
 
 #### 5.2 Implementation
 
-**DECISION**: **Round UP using CEILING() function**
+**DECISION**: **Round UP using Period.between() for accurate month calculation**
 
+**Implementation (Recommended)**:
+```java
+public int calculateMonthsLate(LocalDate dueDate, LocalDate actualDate) {
+    if (actualDate.isBefore(dueDate) || actualDate.isEqual(dueDate)) {
+        return 0;  // Filed on time or early
+    }
+    
+    // Calculate precise period between dates
+    Period period = Period.between(dueDate, actualDate);
+    
+    int months = period.getMonths() + (period.getYears() * 12);
+    int days = period.getDays();
+    
+    // If any days remain, round up (per IRS rule: "part of a month")
+    if (days > 0) {
+        months += 1;
+    }
+    
+    return months;
+}
+```
+
+**Alternative (Simpler, Less Precise)**:
 ```java
 public int calculateMonthsLate(LocalDate dueDate, LocalDate actualDate) {
     if (actualDate.isBefore(dueDate) || actualDate.isEqual(dueDate)) {
@@ -726,29 +749,15 @@ public int calculateMonthsLate(LocalDate dueDate, LocalDate actualDate) {
     // Calculate days late
     long daysLate = ChronoUnit.DAYS.between(dueDate, actualDate);
     
-    // Round up to next full month
+    // Round up to next full month (30-day approximation)
+    // Note: Less accurate for months with 31 days
     int monthsLate = (int) Math.ceil(daysLate / 30.0);
     
     return monthsLate;
 }
 ```
 
-**Alternative (more precise) - Use Period.between()**:
-```java
-public int calculateMonthsLate(LocalDate dueDate, LocalDate actualDate) {
-    Period period = Period.between(dueDate, actualDate);
-    
-    int months = period.getMonths() + (period.getYears() * 12);
-    int days = period.getDays();
-    
-    // If any days remain, round up
-    if (days > 0) {
-        months += 1;
-    }
-    
-    return months;
-}
-```
+**Recommendation**: Use `Period.between()` method for accurate month calculation that handles varying month lengths correctly.
 
 **Testing**:
 ```java

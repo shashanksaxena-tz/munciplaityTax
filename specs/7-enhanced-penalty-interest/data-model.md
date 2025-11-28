@@ -199,9 +199,10 @@ ALTER TABLE penalties ADD CONSTRAINT check_abatement_fields
     CHECK ((is_abated = FALSE) OR 
            (is_abated = TRUE AND abatement_reason IS NOT NULL AND abatement_date IS NOT NULL));
 
--- Months late must match date difference
-ALTER TABLE penalties ADD CONSTRAINT check_months_late_calculation
-    CHECK (months_late = CEILING(EXTRACT(EPOCH FROM (actual_date - tax_due_date)) / 2592000));
+-- Months late calculation is performed in application logic to handle varying month lengths
+-- This constraint ensures months_late is reasonable (not negative, not exceeding reasonable limits)
+ALTER TABLE penalties ADD CONSTRAINT check_months_late_reasonable
+    CHECK (months_late >= 0 AND months_late <= 1200);  -- Max 100 years (sanity check)
 ```
 
 ### 1.4 Java Entity
