@@ -76,9 +76,31 @@ public class SaleTransaction {
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
+    @Column(name = "throwback_applied")
+    private Boolean throwbackApplied = false;
+
+    @Column(name = "throwback_amount", precision = 15, scale = 2)
+    private BigDecimal throwbackAmount = BigDecimal.ZERO;
+
+    @Column(name = "ohio_sourced_amount", precision = 15, scale = 2)
+    private BigDecimal ohioSourcedAmount = BigDecimal.ZERO;
+
+    @Column(name = "schedule_y_id")
+    private UUID scheduleYId;
+
+    @Column(name = "tenant_id", nullable = false)
+    private UUID tenantId;
+
     @PrePersist
     protected void onCreate() {
         createdDate = LocalDateTime.now();
+    }
+
+    /**
+     * Get the sale amount (convenience method).
+     */
+    public BigDecimal getAmount() {
+        return saleAmount;
     }
 
     /**

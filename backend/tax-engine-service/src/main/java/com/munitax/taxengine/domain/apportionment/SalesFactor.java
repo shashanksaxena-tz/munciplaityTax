@@ -62,6 +62,12 @@ public class SalesFactor {
     @Column(name = "sales_factor_percentage", nullable = false, precision = 5, scale = 2)
     private BigDecimal salesFactorPercentage;
 
+    @Column(name = "tenant_id", nullable = false)
+    private UUID tenantId;
+
+    @Column(name = "created_by", nullable = false, updatable = false)
+    private UUID createdBy;
+
     @OneToMany(mappedBy = "salesFactor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleTransaction> transactions = new ArrayList<>();
 
@@ -122,5 +128,19 @@ public class SalesFactor {
     public void removeTransaction(SaleTransaction transaction) {
         transactions.remove(transaction);
         transaction.setSalesFactor(null);
+    }
+
+    /**
+     * Get Ohio sales (convenience method).
+     */
+    public BigDecimal getOhioSales() {
+        return totalOhioSales != null ? totalOhioSales : BigDecimal.ZERO;
+    }
+
+    /**
+     * Get total sales (convenience method).
+     */
+    public BigDecimal getTotalSales() {
+        return totalSalesEverywhere != null ? totalSalesEverywhere : BigDecimal.ZERO;
     }
 }

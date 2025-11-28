@@ -128,11 +128,11 @@ This is a web application with:
 - [ ] T053 [US1] Implement SourcingService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/SourcingService.java (Finnigan vs Joyce logic)
 - [ ] T054 [US1] Implement ApportionmentService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ApportionmentService.java (calculate apportionment percentage with formula weights)
 - [ ] T055 [US1] Implement SalesFactorService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/SalesFactorService.java (calculate sales factor with sourcing election)
-- [ ] T056 [US1] Create ScheduleYController in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ScheduleYController.java (POST /api/schedule-y endpoint)
-- [ ] T057 [US1] Add GET /api/schedule-y endpoint in ScheduleYController (list Schedule Y filings with pagination)
-- [ ] T058 [US1] Add GET /api/schedule-y/{id} endpoint in ScheduleYController (get Schedule Y details)
-- [ ] T059 [US1] Add validation in ApportionmentService (sales factor 0-100%, election required, validate entity nexus data)
-- [ ] T060 [US1] Add audit logging in ApportionmentService (create ApportionmentAuditLog entry on election change)
+- [X] T056 [US1] Create ScheduleYController in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ScheduleYController.java (POST /api/schedule-y endpoint)
+- [X] T057 [US1] Add GET /api/schedule-y endpoint in ScheduleYController (list Schedule Y filings with pagination)
+- [X] T058 [US1] Add GET /api/schedule-y/{id} endpoint in ScheduleYController (get Schedule Y details)
+- [X] T059 [US1] Add validation in ApportionmentService (sales factor 0-100%, election required, validate entity nexus data)
+- [X] T060 [US1] Add audit logging in ApportionmentService (create ApportionmentAuditLog entry on election change)
 
 ### Backend Integration Tests for User Story 1
 

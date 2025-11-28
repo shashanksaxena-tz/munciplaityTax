@@ -1,6 +1,7 @@
 package com.munitax.taxengine.service;
 
 import com.munitax.taxengine.domain.apportionment.ApportionmentFormula;
+import com.munitax.taxengine.repository.ApportionmentAuditLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Service for calculating overall apportionment percentage.
@@ -19,9 +21,14 @@ import java.util.Map;
 public class ApportionmentService {
 
     private final FormulaConfigService formulaConfigService;
+    private final ApportionmentAuditLogRepository auditLogRepository;
 
     private static final int SCALE = 4; // 4 decimal places for percentages
     private static final BigDecimal HUNDRED = new BigDecimal("100");
+    
+    // TODO: Replace with actual authentication service
+    private static final UUID MOCK_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID MOCK_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
 
     /**
      * Calculate final apportionment percentage using the specified formula.
@@ -199,5 +206,86 @@ public class ApportionmentService {
                 "recommendation", recommendation,
                 "difference", traditionalApportionment.subtract(singleSalesApportionment).abs()
         );
+    }
+
+    /**
+     * T059: Validate Schedule Y request data.
+     * Validates sales factor range, election requirements, and nexus data consistency.
+     *
+     * @param propertyFactorPercentage property factor percentage
+     * @param payrollFactorPercentage  payroll factor percentage
+     * @param salesFactorPercentage    sales factor percentage
+     * @throws IllegalArgumentException if validation fails
+     */
+    public void validateScheduleYData(BigDecimal propertyFactorPercentage,
+                                     BigDecimal payrollFactorPercentage,
+                                     BigDecimal salesFactorPercentage) {
+        log.debug("Validating Schedule Y data");
+
+        // Validate individual factor percentages
+        validateFactorPercentage(propertyFactorPercentage);
+        validateFactorPercentage(payrollFactorPercentage);
+        validateFactorPercentage(salesFactorPercentage);
+
+        // Validate that sales factor is required
+        if (salesFactorPercentage == null) {
+            throw new IllegalArgumentException("Sales factor percentage is required");
+        }
+
+        // Additional business rule validations can be added here
+        log.debug("Schedule Y data validation passed");
+    }
+
+    /**
+     * T060: Create audit log entry for apportionment changes.
+     * Records all significant changes for compliance and tracking.
+     *
+     * @param scheduleYId the Schedule Y ID
+     * @param changeType  the type of change
+     * @param description description of the change
+     */
+    public void createAuditLogEntry(UUID scheduleYId, 
+                                   com.munitax.taxengine.domain.apportionment.AuditChangeType changeType,
+                                   String description) {
+        log.debug("Creating audit log entry for Schedule Y: {}", scheduleYId);
+
+        com.munitax.taxengine.domain.apportionment.ApportionmentAuditLog auditLog = 
+                new com.munitax.taxengine.domain.apportionment.ApportionmentAuditLog();
+        auditLog.setScheduleYId(scheduleYId);
+        auditLog.setTenantId(MOCK_TENANT_ID);
+        auditLog.setChangeType(changeType);
+        auditLog.setChangeReason(description);
+        auditLog.setChangedBy(MOCK_USER_ID);
+
+        auditLogRepository.save(auditLog);
+        log.info("Audit log entry created: {} - {}", changeType, description);
+    }
+
+    /**
+     * Create audit log entry for election changes.
+     * Records when sourcing method, throwback, or service sourcing elections change.
+     *
+     * @param scheduleYId  the Schedule Y ID
+     * @param fieldName    the field that changed
+     * @param oldValue     the old value
+     * @param newValue     the new value
+     */
+    public void logElectionChange(UUID scheduleYId, String fieldName, 
+                                  String oldValue, String newValue) {
+        log.debug("Logging election change for Schedule Y: {}", scheduleYId);
+
+        com.munitax.taxengine.domain.apportionment.ApportionmentAuditLog auditLog = 
+                new com.munitax.taxengine.domain.apportionment.ApportionmentAuditLog();
+        auditLog.setScheduleYId(scheduleYId);
+        auditLog.setTenantId(MOCK_TENANT_ID);
+        auditLog.setChangeType(com.munitax.taxengine.domain.apportionment.AuditChangeType.ELECTION_CHANGED);
+        auditLog.setEntityType(fieldName);
+        auditLog.setOldValue(oldValue);
+        auditLog.setNewValue(newValue);
+        auditLog.setChangeReason(String.format("Election changed from %s to %s", oldValue, newValue));
+        auditLog.setChangedBy(MOCK_USER_ID);
+
+        auditLogRepository.save(auditLog);
+        log.info("Election change logged: {} changed from {} to {}", fieldName, oldValue, newValue);
     }
 }

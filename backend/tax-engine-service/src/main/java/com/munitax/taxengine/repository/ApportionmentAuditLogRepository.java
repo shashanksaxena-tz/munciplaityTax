@@ -113,4 +113,15 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @return Count of audit log entries of the specified type
      */
     long countByScheduleYIdAndChangeType(UUID scheduleYId, AuditChangeType changeType);
+
+    /**
+     * Find audit log entries for a Schedule Y with tenant isolation.
+     *
+     * @param scheduleYId the Schedule Y ID
+     * @param tenantId    the tenant ID for multi-tenant isolation
+     * @param pageable    pagination information
+     * @return Page of audit log entries
+     */
+    Page<ApportionmentAuditLog> findByScheduleYIdAndTenantId(
+            UUID scheduleYId, UUID tenantId, Pageable pageable);
 }
