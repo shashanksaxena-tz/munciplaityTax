@@ -67,7 +67,10 @@ public class User {
     public enum UserRole {
         ROLE_INDIVIDUAL, // Can file personal returns
         ROLE_BUSINESS, // Can file business returns
-        ROLE_AUDITOR, // Can review and approve/reject
+        ROLE_AUDITOR, // Can review and approve/reject (basic auditor)
+        ROLE_SENIOR_AUDITOR, // Can approve/reject returns <$50K, all auditor permissions
+        ROLE_SUPERVISOR, // Can approve/reject any return, override priority, reassign
+        ROLE_MANAGER, // All permissions, generate compliance reports, configure audit rules
         ROLE_ADMIN // Can configure system
     }
 
