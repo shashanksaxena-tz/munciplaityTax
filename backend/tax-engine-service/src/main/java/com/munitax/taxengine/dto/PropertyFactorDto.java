@@ -73,4 +73,37 @@ public class PropertyFactorDto {
      */
     @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;
+
+    // Alias methods for backward compatibility with controller
+    public BigDecimal getPropertyInOhio() {
+        return ohioPropertyValue;
+    }
+
+    public void setPropertyInOhio(BigDecimal propertyInOhio) {
+        this.ohioPropertyValue = propertyInOhio;
+    }
+
+    public BigDecimal getTotalPropertyEverywhere() {
+        return totalPropertyValue;
+    }
+
+    public void setTotalPropertyEverywhere(BigDecimal totalPropertyEverywhere) {
+        this.totalPropertyValue = totalPropertyEverywhere;
+    }
+
+    public BigDecimal getRentedPropertyInOhio() {
+        return rentedPropertyValue;
+    }
+
+    public void setRentedPropertyInOhio(BigDecimal rentedPropertyInOhio) {
+        this.rentedPropertyValue = rentedPropertyInOhio;
+    }
+
+    public BigDecimal getRentedPropertyEverywhere() {
+        return totalRentedPropertyValue;
+    }
+
+    public void setRentedPropertyEverywhere(BigDecimal rentedPropertyEverywhere) {
+        this.totalRentedPropertyValue = rentedPropertyEverywhere;
+    }
 }

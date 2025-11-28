@@ -88,4 +88,21 @@ public class SalesFactorDto {
      */
     @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;
+
+    // Alias methods for backward compatibility with controller
+    public BigDecimal getSalesInOhio() {
+        return ohioSales;
+    }
+
+    public void setSalesInOhio(BigDecimal salesInOhio) {
+        this.ohioSales = salesInOhio;
+    }
+
+    public BigDecimal getTotalSalesEverywhere() {
+        return totalSales;
+    }
+
+    public void setTotalSalesEverywhere(BigDecimal totalSalesEverywhere) {
+        this.totalSales = totalSalesEverywhere;
+    }
 }

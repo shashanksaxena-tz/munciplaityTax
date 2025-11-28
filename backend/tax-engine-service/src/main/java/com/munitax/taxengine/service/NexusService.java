@@ -49,7 +49,7 @@ public class NexusService {
                 .findByBusinessIdAndStateAndTenantId(businessId, state, tenantId);
 
         if (existing.isPresent()) {
-            boolean hasNexus = existing.get().isHasNexus();
+            boolean hasNexus = existing.get().getHasNexus();
             log.debug("Nexus status found in database: {}", hasNexus);
             return hasNexus;
         }
@@ -82,20 +82,15 @@ public class NexusService {
         if (existing.isPresent()) {
             nexusTracking = existing.get();
             nexusTracking.setHasNexus(hasNexus);
-            nexusTracking.setNexusReason(nexusReason);
-            nexusTracking.setLastDeterminationDate(LocalDateTime.now());
+            nexusTracking.getNexusReasons().clear();
+            nexusTracking.getNexusReasons().add(nexusReason);
         } else {
-            nexusTracking = NexusTracking.builder()
-                    .id(UUID.randomUUID())
-                    .businessId(businessId)
-                    .state(state)
-                    .hasNexus(hasNexus)
-                    .nexusReason(nexusReason)
-                    .lastDeterminationDate(LocalDateTime.now())
-                    .tenantId(tenantId)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .build();
+            nexusTracking = new NexusTracking();
+            nexusTracking.setBusinessId(businessId);
+            nexusTracking.setState(state);
+            nexusTracking.setHasNexus(hasNexus);
+            nexusTracking.getNexusReasons().add(nexusReason);
+            nexusTracking.setTenantId(tenantId);
         }
 
         return nexusTrackingRepository.save(nexusTracking);
@@ -182,8 +177,10 @@ public class NexusService {
                 nexusRecords.size(), businessId, tenantId);
 
         nexusRecords.forEach(record -> {
-            updateNexusStatus(businessId, record.getState(), record.isHasNexus(),
-                    record.getNexusReason(), tenantId);
+            NexusReason firstReason = record.getNexusReasons().isEmpty() ? 
+                    NexusReason.FACTOR_PRESENCE : record.getNexusReasons().get(0);
+            updateNexusStatus(businessId, record.getState(), record.getHasNexus(),
+                    firstReason, tenantId);
         });
 
         log.info("Completed batch nexus update for business: {}", businessId);

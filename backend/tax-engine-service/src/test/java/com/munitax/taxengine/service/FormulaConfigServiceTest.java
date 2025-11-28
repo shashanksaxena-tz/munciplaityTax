@@ -48,7 +48,7 @@ class FormulaConfigServiceTest {
     void testGetApportionmentFormulaFromRuleEngine() {
         // Given: Rule engine returns four-factor double-weighted sales
         Map<String, Object> ruleEngineResponse = Map.of(
-                "formula", "FOUR_FACTOR_DOUBLE_WEIGHTED_SALES",
+                "formula", "FOUR_FACTOR_DOUBLE_SALES",
                 "municipalityId", municipalityId.toString(),
                 "taxYear", taxYear
         );
@@ -61,7 +61,7 @@ class FormulaConfigServiceTest {
                 municipalityId, taxYear, tenantId);
 
         // Then: Should return the formula from rule engine
-        assertEquals(ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES, formula);
+        assertEquals(ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES, formula);
         verify(restTemplate, times(1)).getForObject(anyString(), eq(Map.class));
     }
 
@@ -77,7 +77,7 @@ class FormulaConfigServiceTest {
                 municipalityId, taxYear, tenantId);
 
         // Then: Should return default formula (four-factor double-weighted sales)
-        assertEquals(ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES, formula);
+        assertEquals(ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES, formula);
     }
 
     @Test
@@ -85,7 +85,7 @@ class FormulaConfigServiceTest {
     void testGetFormulaWeightsFourFactorDoubleWeightedSales() {
         // When: Get weights for four-factor double-weighted sales
         Map<String, BigDecimal> weights = formulaConfigService.getFormulaWeights(
-                ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES);
+                ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
 
         // Then: Weights should be 25%, 25%, 50%
         assertEquals(new BigDecimal("0.25"), weights.get("property"));
@@ -103,7 +103,7 @@ class FormulaConfigServiceTest {
     void testGetFormulaWeightsThreeFactorEqualWeighted() {
         // When: Get weights for three-factor equal weighted
         Map<String, BigDecimal> weights = formulaConfigService.getFormulaWeights(
-                ApportionmentFormula.THREE_FACTOR_EQUAL_WEIGHTED);
+                ApportionmentFormula.TRADITIONAL_THREE_FACTOR);
 
         // Then: Weights should each be approximately 33.33%
         assertEquals(new BigDecimal("0.3333"), weights.get("property"));
@@ -170,9 +170,9 @@ class FormulaConfigServiceTest {
     void testGetFormulaDescription() {
         // When: Get descriptions for each formula
         String fourFactorDesc = formulaConfigService.getFormulaDescription(
-                ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES);
+                ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
         String threeFactorDesc = formulaConfigService.getFormulaDescription(
-                ApportionmentFormula.THREE_FACTOR_EQUAL_WEIGHTED);
+                ApportionmentFormula.TRADITIONAL_THREE_FACTOR);
         String singleSalesDesc = formulaConfigService.getFormulaDescription(
                 ApportionmentFormula.SINGLE_SALES_FACTOR);
 
@@ -200,7 +200,7 @@ class FormulaConfigServiceTest {
     void testFormulaWeightsAreImmutable() {
         // When: Get formula weights
         Map<String, BigDecimal> weights = formulaConfigService.getFormulaWeights(
-                ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES);
+                ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
 
         // Then: Should not be able to modify the map
         assertThrows(UnsupportedOperationException.class, () -> {

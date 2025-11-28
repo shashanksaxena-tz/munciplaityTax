@@ -134,8 +134,11 @@ public class SalesFactorService {
 
             if (!hasNexus) {
                 // Apply throwback rule
-                BigDecimal throwbackAmount = throwbackService.applyThrowback(
-                        transaction, businessId, tenantId);
+                BigDecimal throwbackAmount = throwbackService.applyThrowbackRule(
+                        transaction.getAmount(),
+                        transaction.getOriginState(),
+                        transaction.getDestinationState(),
+                        businessId);
 
                 transaction.setThrowbackApplied(true);
                 transaction.setThrowbackAmount(throwbackAmount);
@@ -158,8 +161,8 @@ public class SalesFactorService {
 
         // Calculate and set sales factor percentage
         BigDecimal percentage = calculateSalesFactorPercentage(
-                salesFactor.getScheduleYId(),
-                Map.of(businessId.toString(), salesFactor.getTotalSales()), // Simplified
+                salesFactor.getScheduleY().getScheduleYId(),
+                Map.of(businessId.toString(), salesFactor.getTotalSalesEverywhere()), // Simplified
                 Map.of(businessId.toString(), true),
                 sourcingMethodElection,
                 tenantId

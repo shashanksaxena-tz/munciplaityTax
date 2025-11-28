@@ -28,11 +28,12 @@ class ApportionmentServiceTest {
     @Mock
     private FormulaConfigService formulaConfigService;
 
-    @Mock
-    private PropertyFactorService propertyFactorService;
+    // Note: PropertyFactorService and PayrollFactorService are part of US4, not yet implemented
+    // @Mock
+    // private PropertyFactorService propertyFactorService;
 
-    @Mock
-    private PayrollFactorService payrollFactorService;
+    // @Mock
+    // private PayrollFactorService payrollFactorService;
 
     @Mock
     private SalesFactorService salesFactorService;
@@ -67,8 +68,8 @@ class ApportionmentServiceTest {
         );
 
         when(formulaConfigService.getApportionmentFormula(municipalityId, taxYear, tenantId))
-                .thenReturn(ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES);
-        when(formulaConfigService.getFormulaWeights(ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES))
+                .thenReturn(ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
+        when(formulaConfigService.getFormulaWeights(ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES))
                 .thenReturn(weights);
 
         // When: Calculate final apportionment percentage
@@ -76,7 +77,7 @@ class ApportionmentServiceTest {
         //        = 5.0 + 10.715 + 25.0 = 40.715%
         BigDecimal apportionment = apportionmentService.calculateApportionmentPercentage(
                 propertyFactor, payrollFactor, salesFactor,
-                ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES);
+                ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
 
         // Then: Apportionment should be 40.715%
         assertEquals(new BigDecimal("40.7150"), apportionment);
@@ -96,7 +97,7 @@ class ApportionmentServiceTest {
                 "sales", new BigDecimal("0.3334")
         );
 
-        when(formulaConfigService.getFormulaWeights(ApportionmentFormula.THREE_FACTOR_EQUAL_WEIGHTED))
+        when(formulaConfigService.getFormulaWeights(ApportionmentFormula.TRADITIONAL_THREE_FACTOR))
                 .thenReturn(weights);
 
         // When: Calculate apportionment
@@ -104,7 +105,7 @@ class ApportionmentServiceTest {
         //        = 9.999 + 13.332 + 16.67 = 40.001%
         BigDecimal apportionment = apportionmentService.calculateApportionmentPercentage(
                 propertyFactor, payrollFactor, salesFactor,
-                ApportionmentFormula.THREE_FACTOR_EQUAL_WEIGHTED);
+                ApportionmentFormula.TRADITIONAL_THREE_FACTOR);
 
         // Then: Apportionment should be approximately 40%
         assertTrue(apportionment.compareTo(new BigDecimal("39.9")) > 0);
@@ -135,7 +136,8 @@ class ApportionmentServiceTest {
                 ApportionmentFormula.SINGLE_SALES_FACTOR);
 
         // Then: Apportionment equals sales factor only
-        assertEquals(new BigDecimal("60.0"), apportionment);
+        assertEquals(0, new BigDecimal("60.0").compareTo(apportionment),
+                "Apportionment should equal 60.0, got: " + apportionment);
     }
 
     @Test
@@ -245,7 +247,7 @@ class ApportionmentServiceTest {
         // When: Calculate apportionment
         BigDecimal apportionment = apportionmentService.calculateApportionmentPercentage(
                 propertyFactor, payrollFactor, salesFactor,
-                ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES);
+                ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
 
         // Then: Apportionment based on sales factor only
         // (0 * 0.25) + (0 * 0.25) + (50 * 0.50) = 25%

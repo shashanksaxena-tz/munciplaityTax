@@ -236,7 +236,7 @@ public class ScheduleYController {
                         "Access denied to Schedule Y: " + id);
             }
 
-            Map<String, BigDecimal> breakdown = apportionmentService.calculateApportionmentBreakdown(
+            Map<String, Object> breakdown = apportionmentService.calculateApportionmentBreakdown(
                     scheduleY.getPropertyFactorPercentage() != null ? scheduleY.getPropertyFactorPercentage() : BigDecimal.ZERO,
                     scheduleY.getPayrollFactorPercentage() != null ? scheduleY.getPayrollFactorPercentage() : BigDecimal.ZERO,
                     scheduleY.getSalesFactorPercentage(),
@@ -244,17 +244,17 @@ public class ScheduleYController {
             );
 
             ApportionmentBreakdownDto response = ApportionmentBreakdownDto.builder()
-                    .propertyFactorPercentage(breakdown.get("propertyFactorPercentage"))
-                    .propertyFactorWeight(breakdown.get("propertyFactorWeight"))
-                    .propertyFactorWeightedContribution(breakdown.get("propertyFactorWeightedContribution"))
-                    .payrollFactorPercentage(breakdown.get("payrollFactorPercentage"))
-                    .payrollFactorWeight(breakdown.get("payrollFactorWeight"))
-                    .payrollFactorWeightedContribution(breakdown.get("payrollFactorWeightedContribution"))
-                    .salesFactorPercentage(breakdown.get("salesFactorPercentage"))
-                    .salesFactorWeight(breakdown.get("salesFactorWeight"))
-                    .salesFactorWeightedContribution(breakdown.get("salesFactorWeightedContribution"))
-                    .totalWeight(breakdown.get("totalWeight"))
-                    .finalApportionmentPercentage(breakdown.get("finalApportionmentPercentage"))
+                    .propertyFactorPercentage((BigDecimal) breakdown.get("propertyFactorPercentage"))
+                    .propertyFactorWeight((BigDecimal) breakdown.get("propertyFactorWeight"))
+                    .propertyFactorWeightedContribution((BigDecimal) breakdown.get("propertyFactorWeightedContribution"))
+                    .payrollFactorPercentage((BigDecimal) breakdown.get("payrollFactorPercentage"))
+                    .payrollFactorWeight((BigDecimal) breakdown.get("payrollFactorWeight"))
+                    .payrollFactorWeightedContribution((BigDecimal) breakdown.get("payrollFactorWeightedContribution"))
+                    .salesFactorPercentage((BigDecimal) breakdown.get("salesFactorPercentage"))
+                    .salesFactorWeight((BigDecimal) breakdown.get("salesFactorWeight"))
+                    .salesFactorWeightedContribution((BigDecimal) breakdown.get("salesFactorWeightedContribution"))
+                    .totalWeight((BigDecimal) breakdown.get("totalWeight"))
+                    .finalApportionmentPercentage((BigDecimal) breakdown.get("finalApportionmentPercentage"))
                     .build();
 
             return ResponseEntity.ok(response);
@@ -357,14 +357,11 @@ public class ScheduleYController {
         if (request.getPropertyFactor() != null) {
             PropertyFactor propertyFactor = new PropertyFactor();
             propertyFactor.setScheduleY(scheduleY);
-            propertyFactor.setTenantId(MOCK_TENANT_ID);
-            propertyFactor.setPropertyInOhio(request.getPropertyFactor().getPropertyInOhio());
+            // Map DTO fields to entity fields
+            propertyFactor.setOhioRealProperty(request.getPropertyFactor().getPropertyInOhio());
             propertyFactor.setTotalPropertyEverywhere(request.getPropertyFactor().getTotalPropertyEverywhere());
-            propertyFactor.setRentedPropertyInOhio(request.getPropertyFactor().getRentedPropertyInOhio());
-            propertyFactor.setRentedPropertyEverywhere(request.getPropertyFactor().getRentedPropertyEverywhere());
-            propertyFactor.setCreatedDate(LocalDateTime.now());
-            propertyFactor.setCreatedBy(MOCK_USER_ID);
-            propertyFactor.setLastModifiedDate(LocalDateTime.now());
+            propertyFactor.setOhioRentedPropertyRent(request.getPropertyFactor().getRentedPropertyInOhio());
+            // Note: entity will calculate totals in @PrePersist
             propertyFactorRepository.save(propertyFactor);
         }
 
@@ -372,14 +369,12 @@ public class ScheduleYController {
         if (request.getPayrollFactor() != null) {
             PayrollFactor payrollFactor = new PayrollFactor();
             payrollFactor.setScheduleY(scheduleY);
-            payrollFactor.setTenantId(MOCK_TENANT_ID);
-            payrollFactor.setPayrollInOhio(request.getPayrollFactor().getPayrollInOhio());
+            // Map DTO fields to entity fields
+            payrollFactor.setOhioW2Wages(request.getPayrollFactor().getPayrollInOhio());
             payrollFactor.setTotalPayrollEverywhere(request.getPayrollFactor().getTotalPayrollEverywhere());
-            payrollFactor.setEmployeesInOhio(request.getPayrollFactor().getEmployeesInOhio());
-            payrollFactor.setTotalEmployeesEverywhere(request.getPayrollFactor().getTotalEmployeesEverywhere());
-            payrollFactor.setCreatedDate(LocalDateTime.now());
-            payrollFactor.setCreatedBy(MOCK_USER_ID);
-            payrollFactor.setLastModifiedDate(LocalDateTime.now());
+            payrollFactor.setOhioEmployeeCount(request.getPayrollFactor().getEmployeesInOhio());
+            payrollFactor.setEmployeeCount(request.getPayrollFactor().getTotalEmployeesEverywhere());
+            // Note: entity will calculate totals in @PrePersist
             payrollFactorRepository.save(payrollFactor);
         }
 
@@ -388,11 +383,11 @@ public class ScheduleYController {
             SalesFactor salesFactor = new SalesFactor();
             salesFactor.setScheduleY(scheduleY);
             salesFactor.setTenantId(MOCK_TENANT_ID);
-            salesFactor.setSalesInOhio(request.getSalesFactor().getSalesInOhio());
+            // Map DTO fields to entity fields - for now, put all Ohio sales in tangible goods
+            salesFactor.setOhioSalesTangibleGoods(request.getSalesFactor().getSalesInOhio());
             salesFactor.setTotalSalesEverywhere(request.getSalesFactor().getTotalSalesEverywhere());
-            salesFactor.setCreatedDate(LocalDateTime.now());
             salesFactor.setCreatedBy(MOCK_USER_ID);
-            salesFactor.setLastModifiedDate(LocalDateTime.now());
+            // Note: entity will calculate percentage in @PrePersist
             salesFactorRepository.save(salesFactor);
         }
     }

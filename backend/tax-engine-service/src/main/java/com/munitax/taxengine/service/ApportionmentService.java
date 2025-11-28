@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -139,7 +140,7 @@ public class ApportionmentService {
      * @param formula                  the apportionment formula
      * @return map containing breakdown details
      */
-    public Map<String, BigDecimal> calculateApportionmentBreakdown(
+    public Map<String, Object> calculateApportionmentBreakdown(
             BigDecimal propertyFactorPercentage,
             BigDecimal payrollFactorPercentage,
             BigDecimal salesFactorPercentage,
@@ -158,19 +159,20 @@ public class ApportionmentService {
         BigDecimal totalWeight = propertyWeight.add(payrollWeight).add(salesWeight);
         BigDecimal finalApportionment = propertyContribution.add(payrollContribution).add(salesContribution);
 
-        return Map.of(
-                "propertyFactorPercentage", propertyFactorPercentage,
-                "propertyFactorWeight", propertyWeight,
-                "propertyFactorWeightedContribution", propertyContribution,
-                "payrollFactorPercentage", payrollFactorPercentage,
-                "payrollFactorWeight", payrollWeight,
-                "payrollFactorWeightedContribution", payrollContribution,
-                "salesFactorPercentage", salesFactorPercentage,
-                "salesFactorWeight", salesWeight,
-                "salesFactorWeightedContribution", salesContribution,
-                "totalWeight", totalWeight,
-                "finalApportionmentPercentage", finalApportionment
-        );
+        Map<String, Object> breakdown = new HashMap<>();
+        breakdown.put("propertyFactorPercentage", propertyFactorPercentage);
+        breakdown.put("propertyFactorWeight", propertyWeight);
+        breakdown.put("propertyFactorWeightedContribution", propertyContribution);
+        breakdown.put("payrollFactorPercentage", payrollFactorPercentage);
+        breakdown.put("payrollFactorWeight", payrollWeight);
+        breakdown.put("payrollFactorWeightedContribution", payrollContribution);
+        breakdown.put("salesFactorPercentage", salesFactorPercentage);
+        breakdown.put("salesFactorWeight", salesWeight);
+        breakdown.put("salesFactorWeightedContribution", salesContribution);
+        breakdown.put("totalWeight", totalWeight);
+        breakdown.put("finalApportionmentPercentage", finalApportionment);
+        
+        return breakdown;
     }
 
     /**

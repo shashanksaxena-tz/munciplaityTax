@@ -119,15 +119,15 @@ This is a web application with:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T050 [P] [US1] Create SourcingServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/SourcingServiceTest.java (test Finnigan vs Joyce calculations)
-- [ ] T051 [P] [US1] Create ApportionmentServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/ApportionmentServiceTest.java (test sales factor denominator calculation)
-- [ ] T052 [P] [US1] Create FormulaConfigServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/FormulaConfigServiceTest.java (mock rule engine response)
+- [X] T050 [P] [US1] Create SourcingServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/SourcingServiceTest.java (test Finnigan vs Joyce calculations)
+- [X] T051 [P] [US1] Create ApportionmentServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/ApportionmentServiceTest.java (test sales factor denominator calculation)
+- [X] T052 [P] [US1] Create FormulaConfigServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/FormulaConfigServiceTest.java (mock rule engine response)
 
 ### Backend Implementation for User Story 1
 
-- [ ] T053 [US1] Implement SourcingService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/SourcingService.java (Finnigan vs Joyce logic)
-- [ ] T054 [US1] Implement ApportionmentService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ApportionmentService.java (calculate apportionment percentage with formula weights)
-- [ ] T055 [US1] Implement SalesFactorService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/SalesFactorService.java (calculate sales factor with sourcing election)
+- [X] T053 [US1] Implement SourcingService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/SourcingService.java (Finnigan vs Joyce logic)
+- [X] T054 [US1] Implement ApportionmentService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ApportionmentService.java (calculate apportionment percentage with formula weights)
+- [X] T055 [US1] Implement SalesFactorService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/SalesFactorService.java (calculate sales factor with sourcing election)
 - [X] T056 [US1] Create ScheduleYController in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ScheduleYController.java (POST /api/schedule-y endpoint)
 - [X] T057 [US1] Add GET /api/schedule-y endpoint in ScheduleYController (list Schedule Y filings with pagination)
 - [X] T058 [US1] Add GET /api/schedule-y/{id} endpoint in ScheduleYController (get Schedule Y details)

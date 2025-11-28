@@ -55,7 +55,7 @@ public class FormulaConfigService {
         }
 
         // Default to four-factor double-weighted sales (most common for Ohio municipalities)
-        return ApportionmentFormula.FOUR_FACTOR_DOUBLE_WEIGHTED_SALES;
+        return ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES;
     }
 
     /**
@@ -71,14 +71,14 @@ public class FormulaConfigService {
         Map<String, BigDecimal> weights = new HashMap<>();
 
         switch (formula) {
-            case THREE_FACTOR_EQUAL_WEIGHTED:
+            case TRADITIONAL_THREE_FACTOR:
                 // Property: 33.33%, Payroll: 33.33%, Sales: 33.33%
                 weights.put("property", new BigDecimal("0.3333"));
                 weights.put("payroll", new BigDecimal("0.3333"));
                 weights.put("sales", new BigDecimal("0.3334"));
                 break;
 
-            case FOUR_FACTOR_DOUBLE_WEIGHTED_SALES:
+            case FOUR_FACTOR_DOUBLE_SALES:
                 // Property: 25%, Payroll: 25%, Sales: 50% (double-weighted)
                 weights.put("property", new BigDecimal("0.25"));
                 weights.put("payroll", new BigDecimal("0.25"));
@@ -143,9 +143,9 @@ public class FormulaConfigService {
      */
     public String getFormulaDescription(ApportionmentFormula formula) {
         switch (formula) {
-            case THREE_FACTOR_EQUAL_WEIGHTED:
+            case TRADITIONAL_THREE_FACTOR:
                 return "Three-Factor Equal Weighted (Property: 33.33%, Payroll: 33.33%, Sales: 33.33%)";
-            case FOUR_FACTOR_DOUBLE_WEIGHTED_SALES:
+            case FOUR_FACTOR_DOUBLE_SALES:
                 return "Four-Factor Double-Weighted Sales (Property: 25%, Payroll: 25%, Sales: 50%)";
             case SINGLE_SALES_FACTOR:
                 return "Single Sales Factor (Sales: 100%)";

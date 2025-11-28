@@ -76,4 +76,37 @@ public class PayrollFactorDto {
      */
     @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     private String notes;
+
+    // Alias methods for backward compatibility with controller
+    public BigDecimal getPayrollInOhio() {
+        return ohioPayroll;
+    }
+
+    public void setPayrollInOhio(BigDecimal payrollInOhio) {
+        this.ohioPayroll = payrollInOhio;
+    }
+
+    public BigDecimal getTotalPayrollEverywhere() {
+        return totalPayroll;
+    }
+
+    public void setTotalPayrollEverywhere(BigDecimal totalPayrollEverywhere) {
+        this.totalPayroll = totalPayrollEverywhere;
+    }
+
+    public Integer getEmployeesInOhio() {
+        return ohioEmployeeCount;
+    }
+
+    public void setEmployeesInOhio(Integer employeesInOhio) {
+        this.ohioEmployeeCount = employeesInOhio;
+    }
+
+    public Integer getTotalEmployeesEverywhere() {
+        return totalEmployeeCount;
+    }
+
+    public void setTotalEmployeesEverywhere(Integer totalEmployeesEverywhere) {
+        this.totalEmployeeCount = totalEmployeesEverywhere;
+    }
 }
