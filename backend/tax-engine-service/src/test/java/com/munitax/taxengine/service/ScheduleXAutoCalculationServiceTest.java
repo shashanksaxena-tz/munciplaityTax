@@ -1,0 +1,234 @@
+package com.munitax.taxengine.service;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Unit tests for ScheduleXAutoCalculationService
+ * Tests auto-calculation helpers: meals 50%→100%, 5% Rule, related-party excess
+ * 
+ * Feature: Comprehensive Business Schedule X Reconciliation (25+ Fields)
+ * Functional Requirements: FR-005 (meals), FR-012 (5% Rule), FR-006 (related-party)
+ */
+@DisplayName("Schedule X Auto-Calculation Service Tests")
+class ScheduleXAutoCalculationServiceTest {
+
+    @InjectMocks
+    private ScheduleXAutoCalculationService autoCalculationService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        autoCalculationService = new ScheduleXAutoCalculationService();
+    }
+
+    /**
+     * Test Case: Meals auto-calculation (50% → 100%)
+     * Scenario: Federal meals deduction = $15,000 (50% of $30,000 total)
+     * Expected: Municipal add-back = $30,000 (100% of meals expense, since municipal allows 0%)
+     * Formula: federalMeals × 2 (to get back to 100% from 50%)
+     */
+    @Test
+    @DisplayName("FR-005: Auto-calculate meals add-back (federal 50% → municipal 0%)")
+    void testCalculateMealsAddBack() {
+        // Arrange
+        double federalMealsDeduction = 15000.0; // Federal deducted 50% of $30K
+
+        // Act
+        double mealsAddBack = autoCalculationService.calculateMealsAddBack(federalMealsDeduction);
+
+        // Assert
+        assertEquals(30000.0, mealsAddBack, 0.01, 
+            "Meals add-back should be $30,000 (federal $15K × 2 = total meals expense of $30K)");
+    }
+
+    /**
+     * Test Case: Meals auto-calculation with zero federal deduction
+     * Scenario: Federal meals deduction = $0 (no meals reported)
+     * Expected: Municipal add-back = $0
+     */
+    @Test
+    @DisplayName("Edge case: Zero federal meals deduction")
+    void testCalculateMealsAddBack_ZeroFederal() {
+        // Arrange
+        double federalMealsDeduction = 0.0;
+
+        // Act
+        double mealsAddBack = autoCalculationService.calculateMealsAddBack(federalMealsDeduction);
+
+        // Assert
+        assertEquals(0.0, mealsAddBack, 0.01, 
+            "Meals add-back should be $0 when no federal meals deduction");
+    }
+
+    /**
+     * Test Case: 5% Rule auto-calculation (User Story 2)
+     * Scenario: Intangible income = $35,000 (interest $20K + dividends $15K + capital gains $0)
+     * Expected: Expenses add-back = $1,750 (5% of $35,000)
+     * Formula: (interestIncome + dividends + capitalGains) × 0.05
+     */
+    @Test
+    @DisplayName("FR-012: Auto-calculate 5% Rule (expenses on intangible income)")
+    void testCalculate5PercentRule_UserStory2() {
+        // Arrange
+        double interestIncome = 20000.0;
+        double dividends = 15000.0;
+        double capitalGains = 0.0;
+
+        // Act
+        double expensesAddBack = autoCalculationService.calculate5PercentRule(
+            interestIncome, dividends, capitalGains
+        );
+
+        // Assert
+        assertEquals(1750.0, expensesAddBack, 0.01, 
+            "5% Rule add-back should be $1,750 (5% of $35,000 intangible income)");
+    }
+
+    /**
+     * Test Case: 5% Rule with all intangible income types
+     * Scenario: Interest $50K, dividends $30K, capital gains $20K = $100K total
+     * Expected: Expenses add-back = $5,000 (5% of $100,000)
+     */
+    @Test
+    @DisplayName("5% Rule with all intangible income types")
+    void testCalculate5PercentRule_AllIncomeTypes() {
+        // Arrange
+        double interestIncome = 50000.0;
+        double dividends = 30000.0;
+        double capitalGains = 20000.0;
+
+        // Act
+        double expensesAddBack = autoCalculationService.calculate5PercentRule(
+            interestIncome, dividends, capitalGains
+        );
+
+        // Assert
+        assertEquals(5000.0, expensesAddBack, 0.01, 
+            "5% Rule add-back should be $5,000 (5% of $100,000 total intangible income)");
+    }
+
+    /**
+     * Test Case: 5% Rule with zero intangible income
+     * Scenario: No intangible income reported
+     * Expected: Expenses add-back = $0
+     */
+    @Test
+    @DisplayName("Edge case: 5% Rule with zero intangible income")
+    void testCalculate5PercentRule_ZeroIncome() {
+        // Arrange
+        double interestIncome = 0.0;
+        double dividends = 0.0;
+        double capitalGains = 0.0;
+
+        // Act
+        double expensesAddBack = autoCalculationService.calculate5PercentRule(
+            interestIncome, dividends, capitalGains
+        );
+
+        // Assert
+        assertEquals(0.0, expensesAddBack, 0.01, 
+            "5% Rule add-back should be $0 when no intangible income");
+    }
+
+    /**
+     * Test Case: Related-party excess calculation (User Story 3)
+     * Scenario: Related-party rent paid = $10,000, Fair Market Value = $7,500
+     * Expected: Excess add-back = $2,500 (paid - FMV)
+     * Formula: paidAmount - fairMarketValue
+     */
+    @Test
+    @DisplayName("FR-006: Auto-calculate related-party excess expenses")
+    void testCalculateRelatedPartyExcess_UserStory3() {
+        // Arrange
+        double paidAmount = 10000.0;
+        double fairMarketValue = 7500.0;
+
+        // Act
+        double excessAddBack = autoCalculationService.calculateRelatedPartyExcess(
+            paidAmount, fairMarketValue
+        );
+
+        // Assert
+        assertEquals(2500.0, excessAddBack, 0.01, 
+            "Related-party excess should be $2,500 (paid $10K - FMV $7.5K)");
+    }
+
+    /**
+     * Test Case: Related-party at fair market value
+     * Scenario: Paid amount equals FMV (no excess)
+     * Expected: Excess add-back = $0
+     */
+    @Test
+    @DisplayName("Edge case: Related-party paid at FMV (no excess)")
+    void testCalculateRelatedPartyExcess_NoExcess() {
+        // Arrange
+        double paidAmount = 10000.0;
+        double fairMarketValue = 10000.0;
+
+        // Act
+        double excessAddBack = autoCalculationService.calculateRelatedPartyExcess(
+            paidAmount, fairMarketValue
+        );
+
+        // Assert
+        assertEquals(0.0, excessAddBack, 0.01, 
+            "Related-party excess should be $0 when paid amount equals FMV");
+    }
+
+    /**
+     * Test Case: Related-party below fair market value (negative excess)
+     * Scenario: Paid $5,000, FMV $10,000 (below-market transaction)
+     * Expected: Excess add-back = -$5,000 (negative means paid < FMV)
+     * Note: This is unusual but possible (related-party deals at below-market rates)
+     */
+    @Test
+    @DisplayName("Edge case: Related-party below FMV (bargain purchase)")
+    void testCalculateRelatedPartyExcess_BelowFMV() {
+        // Arrange
+        double paidAmount = 5000.0;
+        double fairMarketValue = 10000.0;
+
+        // Act
+        double excessAddBack = autoCalculationService.calculateRelatedPartyExcess(
+            paidAmount, fairMarketValue
+        );
+
+        // Assert
+        assertEquals(-5000.0, excessAddBack, 0.01, 
+            "Related-party excess should be -$5,000 when paid below FMV (may trigger imputed income for related party)");
+    }
+
+    /**
+     * Test Case: Manual override scenario for 5% Rule
+     * Scenario: User enters actual expense of $2,500 instead of calculated $1,750 (5% of $35K)
+     * Expected: System should accept manual value (test validates that manual override is allowed)
+     * Note: This test simulates the scenario where actual allocated expenses exceed 5% safe harbor
+     */
+    @Test
+    @DisplayName("5% Rule manual override: Actual expense exceeds 5% safe harbor")
+    void testManualOverride5PercentRule() {
+        // Arrange
+        double intangibleIncome = 35000.0;
+        double calculatedExpense = intangibleIncome * 0.05; // $1,750 (5% safe harbor)
+        double actualExpense = 2500.0; // User has actual records showing $2,500
+
+        // Act
+        double manualOverride = autoCalculationService.applyManualOverride(
+            "expensesOnIntangibleIncome", 
+            calculatedExpense, 
+            actualExpense
+        );
+
+        // Assert
+        assertEquals(2500.0, manualOverride, 0.01, 
+            "Manual override should allow actual expense $2,500 (exceeds 5% safe harbor of $1,750)");
+        assertTrue(actualExpense > calculatedExpense, 
+            "Manual override scenario: actual expense exceeds calculated 5% safe harbor");
+    }
+}

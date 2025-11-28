@@ -19,7 +19,7 @@ export interface BusinessScheduleXDetails {
  */
 export interface AddBacks {
   // Old fields (maintained for backward compatibility)
-  interestAndStateTaxes: number;      // FR-003 - State/local/foreign income taxes
+  incomeAndStateTaxes: number;         // FR-003 - State/local/foreign income taxes
   guaranteedPayments: number;          // FR-004 - Form 1065 guaranteed payments (partnerships only)
   expensesOnIntangibleIncome: number;  // FR-012 - 5% Rule
 
@@ -180,7 +180,7 @@ export function createEmptyScheduleXDetails(fedTaxableIncome: number = 0): Busin
     addBacks: {
       depreciationAdjustment: 0,
       amortizationAdjustment: 0,
-      interestAndStateTaxes: 0,
+      incomeAndStateTaxes: 0,
       guaranteedPayments: 0,
       mealsAndEntertainment: 0,
       relatedPartyExcess: 0,
@@ -231,7 +231,7 @@ export function recalculateTotals(scheduleX: BusinessScheduleXDetails): Business
   const totalAddBacks = 
     scheduleX.addBacks.depreciationAdjustment +
     scheduleX.addBacks.amortizationAdjustment +
-    scheduleX.addBacks.interestAndStateTaxes +
+    scheduleX.addBacks.incomeAndStateTaxes +
     scheduleX.addBacks.guaranteedPayments +
     scheduleX.addBacks.mealsAndEntertainment +
     scheduleX.addBacks.relatedPartyExcess +

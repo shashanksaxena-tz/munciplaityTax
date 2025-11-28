@@ -58,29 +58,195 @@ export const ScheduleXAccordion: React.FC<ScheduleXAccordionProps> = ({
       defaultExpanded: true,
       content: (
         <div className="space-y-3">
-          <ScheduleXFieldInput
-            fieldName="depreciationAdjustment"
-            label="Depreciation Adjustment"
-            value={scheduleX.addBacks.depreciationAdjustment}
-            onChange={(v) => handleFieldChange('addBacks', 'depreciationAdjustment', v)}
-            helpText="Book depreciation vs MACRS tax depreciation difference"
-          />
-          <ScheduleXFieldInput
-            fieldName="mealsAndEntertainment"
-            label="Meals & Entertainment"
-            value={scheduleX.addBacks.mealsAndEntertainment}
-            onChange={(v) => handleFieldChange('addBacks', 'mealsAndEntertainment', v)}
-            helpText="Federal allows 50%, municipal allows 0%"
-            showAutoCalcButton
-          />
-          <ScheduleXFieldInput
-            fieldName="interestAndStateTaxes"
-            label="State & Local Income Taxes"
-            value={scheduleX.addBacks.interestAndStateTaxes}
-            onChange={(v) => handleFieldChange('addBacks', 'interestAndStateTaxes', v)}
-            helpText="State/local income taxes deducted federally"
-          />
-          {/* Additional fields would go here... */}
+          {/* Depreciation & Amortization */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Depreciation & Amortization</h4>
+            <ScheduleXFieldInput
+              fieldName="depreciationAdjustment"
+              label="Depreciation Adjustment (Book vs Tax)"
+              value={scheduleX.addBacks.depreciationAdjustment}
+              onChange={(v) => handleFieldChange('addBacks', 'depreciationAdjustment', v)}
+              helpText="Add back if book depreciation < MACRS tax depreciation. Example: Book $80K, MACRS $130K → Add-back $50K"
+            />
+            <ScheduleXFieldInput
+              fieldName="amortizationAdjustment"
+              label="Amortization Adjustment (Intangibles)"
+              value={scheduleX.addBacks.amortizationAdjustment}
+              onChange={(v) => handleFieldChange('addBacks', 'amortizationAdjustment', v)}
+              helpText="Difference between book and tax amortization for goodwill, patents, etc."
+            />
+            <ScheduleXFieldInput
+              fieldName="section179Excess"
+              label="Section 179 Excess"
+              value={scheduleX.addBacks.section179Excess}
+              onChange={(v) => handleFieldChange('addBacks', 'section179Excess', v)}
+              helpText="Section 179 expensing exceeding municipal limits"
+            />
+            <ScheduleXFieldInput
+              fieldName="bonusDepreciation"
+              label="Bonus Depreciation"
+              value={scheduleX.addBacks.bonusDepreciation}
+              onChange={(v) => handleFieldChange('addBacks', 'bonusDepreciation', v)}
+              helpText="100% bonus depreciation allowed federally but not municipally"
+            />
+          </div>
+
+          {/* Taxes & State Adjustments */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Taxes & State Adjustments</h4>
+            <ScheduleXFieldInput
+              fieldName="incomeAndStateTaxes"
+              label="State & Local Income Taxes"
+              value={scheduleX.addBacks.incomeAndStateTaxes}
+              onChange={(v) => handleFieldChange('addBacks', 'incomeAndStateTaxes', v)}
+              helpText="State/local income taxes deducted federally (add back for municipal)"
+            />
+          </div>
+
+          {/* Partnership-Specific */}
+          {entityType === 'PARTNERSHIP' && (
+            <div className="mb-4">
+              <h4 className="font-semibold text-gray-700 mb-2">Partnership-Specific</h4>
+              <ScheduleXFieldInput
+                fieldName="guaranteedPayments"
+                label="Guaranteed Payments to Partners"
+                value={scheduleX.addBacks.guaranteedPayments}
+                onChange={(v) => handleFieldChange('addBacks', 'guaranteedPayments', v)}
+                helpText="Form 1065 Line 10 guaranteed payments (deductible federally, not municipally)"
+              />
+            </div>
+          )}
+
+          {/* Meals & Entertainment */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Meals & Entertainment</h4>
+            <ScheduleXFieldInput
+              fieldName="mealsAndEntertainment"
+              label="Meals & Entertainment (100% Add-Back)"
+              value={scheduleX.addBacks.mealsAndEntertainment}
+              onChange={(v) => handleFieldChange('addBacks', 'mealsAndEntertainment', v)}
+              helpText="Federal allows 50%, municipal allows 0%. Add back full amount."
+              showAutoCalcButton
+            />
+          </div>
+
+          {/* Related-Party & Officer Expenses */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Related-Party & Officer Expenses</h4>
+            <ScheduleXFieldInput
+              fieldName="relatedPartyExcess"
+              label="Related-Party Excess Expenses"
+              value={scheduleX.addBacks.relatedPartyExcess}
+              onChange={(v) => handleFieldChange('addBacks', 'relatedPartyExcess', v)}
+              helpText="Payments to related parties above fair market value. Example: Paid $10K rent, FMV $7.5K → Add-back $2.5K"
+            />
+            <ScheduleXFieldInput
+              fieldName="officerLifeInsurance"
+              label="Officer Life Insurance Premiums"
+              value={scheduleX.addBacks.officerLifeInsurance}
+              onChange={(v) => handleFieldChange('addBacks', 'officerLifeInsurance', v)}
+              helpText="Life insurance premiums where corporation is beneficiary (non-deductible)"
+            />
+          </div>
+
+          {/* Non-Deductible Expenses */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Non-Deductible Expenses</h4>
+            <ScheduleXFieldInput
+              fieldName="penaltiesAndFines"
+              label="Penalties & Fines"
+              value={scheduleX.addBacks.penaltiesAndFines}
+              onChange={(v) => handleFieldChange('addBacks', 'penaltiesAndFines', v)}
+              helpText="Government penalties/fines (already non-deductible federally)"
+            />
+            <ScheduleXFieldInput
+              fieldName="politicalContributions"
+              label="Political Contributions"
+              value={scheduleX.addBacks.politicalContributions}
+              onChange={(v) => handleFieldChange('addBacks', 'politicalContributions', v)}
+              helpText="Political campaign contributions (non-deductible)"
+            />
+          </div>
+
+          {/* Capital & Losses */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Capital & Losses</h4>
+            <ScheduleXFieldInput
+              fieldName="capitalLossExcess"
+              label="Capital Loss Excess"
+              value={scheduleX.addBacks.capitalLossExcess}
+              onChange={(v) => handleFieldChange('addBacks', 'capitalLossExcess', v)}
+              helpText="Capital losses exceeding capital gains (Form 1120 Line 8 carryforward)"
+            />
+          </div>
+
+          {/* Intangible Income Expenses */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Intangible Income Expenses (5% Rule)</h4>
+            <ScheduleXFieldInput
+              fieldName="expensesOnIntangibleIncome"
+              label="Expenses on Intangible Income (5% Rule)"
+              value={scheduleX.addBacks.expensesOnIntangibleIncome}
+              onChange={(v) => handleFieldChange('addBacks', 'expensesOnIntangibleIncome', v)}
+              helpText="5% of non-taxable intangible income (interest + dividends + capital gains)"
+              showAutoCalcButton
+            />
+          </div>
+
+          {/* Other Adjustments */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Other Adjustments</h4>
+            <ScheduleXFieldInput
+              fieldName="federalTaxRefunds"
+              label="Federal Tax Refunds"
+              value={scheduleX.addBacks.federalTaxRefunds}
+              onChange={(v) => handleFieldChange('addBacks', 'federalTaxRefunds', v)}
+              helpText="Prior year federal income tax refunds included in income"
+            />
+            <ScheduleXFieldInput
+              fieldName="badDebtReserveIncrease"
+              label="Bad Debt Reserve Increase"
+              value={scheduleX.addBacks.badDebtReserveIncrease}
+              onChange={(v) => handleFieldChange('addBacks', 'badDebtReserveIncrease', v)}
+              helpText="Increase in bad debt reserve (reserve method vs direct write-off)"
+            />
+            <ScheduleXFieldInput
+              fieldName="charitableContributionExcess"
+              label="Charitable Contribution Excess"
+              value={scheduleX.addBacks.charitableContributionExcess}
+              onChange={(v) => handleFieldChange('addBacks', 'charitableContributionExcess', v)}
+              helpText="Contributions exceeding 10% limit (federal error, municipal follows 10% rule)"
+            />
+            <ScheduleXFieldInput
+              fieldName="domesticProductionActivities"
+              label="Domestic Production Activities Deduction (DPAD)"
+              value={scheduleX.addBacks.domesticProductionActivities}
+              onChange={(v) => handleFieldChange('addBacks', 'domesticProductionActivities', v)}
+              helpText="Section 199 DPAD deduction (pre-TCJA, no longer applies for most)"
+            />
+            <ScheduleXFieldInput
+              fieldName="stockCompensationAdjustment"
+              label="Stock Compensation Adjustment"
+              value={scheduleX.addBacks.stockCompensationAdjustment}
+              onChange={(v) => handleFieldChange('addBacks', 'stockCompensationAdjustment', v)}
+              helpText="Difference between book expense (ASC 718) and tax deduction"
+            />
+            <ScheduleXFieldInput
+              fieldName="inventoryMethodChange"
+              label="Inventory Method Change (Section 481(a))"
+              value={scheduleX.addBacks.inventoryMethodChange}
+              onChange={(v) => handleFieldChange('addBacks', 'inventoryMethodChange', v)}
+              helpText="Section 481(a) adjustment for inventory method change (LIFO → FIFO)"
+            />
+            <ScheduleXFieldInput
+              fieldName="otherAddBacks"
+              label="Other Add-Backs"
+              value={scheduleX.addBacks.otherAddBacks}
+              onChange={(v) => handleFieldChange('addBacks', 'otherAddBacks', v)}
+              helpText="Catch-all for adjustments not covered by specific fields (requires description)"
+            />
+          </div>
+
           <div className="pt-4 border-t border-gray-200">
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Total Add-Backs:</span>
@@ -98,28 +264,65 @@ export const ScheduleXAccordion: React.FC<ScheduleXAccordionProps> = ({
       defaultExpanded: true,
       content: (
         <div className="space-y-3">
-          <ScheduleXFieldInput
-            fieldName="interestIncome"
-            label="Interest Income"
-            value={scheduleX.deductions.interestIncome}
-            onChange={(v) => handleFieldChange('deductions', 'interestIncome', v)}
-            helpText="Non-taxable interest income for municipal purposes"
-          />
-          <ScheduleXFieldInput
-            fieldName="dividends"
-            label="Dividends"
-            value={scheduleX.deductions.dividends}
-            onChange={(v) => handleFieldChange('deductions', 'dividends', v)}
-            helpText="Non-taxable dividend income for municipal purposes"
-          />
-          <ScheduleXFieldInput
-            fieldName="capitalGains"
-            label="Capital Gains"
-            value={scheduleX.deductions.capitalGains}
-            onChange={(v) => handleFieldChange('deductions', 'capitalGains', v)}
-            helpText="Non-taxable capital gains for municipal purposes"
-          />
-          {/* Additional fields would go here... */}
+          {/* Intangible Income (Non-Taxable) */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Intangible Income (Non-Taxable)</h4>
+            <ScheduleXFieldInput
+              fieldName="interestIncome"
+              label="Interest Income"
+              value={scheduleX.deductions.interestIncome}
+              onChange={(v) => handleFieldChange('deductions', 'interestIncome', v)}
+              helpText="Taxable interest income (non-taxable for municipal purposes). Includes interest from savings, bonds, CDs."
+            />
+            <ScheduleXFieldInput
+              fieldName="dividends"
+              label="Dividends"
+              value={scheduleX.deductions.dividends}
+              onChange={(v) => handleFieldChange('deductions', 'dividends', v)}
+              helpText="Qualified and ordinary dividends (non-taxable municipally)"
+            />
+            <ScheduleXFieldInput
+              fieldName="capitalGains"
+              label="Net Capital Gains"
+              value={scheduleX.deductions.capitalGains}
+              onChange={(v) => handleFieldChange('deductions', 'capitalGains', v)}
+              helpText="Net capital gains (non-taxable municipally)"
+            />
+          </div>
+
+          {/* Other Deductions */}
+          <div className="mb-4">
+            <h4 className="font-semibold text-gray-700 mb-2">Other Deductions</h4>
+            <ScheduleXFieldInput
+              fieldName="section179Recapture"
+              label="Section 179 Recapture"
+              value={scheduleX.deductions.section179Recapture}
+              onChange={(v) => handleFieldChange('deductions', 'section179Recapture', v)}
+              helpText="Recapture of Section 179 deduction (if asset sold before recovery period)"
+            />
+            <ScheduleXFieldInput
+              fieldName="municipalBondInterest"
+              label="Municipal Bond Interest"
+              value={scheduleX.deductions.municipalBondInterest}
+              onChange={(v) => handleFieldChange('deductions', 'municipalBondInterest', v)}
+              helpText="Municipal bond interest taxable at different jurisdiction (cross-jurisdiction bonds)"
+            />
+            <ScheduleXFieldInput
+              fieldName="depletionDifference"
+              label="Depletion Difference"
+              value={scheduleX.deductions.depletionDifference}
+              onChange={(v) => handleFieldChange('deductions', 'depletionDifference', v)}
+              helpText="Percentage depletion (oil/gas) exceeding cost depletion"
+            />
+            <ScheduleXFieldInput
+              fieldName="otherDeductions"
+              label="Other Deductions"
+              value={scheduleX.deductions.otherDeductions}
+              onChange={(v) => handleFieldChange('deductions', 'otherDeductions', v)}
+              helpText="Catch-all for deductions not covered by specific fields (requires description)"
+            />
+          </div>
+
           <div className="pt-4 border-t border-gray-200">
             <div className="flex justify-between items-center text-lg font-semibold">
               <span>Total Deductions:</span>
