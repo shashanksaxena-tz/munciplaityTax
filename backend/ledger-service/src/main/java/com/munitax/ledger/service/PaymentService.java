@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,11 +63,8 @@ public class PaymentService {
                 providerResponse.setJournalEntryId(entry.getEntryId());
             } catch (Exception e) {
                 log.error("Failed to create journal entries for payment", e);
-                transaction.setStatus(PaymentStatus.ERROR);
-                transaction.setFailureReason("Failed to record in ledger: " + e.getMessage());
-                paymentTransactionRepository.save(transaction);
-                providerResponse.setStatus(PaymentStatus.ERROR);
-                providerResponse.setFailureReason("Failed to record in ledger");
+                // Rethrow to trigger transaction rollback
+                throw new RuntimeException("Failed to record in ledger: " + e.getMessage(), e);
             }
         }
         
@@ -100,7 +98,7 @@ public class PaymentService {
         // configuration and retrieved from the tenant service. This deterministic approach
         // ensures consistency during development and testing.
         UUID municipalityEntityId = UUID.nameUUIDFromBytes(
-                ("MUNICIPALITY-" + request.getTenantId().toString()).getBytes());
+                ("MUNICIPALITY-" + request.getTenantId().toString()).getBytes(StandardCharsets.UTF_8));
         
         // Create filer journal entry (payment reduces liability)
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()

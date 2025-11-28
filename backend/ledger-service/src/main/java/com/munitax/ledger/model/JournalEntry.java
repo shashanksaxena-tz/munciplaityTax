@@ -73,14 +73,14 @@ public class JournalEntry {
     
     @Transient
     public BigDecimal getTotalDebits() {
-        return lines.stream()
+        return lines == null ? BigDecimal.ZERO : lines.stream()
                 .map(JournalEntryLine::getDebit)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     
     @Transient
     public BigDecimal getTotalCredits() {
-        return lines.stream()
+        return lines == null ? BigDecimal.ZERO : lines.stream()
                 .map(JournalEntryLine::getCredit)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

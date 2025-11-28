@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,5 +23,6 @@ public class JournalEntryRequest {
     private UUID tenantId;
     private UUID entityId;
     private UUID createdBy;
-    private List<JournalEntryLineRequest> lines;
+    @Builder.Default
+    private List<JournalEntryLineRequest> lines = new ArrayList<>();
 }

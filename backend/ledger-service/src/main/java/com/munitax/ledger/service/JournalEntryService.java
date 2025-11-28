@@ -179,8 +179,13 @@ public class JournalEntryService {
         
         int nextNumber = 1;
         if (maxNumber != null) {
-            String numberPart = maxNumber.substring(maxNumber.lastIndexOf('-') + 1);
-            nextNumber = Integer.parseInt(numberPart) + 1;
+            try {
+                String numberPart = maxNumber.substring(maxNumber.lastIndexOf('-') + 1);
+                nextNumber = Integer.parseInt(numberPart) + 1;
+            } catch (NumberFormatException e) {
+                log.warn("Failed to parse entry number from {}, using 1 as next number", maxNumber, e);
+                nextNumber = 1;
+            }
         }
         
         return String.format("%s-%05d", prefix, nextNumber);

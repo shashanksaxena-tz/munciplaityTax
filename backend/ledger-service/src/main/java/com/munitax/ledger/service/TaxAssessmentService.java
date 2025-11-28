@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class TaxAssessmentService {
         
         // Use a fixed municipality entity ID (deterministic based on tenant ID)
         UUID municipalityEntityId = UUID.nameUUIDFromBytes(
-                ("MUNICIPALITY-" + tenantId.toString()).getBytes());
+                ("MUNICIPALITY-" + tenantId.toString()).getBytes(StandardCharsets.UTF_8));
         
         // Create filer journal entry for tax assessment
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
@@ -48,7 +49,7 @@ public class TaxAssessmentService {
                 .lines(new ArrayList<>())
                 .build();
         
-        // Filer: DEBIT Tax Liability (liability increases), CREDIT Tax Expense
+        // Filer: CREDIT Tax Liability (liability increases), DEBIT Tax Expense
         if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
             filerEntry.getLines().add(JournalEntryLineRequest.builder()
                     .accountNumber("2100")
