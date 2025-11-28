@@ -6,6 +6,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class BusinessTaxCalculator {
 
+    private final ScheduleXCalculationService scheduleXCalculationService;
+
+    public BusinessTaxCalculator(ScheduleXCalculationService scheduleXCalculationService) {
+        this.scheduleXCalculationService = scheduleXCalculationService;
+    }
+
     public NetProfitReturnData calculateBusinessTax(
             int year,
             double estimates,
@@ -15,21 +21,14 @@ public class BusinessTaxCalculator {
             double nolCarryforward,
             BusinessTaxRulesConfig rules) {
 
-        // 1. Calculate Adjusted Federal Taxable Income (Schedule X)
-        double totalAddBacks = schX.addBacks().interestAndStateTaxes() +
-                schX.addBacks().wagesCredit() +
-                schX.addBacks().losses1231() +
-                schX.addBacks().guaranteedPayments() +
-                schX.addBacks().expensesOnIntangibleIncome() +
-                schX.addBacks().other();
-
-        double totalDeductions = schX.deductions().interestIncome() +
-                schX.deductions().dividends() +
-                schX.deductions().capitalGains() +
-                schX.deductions().section179Excess() +
-                schX.deductions().other();
-
-        double adjustedFedIncome = schX.fedTaxableIncome() + totalAddBacks - totalDeductions;
+        // 1. Calculate Adjusted Federal Taxable Income (Schedule X) using expanded 27-field model
+        // Recalculate totals using ScheduleXCalculationService to ensure consistency
+        BusinessFederalForm.BusinessScheduleXDetails recalculatedSchX = 
+            scheduleXCalculationService.recalculateAll(schX);
+        
+        double adjustedFedIncome = recalculatedSchX.calculatedFields() != null ? 
+            recalculatedSchX.calculatedFields().adjustedMunicipalIncome() :
+            schX.fedTaxableIncome();
 
         // 2. Calculate Allocation % (Schedule Y) with Weighted Factors
         double propertyPct = safeDiv(schY.property().dublin(), schY.property().everywhere());
@@ -98,7 +97,7 @@ public class BusinessTaxCalculator {
                 java.util.UUID.randomUUID().toString(),
                 java.time.LocalDateTime.now().toString(),
                 year,
-                schX,
+                recalculatedSchX, // Use recalculated Schedule X with updated totals
                 updatedSchY,
                 adjustedFedIncome,
                 allocatedIncome,
