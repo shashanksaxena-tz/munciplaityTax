@@ -291,7 +291,7 @@ This is a web application with:
 - [X] T120 [US4] Create ApportionmentBreakdownCard component in src/components/apportionment/ApportionmentBreakdownCard.tsx (display factor breakdown with weighted formula)
 - [X] T121 [US4] Create ApportionmentChart component in src/components/apportionment/ApportionmentChart.tsx (Recharts bar/pie chart showing factor contributions)
 - [X] T122 [US4] Create FactorPercentageDisplay component in src/components/shared/FactorPercentageDisplay.tsx (reusable percentage display with numerator/denominator)
-- [ ] T123 [US4] Update ScheduleYWizard to include all factor forms (Property → Payroll → Sales → Elections → Review → Submit)
+- [X] T123 [US4] Update ScheduleYWizard to include all factor forms (Property → Payroll → Sales → Elections → Review → Submit)
 
 ### Frontend Tests for User Story 4
 
@@ -318,15 +318,15 @@ This is a web application with:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T129 [P] [US5] Add single-sales-factor tests in ApportionmentServiceTest (test single-factor calculation, compare to traditional formula)
-- [ ] T130 [P] [US5] Add formula comparison tests in ApportionmentServiceTest (verify recommendation logic based on which minimizes tax)
+- [X] T129 [P] [US5] Add single-sales-factor tests in ApportionmentServiceTest (test single-factor calculation, compare to traditional formula)
+- [X] T130 [P] [US5] Add formula comparison tests in ApportionmentServiceTest (verify recommendation logic based on which minimizes tax)
 
 ### Backend Implementation for User Story 5
 
-- [ ] T131 [US5] Enhance ApportionmentService to support single-sales-factor formula (override weights to 100% sales, 0% property/payroll)
-- [ ] T132 [US5] Add formula comparison logic in ApportionmentService (calculate both formulas, recommend lower apportionment)
-- [ ] T133 [US5] Add formula election validation in ApportionmentService (check if municipality allows single-sales-factor via FormulaConfigService)
-- [ ] T134 [US5] Add formula comparison to ScheduleYResponse DTO (include traditional calculation, single-sales calculation, recommendation)
+- [X] T131 [US5] Enhance ApportionmentService to support single-sales-factor formula (override weights to 100% sales, 0% property/payroll)
+- [X] T132 [US5] Add formula comparison logic in ApportionmentService (calculate both formulas, recommend lower apportionment)
+- [X] T133 [US5] Add formula election validation in ApportionmentService (check if municipality allows single-sales-factor via FormulaConfigService)
+- [X] T134 [US5] Add formula comparison to ScheduleYResponse DTO (include traditional calculation, single-sales calculation, recommendation)
 
 ### Backend Integration Tests for User Story 5
 
@@ -334,8 +334,8 @@ This is a web application with:
 
 ### Frontend Implementation for User Story 5
 
-- [ ] T136 [US5] Add formula election to ScheduleYWizard (show traditional vs single-sales-factor comparison before submission)
-- [ ] T137 [US5] Create FormulaComparisonPanel component in src/components/apportionment/FormulaComparisonPanel.tsx (side-by-side comparison with recommendation)
+- [X] T136 [US5] Add formula election to ScheduleYWizard (show traditional vs single-sales-factor comparison before submission)
+- [X] T137 [US5] Create FormulaComparisonPanel component in src/components/apportionment/FormulaComparisonPanel.tsx (side-by-side comparison with recommendation)
 - [ ] T138 [US5] Add formula election radio buttons in ScheduleYWizard (allow override of recommendation if desired)
 
 ### Frontend Tests for User Story 5

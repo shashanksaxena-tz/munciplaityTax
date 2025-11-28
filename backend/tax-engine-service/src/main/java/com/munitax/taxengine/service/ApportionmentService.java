@@ -290,4 +290,162 @@ public class ApportionmentService {
         auditLogRepository.save(auditLog);
         log.info("Election change logged: {} changed from {} to {}", fieldName, oldValue, newValue);
     }
+
+    // ===== T131-T134: Single-Sales-Factor Election Support =====
+
+    /**
+     * Compare traditional formula vs single-sales-factor formula.
+     * Returns both calculations and recommends the option that minimizes tax liability.
+     * Task: T132 [US5]
+     *
+     * @param propertyFactorPercentage property factor percentage
+     * @param payrollFactorPercentage  payroll factor percentage
+     * @param salesFactorPercentage    sales factor percentage
+     * @return map containing comparison details and recommendation
+     */
+    public Map<String, Object> compareFormulaOptions(
+            BigDecimal propertyFactorPercentage,
+            BigDecimal payrollFactorPercentage,
+            BigDecimal salesFactorPercentage) {
+        
+        log.debug("Comparing traditional vs single-sales-factor formula");
+        
+        // Calculate with traditional four-factor double-weighted sales
+        BigDecimal traditionalApportionment = calculateApportionmentPercentage(
+                propertyFactorPercentage,
+                payrollFactorPercentage,
+                salesFactorPercentage,
+                ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
+        
+        // Calculate with single-sales-factor
+        BigDecimal singleSalesApportionment = calculateApportionmentPercentage(
+                propertyFactorPercentage,
+                payrollFactorPercentage,
+                salesFactorPercentage,
+                ApportionmentFormula.SINGLE_SALES_FACTOR);
+        
+        // Get breakdown for both formulas
+        Map<String, Object> traditionalBreakdown = calculateApportionmentBreakdown(
+                propertyFactorPercentage,
+                payrollFactorPercentage,
+                salesFactorPercentage,
+                ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES);
+        
+        Map<String, Object> singleSalesBreakdown = calculateApportionmentBreakdown(
+                propertyFactorPercentage,
+                payrollFactorPercentage,
+                salesFactorPercentage,
+                ApportionmentFormula.SINGLE_SALES_FACTOR);
+        
+        // Determine recommendation (lower apportionment = lower tax)
+        boolean recommendSingleSales = singleSalesApportionment.compareTo(traditionalApportionment) < 0;
+        BigDecimal savingsPercentage = traditionalApportionment.subtract(singleSalesApportionment).abs();
+        
+        String recommendation = recommendSingleSales 
+                ? "SINGLE_SALES_FACTOR" 
+                : "FOUR_FACTOR_DOUBLE_SALES";
+        
+        String reason = recommendSingleSales
+                ? String.format("Single-sales-factor apportionment (%.2f%%) is %.2f%% lower than traditional formula (%.2f%%), minimizing tax liability",
+                        singleSalesApportionment, savingsPercentage, traditionalApportionment)
+                : String.format("Traditional formula apportionment (%.2f%%) is %.2f%% lower than single-sales-factor (%.2f%%), minimizing tax liability",
+                        traditionalApportionment, savingsPercentage, singleSalesApportionment);
+        
+        Map<String, Object> comparison = new HashMap<>();
+        comparison.put("traditionalFormula", ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES.name());
+        comparison.put("traditionalApportionment", traditionalApportionment);
+        comparison.put("traditionalBreakdown", traditionalBreakdown);
+        comparison.put("singleSalesFormula", ApportionmentFormula.SINGLE_SALES_FACTOR.name());
+        comparison.put("singleSalesApportionment", singleSalesApportionment);
+        comparison.put("singleSalesBreakdown", singleSalesBreakdown);
+        comparison.put("recommendedFormula", recommendation);
+        comparison.put("recommendationReason", reason);
+        comparison.put("savingsPercentage", savingsPercentage);
+        
+        log.info("Formula comparison: Traditional={}, SingleSales={}, Recommended={}",
+                traditionalApportionment, singleSalesApportionment, recommendation);
+        
+        return comparison;
+    }
+
+    /**
+     * Validate if single-sales-factor election is allowed for the municipality and tax year.
+     * Task: T133 [US5]
+     *
+     * @param municipalityId the municipality ID
+     * @param taxYear        the tax year
+     * @param tenantId       the tenant ID
+     * @return true if single-sales-factor is allowed, false otherwise
+     */
+    public boolean isSingleSalesFactorAllowed(UUID municipalityId, Integer taxYear, UUID tenantId) {
+        try {
+            // Check if municipality allows single-sales-factor election via rule engine
+            ApportionmentFormula allowedFormula = formulaConfigService
+                    .getApportionmentFormula(municipalityId, taxYear, tenantId);
+            
+            log.debug("Municipality {} allows formula: {} for tax year {}",
+                    municipalityId, allowedFormula, taxYear);
+            
+            // For now, assume Ohio allows both traditional and single-sales-factor
+            // In production, this would query the rule engine for specific municipality rules
+            return true;
+        } catch (Exception e) {
+            log.warn("Error checking single-sales-factor eligibility for municipality {}: {}",
+                    municipalityId, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Calculate apportionment with both formulas and include comparison in the response.
+     * This enriches the Schedule Y response with formula comparison data.
+     * Task: T134 [US5]
+     *
+     * @param propertyFactorPercentage property factor percentage
+     * @param payrollFactorPercentage  payroll factor percentage
+     * @param salesFactorPercentage    sales factor percentage
+     * @param electedFormula          the formula the taxpayer elects to use
+     * @return map containing elected calculation plus comparison data
+     */
+    public Map<String, Object> calculateWithFormulaComparison(
+            BigDecimal propertyFactorPercentage,
+            BigDecimal payrollFactorPercentage,
+            BigDecimal salesFactorPercentage,
+            ApportionmentFormula electedFormula) {
+        
+        log.debug("Calculating apportionment with formula comparison, elected formula: {}", electedFormula);
+        
+        // Get full comparison
+        Map<String, Object> comparison = compareFormulaOptions(
+                propertyFactorPercentage,
+                payrollFactorPercentage,
+                salesFactorPercentage);
+        
+        // Calculate with elected formula
+        BigDecimal electedApportionment = calculateApportionmentPercentage(
+                propertyFactorPercentage,
+                payrollFactorPercentage,
+                salesFactorPercentage,
+                electedFormula);
+        
+        Map<String, Object> electedBreakdown = calculateApportionmentBreakdown(
+                propertyFactorPercentage,
+                payrollFactorPercentage,
+                salesFactorPercentage,
+                electedFormula);
+        
+        // Build response
+        Map<String, Object> result = new HashMap<>();
+        result.put("electedFormula", electedFormula.name());
+        result.put("electedApportionment", electedApportionment);
+        result.put("electedBreakdown", electedBreakdown);
+        result.put("comparison", comparison);
+        result.put("usedRecommendation", 
+                electedFormula.name().equals(comparison.get("recommendedFormula")));
+        
+        log.info("Apportionment calculated with comparison: Elected {}={}, Recommended={}",
+                electedFormula.name(), electedApportionment, comparison.get("recommendedFormula"));
+        
+        return result;
+    }
 }

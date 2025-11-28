@@ -132,4 +132,11 @@ public class ScheduleYResponse {
      * Creation timestamp.
      */
     private LocalDateTime createdAt;
+
+    /**
+     * Formula comparison details (Task T134 [US5]).
+     * Contains traditional vs single-sales-factor comparison and recommendation.
+     * Only populated if formula comparison was requested.
+     */
+    private FormulaComparisonDto formulaComparison;
 }
