@@ -265,18 +265,18 @@ This is a web application with:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T106 [P] [US4] Create PropertyFactorServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/PropertyFactorServiceTest.java (test property factor calculation, rented property capitalization)
-- [ ] T107 [P] [US4] Create PayrollFactorServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/PayrollFactorServiceTest.java (test payroll factor calculation, remote employee allocation)
-- [ ] T108 [P] [US4] Add four-factor formula tests in ApportionmentServiceTest (test double-weighted sales, final apportionment percentage)
+- [X] T106 [P] [US4] Create PropertyFactorServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/PropertyFactorServiceTest.java (test property factor calculation, rented property capitalization)
+- [X] T107 [P] [US4] Create PayrollFactorServiceTest in backend/tax-engine-service/src/test/java/com/munitax/taxengine/service/PayrollFactorServiceTest.java (test payroll factor calculation, remote employee allocation)
+- [X] T108 [P] [US4] Add four-factor formula tests in ApportionmentServiceTest (test double-weighted sales, final apportionment percentage)
 
 ### Backend Implementation for User Story 4
 
-- [ ] T109 [US4] Implement PropertyFactorService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/PropertyFactorService.java (calculate property factor with averaging, rented property capitalization)
-- [ ] T110 [US4] Implement PayrollFactorService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/PayrollFactorService.java (calculate payroll factor, integrate with WithholdingIntegrationService)
-- [ ] T111 [US4] Enhance ApportionmentService to calculate weighted formula (apply property/payroll/sales weights from FormulaConfigService)
-- [ ] T112 [US4] Add GET /api/schedule-y/{id}/breakdown endpoint in ScheduleYController (return detailed factor breakdown)
-- [ ] T113 [US4] Create ApportionmentController in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ApportionmentController.java (POST /api/apportionment/calculate endpoint)
-- [ ] T114 [US4] Implement breakdown DTO with all factor details (numerator, denominator, percentage, weights, final calculation)
+- [X] T109 [US4] Implement PropertyFactorService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/PropertyFactorService.java (calculate property factor with averaging, rented property capitalization)
+- [X] T110 [US4] Implement PayrollFactorService in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/PayrollFactorService.java (calculate payroll factor, integrate with WithholdingIntegrationService)
+- [X] T111 [US4] Enhance ApportionmentService to calculate weighted formula (apply property/payroll/sales weights from FormulaConfigService)
+- [X] T112 [US4] Add GET /api/schedule-y/{id}/breakdown endpoint in ScheduleYController (return detailed factor breakdown)
+- [X] T113 [US4] Create ApportionmentController in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ApportionmentController.java (POST /api/apportionment/calculate endpoint)
+- [X] T114 [US4] Implement breakdown DTO with all factor details (numerator, denominator, percentage, weights, final calculation)
 
 ### Backend Integration Tests for User Story 4
 
@@ -284,13 +284,13 @@ This is a web application with:
 
 ### Frontend Implementation for User Story 4
 
-- [ ] T116 [P] [US4] Create apportionmentService API client in src/services/apportionmentService.ts (POST /apportionment/calculate, GET /schedule-y/{id}/breakdown)
+- [X] T116 [P] [US4] Create apportionmentService API client in src/services/apportionmentService.ts (POST /apportionment/calculate, GET /schedule-y/{id}/breakdown)
 - [X] T117 [US4] Create PropertyFactorForm component in src/components/apportionment/PropertyFactorForm.tsx (enter OH property, total property, rented property)
 - [X] T118 [US4] Create PayrollFactorForm component in src/components/apportionment/PayrollFactorForm.tsx (enter OH payroll, total payroll, employee counts)
 - [X] T119 [US4] Update SalesFactorForm component for complete sales entry (tangible goods, services, rental, interest, royalties)
 - [X] T120 [US4] Create ApportionmentBreakdownCard component in src/components/apportionment/ApportionmentBreakdownCard.tsx (display factor breakdown with weighted formula)
-- [ ] T121 [US4] Create ApportionmentChart component in src/components/apportionment/ApportionmentChart.tsx (Recharts bar/pie chart showing factor contributions)
-- [ ] T122 [US4] Create FactorPercentageDisplay component in src/components/shared/FactorPercentageDisplay.tsx (reusable percentage display with numerator/denominator)
+- [X] T121 [US4] Create ApportionmentChart component in src/components/apportionment/ApportionmentChart.tsx (Recharts bar/pie chart showing factor contributions)
+- [X] T122 [US4] Create FactorPercentageDisplay component in src/components/shared/FactorPercentageDisplay.tsx (reusable percentage display with numerator/denominator)
 - [ ] T123 [US4] Update ScheduleYWizard to include all factor forms (Property → Payroll → Sales → Elections → Review → Submit)
 
 ### Frontend Tests for User Story 4
