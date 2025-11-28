@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegistrationForm } from './components/auth/RegistrationForm';
 import { ForgotPassword } from './components/auth/ForgotPassword';
@@ -52,41 +53,44 @@ const AuditorRoute = ({ children }: { children: React.ReactNode }) => {
 
 export default function App() {
     const [reviewingReturnId, setReviewingReturnId] = React.useState<string | null>(null);
+    const { user } = useAuth();
     
     return (
         <AuthProvider>
-            <Router>
-                <Routes>
-                    <Route path="/login" element={<LoginForm />} />
-                    <Route path="/register" element={<RegistrationForm />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    
-                    {/* Auditor Routes */}
-                    <Route path="/auditor" element={
-                        <AuditorRoute>
-                            {reviewingReturnId ? (
-                                <ReturnReviewPanel 
-                                    returnId={reviewingReturnId}
-                                    userId="current-user-id"
-                                    onBack={() => setReviewingReturnId(null)}
-                                />
-                            ) : (
-                                <AuditorDashboard
-                                    userId="current-user-id"
-                                    onReviewReturn={(returnId) => setReviewingReturnId(returnId)}
-                                />
-                            )}
-                        </AuditorRoute>
-                    } />
-                    
-                    <Route path="/*" element={
-                        <ProtectedRoute>
-                            <TaxFilingApp />
-                        </ProtectedRoute>
-                    } />
-                </Routes>
-            </Router>
+            <ToastProvider>
+                <Router>
+                    <Routes>
+                        <Route path="/login" element={<LoginForm />} />
+                        <Route path="/register" element={<RegistrationForm />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        
+                        {/* Auditor Routes */}
+                        <Route path="/auditor" element={
+                            <AuditorRoute>
+                                {reviewingReturnId ? (
+                                    <ReturnReviewPanel 
+                                        returnId={reviewingReturnId}
+                                        userId={user?.id || ''}
+                                        onBack={() => setReviewingReturnId(null)}
+                                    />
+                                ) : (
+                                    <AuditorDashboard
+                                        userId={user?.id || ''}
+                                        onReviewReturn={(returnId) => setReviewingReturnId(returnId)}
+                                    />
+                                )}
+                            </AuditorRoute>
+                        } />
+                        
+                        <Route path="/*" element={
+                            <ProtectedRoute>
+                                <TaxFilingApp />
+                            </ProtectedRoute>
+                        } />
+                    </Routes>
+                </Router>
+            </ToastProvider>
         </AuthProvider>
     );
 }

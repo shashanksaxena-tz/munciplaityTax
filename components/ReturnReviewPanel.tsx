@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   ArrowLeft
 } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
 
 interface ReturnReviewPanelProps {
   returnId: string;
@@ -28,6 +29,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
   const [auditTrail, setAuditTrail] = useState<AuditTrail[]>([]);
   const [auditReport, setAuditReport] = useState<AuditReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
   
   // Dialogs
   const [showApproveDialog, setShowApproveDialog] = useState(false);
@@ -69,6 +71,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
       }
     } catch (error) {
       console.error('Error loading return data:', error);
+      showToast('error', 'Failed to load return data');
     } finally {
       setLoading(false);
     }
@@ -76,36 +79,44 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
 
   const handleApprove = async () => {
     if (!eSignature) {
-      alert('Please enter your password for e-signature');
+      showToast('warning', 'Please enter your password for e-signature');
       return;
     }
     
     try {
+      // NOTE: In production, implement proper cryptographic signing
+      // using Web Crypto API or server-side signing with PKI certificates.
+      // The current btoa() encoding is a placeholder and NOT secure.
       const response = await fetch('/api/v1/audit/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           returnId,
           auditorId: userId,
-          eSignature: btoa(eSignature) // Simple base64 encoding
+          eSignature: btoa(eSignature) // TODO: Replace with proper crypto signing
         })
       });
       
       if (response.ok) {
-        alert('Return approved successfully');
+        showToast('success', 'Return approved successfully');
         onBack();
       } else {
-        alert('Failed to approve return');
+        showToast('error', 'Failed to approve return');
       }
     } catch (error) {
       console.error('Error approving return:', error);
-      alert('Error approving return');
+      showToast('error', 'Error approving return');
     }
   };
 
   const handleReject = async () => {
     if (!rejectionReason || !rejectionDetails || !resubmitDeadline) {
-      alert('Please fill in all required fields');
+      showToast('warning', 'Please fill in all required fields');
+      return;
+    }
+    
+    if (rejectionDetails.length < 50) {
+      showToast('warning', 'Detailed explanation must be at least 50 characters');
       return;
     }
     
@@ -123,14 +134,14 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
       });
       
       if (response.ok) {
-        alert('Return rejected successfully');
+        showToast('success', 'Return rejected successfully');
         onBack();
       } else {
-        alert('Failed to reject return');
+        showToast('error', 'Failed to reject return');
       }
     } catch (error) {
       console.error('Error rejecting return:', error);
-      alert('Error rejecting return');
+      showToast('error', 'Error rejecting return');
     }
   };
 

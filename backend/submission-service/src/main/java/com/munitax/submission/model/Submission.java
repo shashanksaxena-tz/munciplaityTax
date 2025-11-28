@@ -20,21 +20,42 @@ public class Submission {
     private String tenantId;
     private String userId;
     private String taxYear;
+    @Column(nullable = false)
     private String status; // SUBMITTED, IN_REVIEW, APPROVED, REJECTED, AMENDED, AWAITING_DOCUMENTATION
+    
+    @Column(columnDefinition = "TEXT")
     private String auditorComments;
+    
     private Instant submittedAt;
     private Instant reviewedAt;
     private String reviewedBy;
+    
+    @Column(length = 50)
     private String returnType; // INDIVIDUAL or BUSINESS
+    
+    @Column(precision = 10, scale = 2)
     private Double taxDue;
+    
+    @Column(length = 255)
     private String taxpayerName;
+    
+    @Column(length = 50)
     private String taxpayerFEIN;
     
     // Audit workflow fields
+    @Column(length = 20)
     private String priority; // HIGH, MEDIUM, LOW
+    
+    @Column
     private Integer riskScore;
+    
+    @Column
     private Boolean hasDiscrepancies;
+    
+    @Column(columnDefinition = "TEXT")
     private String rejectionReason;
+    
+    @Column(length = 512)
     private String digitalSignature; // E-signature hash for approvals
 
     public void setId(String id) { this.id = id; }
