@@ -49,7 +49,7 @@ public class TaxAssessmentService {
                 .lines(new ArrayList<>())
                 .build();
         
-        // Filer: CREDIT Tax Liability (liability increases), DEBIT Tax Expense
+        // Filer: CREDIT Tax Liability (increases liability), DEBIT Tax Expense (increases expense)
         if (taxAmount.compareTo(BigDecimal.ZERO) > 0) {
             filerEntry.getLines().add(JournalEntryLineRequest.builder()
                     .accountNumber("2100")
