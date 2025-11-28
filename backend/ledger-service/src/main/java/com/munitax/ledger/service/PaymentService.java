@@ -95,8 +95,10 @@ public class PaymentService {
                     .build();
         }
         
-        // Use a fixed municipality entity ID (in production, this should come from tenant configuration)
-        // For now, using a deterministic UUID based on tenant ID
+        // Use a fixed municipality entity ID (deterministic based on tenant ID)
+        // PRODUCTION NOTE: In production, municipality entity ID should be stored in tenant
+        // configuration and retrieved from the tenant service. This deterministic approach
+        // ensures consistency during development and testing.
         UUID municipalityEntityId = UUID.nameUUIDFromBytes(
                 ("MUNICIPALITY-" + request.getTenantId().toString()).getBytes());
         

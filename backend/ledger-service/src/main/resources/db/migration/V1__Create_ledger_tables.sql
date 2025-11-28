@@ -114,6 +114,8 @@ CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_id);
 CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp);
 
 -- Insert default chart of accounts for filers
+-- Note: Using system-wide default tenant_id for shared account definitions
+-- In production, accounts can be copied/customized per tenant
 -- Filer accounts (1000-2999)
 INSERT INTO chart_of_accounts (account_id, account_number, account_name, account_type, normal_balance, tenant_id, description, active)
 VALUES 

@@ -32,12 +32,13 @@ public class ReconciliationService {
         BigDecimal municipalityCash = calculateAccountBalance(tenantId, municipalityId, "1001");
         
         // TODO: For production, implement proper aggregation across all filers
-        // This simplified version uses municipality balances only
-        // Production implementation should:
+        // IMPORTANT: This simplified version uses municipality balances only for TESTING
+        // Production implementation MUST:
         // 1. Query all filer entities for the tenant
         // 2. Sum all filer tax liability accounts (2100, 2110, 2120, 2130)
         // 3. Sum all filer payment entries
         // 4. Compare aggregated filer totals with municipality totals
+        // WARNING: Current implementation will always show as reconciled
         BigDecimal filerLiabilities = municipalityAR; 
         BigDecimal filerPayments = municipalityCash;
         
