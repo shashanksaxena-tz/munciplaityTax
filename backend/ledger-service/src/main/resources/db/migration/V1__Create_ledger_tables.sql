@@ -30,7 +30,7 @@ CREATE TABLE journal_entries (
     reversed_by UUID,
     reversed_at TIMESTAMP,
     reversal_entry_id UUID,
-    CONSTRAINT fk_reversal_entry FOREIGN KEY (reversal_entry_id) REFERENCES journal_entries(entry_id)
+    CONSTRAINT fk_reversal_entry FOREIGN KEY (reversal_entry_id) REFERENCES journal_entries(entry_id) ON DELETE SET NULL
 );
 
 -- Create journal entry lines table

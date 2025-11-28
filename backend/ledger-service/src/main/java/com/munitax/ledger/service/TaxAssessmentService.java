@@ -32,6 +32,10 @@ public class TaxAssessmentService {
         
         BigDecimal totalAmount = taxAmount.add(penaltyAmount).add(interestAmount);
         
+        // Use a fixed municipality entity ID (deterministic based on tenant ID)
+        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + tenantId.toString()).getBytes());
+        
         // Create filer journal entry for tax assessment
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
                 .entryDate(LocalDate.now())
@@ -104,7 +108,7 @@ public class TaxAssessmentService {
                 .sourceType(SourceType.TAX_ASSESSMENT)
                 .sourceId(returnId)
                 .tenantId(tenantId)
-                .entityId(UUID.randomUUID()) // Municipality entity
+                .entityId(municipalityEntityId)
                 .createdBy(filerId)
                 .lines(new ArrayList<>())
                 .build();

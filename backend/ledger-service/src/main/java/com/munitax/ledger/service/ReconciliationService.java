@@ -31,10 +31,15 @@ public class ReconciliationService {
         // Calculate municipality cash receipts (account 1001 credits)
         BigDecimal municipalityCash = calculateAccountBalance(tenantId, municipalityId, "1001");
         
-        // For filer liabilities and payments, we would need to aggregate across all filers
-        // Simplified: Using same values for demonstration (in real implementation, would iterate all filers)
-        BigDecimal filerLiabilities = municipalityAR; // Should sum all filer liability accounts
-        BigDecimal filerPayments = municipalityCash; // Should sum all filer payment entries
+        // TODO: For production, implement proper aggregation across all filers
+        // This simplified version uses municipality balances only
+        // Production implementation should:
+        // 1. Query all filer entities for the tenant
+        // 2. Sum all filer tax liability accounts (2100, 2110, 2120, 2130)
+        // 3. Sum all filer payment entries
+        // 4. Compare aggregated filer totals with municipality totals
+        BigDecimal filerLiabilities = municipalityAR; 
+        BigDecimal filerPayments = municipalityCash;
         
         // Calculate variances
         BigDecimal arVariance = municipalityAR.subtract(filerLiabilities);

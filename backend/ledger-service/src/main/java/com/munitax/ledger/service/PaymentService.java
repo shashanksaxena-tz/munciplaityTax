@@ -95,6 +95,11 @@ public class PaymentService {
                     .build();
         }
         
+        // Use a fixed municipality entity ID (in production, this should come from tenant configuration)
+        // For now, using a deterministic UUID based on tenant ID
+        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + request.getTenantId().toString()).getBytes());
+        
         // Create filer journal entry (payment reduces liability)
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
                 .entryDate(LocalDate.now())
@@ -154,7 +159,7 @@ public class PaymentService {
                 .sourceType(SourceType.PAYMENT)
                 .sourceId(transaction.getPaymentId())
                 .tenantId(request.getTenantId())
-                .entityId(UUID.randomUUID()) // Municipality entity
+                .entityId(municipalityEntityId)
                 .createdBy(request.getFilerId())
                 .lines(new ArrayList<>())
                 .build();

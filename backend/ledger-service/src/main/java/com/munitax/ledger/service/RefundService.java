@@ -31,6 +31,10 @@ public class RefundService {
             throw new IllegalArgumentException("Refund amount must be positive");
         }
         
+        // Use a fixed municipality entity ID (deterministic based on tenant ID)
+        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + tenantId.toString()).getBytes());
+        
         // Create filer journal entry for refund request
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
                 .entryDate(LocalDate.now())
@@ -67,7 +71,7 @@ public class RefundService {
                 .sourceType(SourceType.REFUND)
                 .sourceId(filerJournalEntry.getSourceId())
                 .tenantId(tenantId)
-                .entityId(UUID.randomUUID()) // Municipality entity
+                .entityId(municipalityEntityId)
                 .createdBy(requestedBy)
                 .lines(new ArrayList<>())
                 .build();
@@ -108,6 +112,10 @@ public class RefundService {
                            BigDecimal refundAmount, UUID issuedBy) {
         log.info("Issuing refund for filer {}: amount={}", filerId, refundAmount);
         
+        // Use a fixed municipality entity ID (deterministic based on tenant ID)
+        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + tenantId.toString()).getBytes());
+        
         // Create filer journal entry for refund issuance
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
                 .entryDate(LocalDate.now())
@@ -144,7 +152,7 @@ public class RefundService {
                 .sourceType(SourceType.REFUND)
                 .sourceId(refundRequestId)
                 .tenantId(tenantId)
-                .entityId(UUID.randomUUID()) // Municipality entity
+                .entityId(municipalityEntityId)
                 .createdBy(issuedBy)
                 .lines(new ArrayList<>())
                 .build();
