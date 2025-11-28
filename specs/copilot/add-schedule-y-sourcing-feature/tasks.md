@@ -192,10 +192,10 @@ This is a web application with:
 
 - [X] T082 [P] [US2] Create nexusService API client in src/services/nexusService.ts (GET /nexus/{businessId}, POST /nexus/{businessId}/update)
 - [X] T083 [P] [US2] Create useNexus hook in src/hooks/useNexus.ts (React Query hook for nexus status)
-- [ ] T084 [US2] Create ThrowbackElectionPanel component in src/components/apportionment/ThrowbackElectionPanel.tsx (throwback vs throwout radio buttons)
-- [ ] T085 [US2] Create NexusTrackingPanel component in src/components/apportionment/NexusTrackingPanel.tsx (table showing nexus status by state with reasons)
-- [ ] T086 [US2] Update SalesFactorForm component in src/components/apportionment/SalesFactorForm.tsx (add destination state field, show throwback indicator)
-- [ ] T087 [US2] Add throwback adjustment display to ApportionmentBreakdownCard component (show "Sales to [State] - No nexus - Thrown back: $X")
+- [X] T084 [US2] Create ThrowbackElectionPanel component in src/components/apportionment/ThrowbackElectionPanel.tsx (throwback vs throwout radio buttons)
+- [X] T085 [US2] Create NexusTrackingPanel component in src/components/apportionment/NexusTrackingPanel.tsx (table showing nexus status by state with reasons)
+- [X] T086 [US2] Update SalesFactorForm component in src/components/apportionment/SalesFactorForm.tsx (add destination state field, show throwback indicator)
+- [X] T087 [US2] Add throwback adjustment display to ApportionmentBreakdownCard component (show "Sales to [State] - No nexus - Thrown back: $X")
 
 ### Frontend Tests for User Story 2
 
@@ -237,10 +237,10 @@ This is a web application with:
 
 ### Frontend Implementation for User Story 3
 
-- [ ] T099 [US3] Create ServiceSourcingPanel component in src/components/apportionment/ServiceSourcingPanel.tsx (market-based vs cost-of-performance radio buttons)
-- [ ] T100 [US3] Enhance SalesFactorForm component to handle service transactions (add customer location field, sale type dropdown)
-- [ ] T101 [US3] Add customer location prompt in ServiceSourcingPanel (text input with state dropdown, show cascading rules explanation)
-- [ ] T102 [US3] Add service revenue breakdown to ApportionmentBreakdownCard (show sourcing method used per transaction)
+- [X] T099 [US3] Create ServiceSourcingPanel component in src/components/apportionment/ServiceSourcingPanel.tsx (market-based vs cost-of-performance radio buttons)
+- [X] T100 [US3] Enhance SalesFactorForm component to handle service transactions (add customer location field, sale type dropdown)
+- [X] T101 [US3] Add customer location prompt in ServiceSourcingPanel (text input with state dropdown, show cascading rules explanation)
+- [X] T102 [US3] Add service revenue breakdown to ApportionmentBreakdownCard (show sourcing method used per transaction)
 
 ### Frontend Tests for User Story 3
 
@@ -285,10 +285,10 @@ This is a web application with:
 ### Frontend Implementation for User Story 4
 
 - [ ] T116 [P] [US4] Create apportionmentService API client in src/services/apportionmentService.ts (POST /apportionment/calculate, GET /schedule-y/{id}/breakdown)
-- [ ] T117 [US4] Create PropertyFactorForm component in src/components/apportionment/PropertyFactorForm.tsx (enter OH property, total property, rented property)
-- [ ] T118 [US4] Create PayrollFactorForm component in src/components/apportionment/PayrollFactorForm.tsx (enter OH payroll, total payroll, employee counts)
-- [ ] T119 [US4] Update SalesFactorForm component for complete sales entry (tangible goods, services, rental, interest, royalties)
-- [ ] T120 [US4] Create ApportionmentBreakdownCard component in src/components/apportionment/ApportionmentBreakdownCard.tsx (display factor breakdown with weighted formula)
+- [X] T117 [US4] Create PropertyFactorForm component in src/components/apportionment/PropertyFactorForm.tsx (enter OH property, total property, rented property)
+- [X] T118 [US4] Create PayrollFactorForm component in src/components/apportionment/PayrollFactorForm.tsx (enter OH payroll, total payroll, employee counts)
+- [X] T119 [US4] Update SalesFactorForm component for complete sales entry (tangible goods, services, rental, interest, royalties)
+- [X] T120 [US4] Create ApportionmentBreakdownCard component in src/components/apportionment/ApportionmentBreakdownCard.tsx (display factor breakdown with weighted formula)
 - [ ] T121 [US4] Create ApportionmentChart component in src/components/apportionment/ApportionmentChart.tsx (Recharts bar/pie chart showing factor contributions)
 - [ ] T122 [US4] Create FactorPercentageDisplay component in src/components/shared/FactorPercentageDisplay.tsx (reusable percentage display with numerator/denominator)
 - [ ] T123 [US4] Update ScheduleYWizard to include all factor forms (Property → Payroll → Sales → Elections → Review → Submit)
