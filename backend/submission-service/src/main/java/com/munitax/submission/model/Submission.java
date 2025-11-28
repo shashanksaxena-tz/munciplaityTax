@@ -20,11 +20,43 @@ public class Submission {
     private String tenantId;
     private String userId;
     private String taxYear;
-    private String status; // SUBMITTED, APPROVED, REJECTED
+    @Column(nullable = false)
+    private String status; // SUBMITTED, IN_REVIEW, APPROVED, REJECTED, AMENDED, AWAITING_DOCUMENTATION
+    
+    @Column(columnDefinition = "TEXT")
     private String auditorComments;
+    
     private Instant submittedAt;
     private Instant reviewedAt;
     private String reviewedBy;
+    
+    @Column(length = 50)
+    private String returnType; // INDIVIDUAL or BUSINESS
+    
+    @Column(precision = 10, scale = 2)
+    private Double taxDue;
+    
+    @Column(length = 255)
+    private String taxpayerName;
+    
+    @Column(length = 50)
+    private String taxpayerFEIN;
+    
+    // Audit workflow fields
+    @Column(length = 20)
+    private String priority; // HIGH, MEDIUM, LOW
+    
+    @Column
+    private Integer riskScore;
+    
+    @Column
+    private Boolean hasDiscrepancies;
+    
+    @Column(columnDefinition = "TEXT")
+    private String rejectionReason;
+    
+    @Column(length = 512)
+    private String digitalSignature; // E-signature hash for approvals
 
     public void setId(String id) { this.id = id; }
     public String getId() { return id; }
@@ -44,4 +76,22 @@ public class Submission {
     public Instant getReviewedAt() { return reviewedAt; }
     public void setReviewedBy(String reviewedBy) { this.reviewedBy = reviewedBy; }
     public String getReviewedBy() { return reviewedBy; }
+    public void setReturnType(String returnType) { this.returnType = returnType; }
+    public String getReturnType() { return returnType; }
+    public void setTaxDue(Double taxDue) { this.taxDue = taxDue; }
+    public Double getTaxDue() { return taxDue; }
+    public void setTaxpayerName(String taxpayerName) { this.taxpayerName = taxpayerName; }
+    public String getTaxpayerName() { return taxpayerName; }
+    public void setTaxpayerFEIN(String taxpayerFEIN) { this.taxpayerFEIN = taxpayerFEIN; }
+    public String getTaxpayerFEIN() { return taxpayerFEIN; }
+    public void setPriority(String priority) { this.priority = priority; }
+    public String getPriority() { return priority; }
+    public void setRiskScore(Integer riskScore) { this.riskScore = riskScore; }
+    public Integer getRiskScore() { return riskScore; }
+    public void setHasDiscrepancies(Boolean hasDiscrepancies) { this.hasDiscrepancies = hasDiscrepancies; }
+    public Boolean getHasDiscrepancies() { return hasDiscrepancies; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    public String getRejectionReason() { return rejectionReason; }
+    public void setDigitalSignature(String digitalSignature) { this.digitalSignature = digitalSignature; }
+    public String getDigitalSignature() { return digitalSignature; }
 }
