@@ -1,0 +1,276 @@
+# JSON Schema for BusinessScheduleXDetails (27-field expansion)
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "https://api.munitax.com/schemas/business-schedule-x-details.json"
+title: BusinessScheduleXDetails
+description: Comprehensive Schedule X reconciliation data (expanded from 6 to 27 fields)
+type: object
+required:
+  - fedTaxableIncome
+  - addBacks
+  - deductions
+properties:
+  fedTaxableIncome:
+    type: number
+    description: Federal taxable income from Form 1120 Line 30 / Form 1065 Line 22 / Form 1120-S Line 23
+    minimum: 0
+  addBacks:
+    type: object
+    description: 20 fields that increase federal income for municipal purposes (FR-001 through FR-020)
+    properties:
+      depreciationAdjustment:
+        type: number
+        default: 0.0
+        description: Book depreciation minus MACRS tax depreciation
+      amortizationAdjustment:
+        type: number
+        default: 0.0
+        description: Book amortization minus tax amortization for intangibles
+      incomeAndStateTaxes:
+        type: number
+        default: 0.0
+        description: State/local/foreign income taxes (FR-003)
+      guaranteedPayments:
+        type: number
+        default: 0.0
+        description: Form 1065 Line 10 - Partnerships only (FR-004)
+      mealsAndEntertainment:
+        type: number
+        default: 0.0
+        description: 100% add-back (federal 50% deduction, municipal 0%) - FR-005
+      relatedPartyExcess:
+        type: number
+        default: 0.0
+        description: Payments to related parties above FMV (FR-006)
+      penaltiesAndFines:
+        type: number
+        default: 0.0
+        description: Government penalties/fines (FR-007)
+      politicalContributions:
+        type: number
+        default: 0.0
+        description: Political campaign contributions (FR-008)
+      officerLifeInsurance:
+        type: number
+        default: 0.0
+        description: Officer life insurance premiums (corp is beneficiary) - FR-009
+      capitalLossExcess:
+        type: number
+        default: 0.0
+        description: Capital losses exceeding capital gains (FR-010)
+      federalTaxRefunds:
+        type: number
+        default: 0.0
+        description: Prior year federal income tax refunds (FR-011)
+      expensesOnIntangibleIncome:
+        type: number
+        default: 0.0
+        description: 5% Rule - expenses incurred to earn non-taxable intangible income (FR-012)
+      section179Excess:
+        type: number
+        default: 0.0
+        description: Section 179 expensing exceeding municipal limits (FR-013)
+      bonusDepreciation:
+        type: number
+        default: 0.0
+        description: 100% bonus depreciation (federal) not allowed municipally (FR-014)
+      badDebtReserveIncrease:
+        type: number
+        default: 0.0
+        description: Increase in bad debt reserve (reserve method vs direct write-off) - FR-015
+      charitableContributionExcess:
+        type: number
+        default: 0.0
+        description: Contributions exceeding 10% limit (FR-016)
+      domesticProductionActivities:
+        type: number
+        default: 0.0
+        description: Section 199 DPAD deduction (pre-TCJA) - FR-017
+      stockCompensationAdjustment:
+        type: number
+        default: 0.0
+        description: Book expense (ASC 718) vs tax deduction (intrinsic value) - FR-018
+      inventoryMethodChange:
+        type: number
+        default: 0.0
+        description: Section 481(a) adjustment for inventory method change (FR-019)
+      otherAddBacks:
+        type: number
+        default: 0.0
+        description: Catch-all for adjustments not covered by specific fields (FR-020)
+      otherAddBacksDescription:
+        type: string
+        nullable: true
+        description: Required if otherAddBacks > 0 (FR-020)
+    required:
+      - depreciationAdjustment
+      - amortizationAdjustment
+      - incomeAndStateTaxes
+      - mealsAndEntertainment
+  deductions:
+    type: object
+    description: 7 fields that decrease federal income for municipal purposes (FR-021 through FR-027)
+    properties:
+      interestIncome:
+        type: number
+        default: 0.0
+        description: Taxable interest income (non-taxable municipally) - FR-021
+      dividends:
+        type: number
+        default: 0.0
+        description: Qualified and ordinary dividends (non-taxable municipally) - FR-022
+      capitalGains:
+        type: number
+        default: 0.0
+        description: Net capital gains (non-taxable municipally) - FR-023
+      section179Recapture:
+        type: number
+        default: 0.0
+        description: Recapture of Section 179 deduction (FR-024)
+      municipalBondInterest:
+        type: number
+        default: 0.0
+        description: Municipal bond interest taxable at different jurisdiction (FR-025)
+      depletionDifference:
+        type: number
+        default: 0.0
+        description: Percentage depletion exceeding cost depletion (FR-026)
+      otherDeductions:
+        type: number
+        default: 0.0
+        description: Catch-all for deductions not covered by specific fields (FR-027)
+      otherDeductionsDescription:
+        type: string
+        nullable: true
+        description: Required if otherDeductions > 0 (FR-027)
+    required:
+      - interestIncome
+      - dividends
+      - capitalGains
+  calculatedFields:
+    type: object
+    description: Read-only computed values (FR-028, FR-029, FR-030)
+    readOnly: true
+    properties:
+      totalAddBacks:
+        type: number
+        description: Sum of all 20 add-back fields (FR-028)
+      totalDeductions:
+        type: number
+        description: Sum of all 7 deduction fields (FR-029)
+      adjustedMunicipalIncome:
+        type: number
+        description: fedTaxableIncome + totalAddBacks - totalDeductions (FR-030)
+    required:
+      - totalAddBacks
+      - totalDeductions
+      - adjustedMunicipalIncome
+  metadata:
+    type: object
+    description: Audit trail, auto-calculation tracking, attached documents
+    properties:
+      lastModified:
+        type: string
+        format: date-time
+        description: Last modification timestamp (ISO 8601)
+      autoCalculatedFields:
+        type: array
+        items:
+          type: string
+        description: List of fields populated by auto-calculation helpers (FR-037)
+        example: ["mealsAndEntertainment", "expensesOnIntangibleIncome"]
+      manualOverrides:
+        type: array
+        items:
+          type: string
+        description: List of fields where user overrode AI-extracted value (FR-037)
+        example: ["depreciationAdjustment"]
+      attachedDocuments:
+        type: array
+        items:
+          $ref: "#/definitions/AttachedDocument"
+        description: Supporting documentation for adjustments (FR-036)
+    required:
+      - lastModified
+      - autoCalculatedFields
+      - manualOverrides
+      - attachedDocuments
+definitions:
+  AttachedDocument:
+    type: object
+    properties:
+      fileName:
+        type: string
+        description: Original file name
+        example: "depreciation_schedule.xlsx"
+      fileUrl:
+        type: string
+        format: uri
+        description: S3/storage URL for document
+        example: "s3://munitax-docs/dublin/return-123/depreciation_schedule.xlsx"
+      fieldName:
+        type: string
+        description: Which Schedule X field this document supports
+        example: "depreciationAdjustment"
+      uploadedAt:
+        type: string
+        format: date-time
+        description: Upload timestamp
+      uploadedBy:
+        type: string
+        format: uuid
+        description: User ID who uploaded the document
+    required:
+      - fileName
+      - fileUrl
+      - fieldName
+      - uploadedAt
+      - uploadedBy
+examples:
+  - description: User Story 1 - C-Corp with depreciation, meals, state taxes
+    value:
+      fedTaxableIncome: 500000.00
+      addBacks:
+        depreciationAdjustment: 50000.00
+        amortizationAdjustment: 0.00
+        incomeAndStateTaxes: 10000.00
+        guaranteedPayments: 0.00
+        mealsAndEntertainment: 15000.00
+        relatedPartyExcess: 0.00
+        penaltiesAndFines: 0.00
+        politicalContributions: 0.00
+        officerLifeInsurance: 0.00
+        capitalLossExcess: 0.00
+        federalTaxRefunds: 0.00
+        expensesOnIntangibleIncome: 0.00
+        section179Excess: 0.00
+        bonusDepreciation: 0.00
+        badDebtReserveIncrease: 0.00
+        charitableContributionExcess: 0.00
+        domesticProductionActivities: 0.00
+        stockCompensationAdjustment: 0.00
+        inventoryMethodChange: 0.00
+        otherAddBacks: 0.00
+        otherAddBacksDescription: null
+      deductions:
+        interestIncome: 0.00
+        dividends: 0.00
+        capitalGains: 0.00
+        section179Recapture: 0.00
+        municipalBondInterest: 0.00
+        depletionDifference: 0.00
+        otherDeductions: 0.00
+        otherDeductionsDescription: null
+      calculatedFields:
+        totalAddBacks: 75000.00
+        totalDeductions: 0.00
+        adjustedMunicipalIncome: 575000.00
+      metadata:
+        lastModified: "2024-11-27T19:45:00Z"
+        autoCalculatedFields: ["mealsAndEntertainment"]
+        manualOverrides: []
+        attachedDocuments:
+          - fileName: "form_4562_depreciation.pdf"
+            fileUrl: "s3://munitax-docs/dublin/return-123/form4562.pdf"
+            fieldName: "depreciationAdjustment"
+            uploadedAt: "2024-11-27T19:40:00Z"
+            uploadedBy: "user-uuid-456"
