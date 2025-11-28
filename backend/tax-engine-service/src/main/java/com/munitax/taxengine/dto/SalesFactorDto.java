@@ -55,6 +55,22 @@ public class SalesFactorDto {
     private BigDecimal serviceRevenue = BigDecimal.ZERO;
 
     /**
+     * Service revenue sourced using market-based method.
+     * T097 [US3]: Added for service revenue breakdown display.
+     */
+    @DecimalMin(value = "0.0", inclusive = true, message = "Market-based service revenue must be non-negative")
+    @Builder.Default
+    private BigDecimal marketBasedServiceRevenue = BigDecimal.ZERO;
+
+    /**
+     * Service revenue sourced using cost-of-performance method.
+     * T097 [US3]: Added for service revenue breakdown display.
+     */
+    @DecimalMin(value = "0.0", inclusive = true, message = "Cost-of-performance service revenue must be non-negative")
+    @Builder.Default
+    private BigDecimal costOfPerformanceServiceRevenue = BigDecimal.ZERO;
+
+    /**
      * Tangible goods sales portion of total sales.
      */
     @DecimalMin(value = "0.0", inclusive = true, message = "Tangible goods sales must be non-negative")

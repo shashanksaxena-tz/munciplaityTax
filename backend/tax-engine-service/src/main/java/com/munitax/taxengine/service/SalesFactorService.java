@@ -1,7 +1,9 @@
 package com.munitax.taxengine.service;
 
 import com.munitax.taxengine.domain.apportionment.SaleTransaction;
+import com.munitax.taxengine.domain.apportionment.SaleType;
 import com.munitax.taxengine.domain.apportionment.SalesFactor;
+import com.munitax.taxengine.domain.apportionment.ServiceSourcingMethod;
 import com.munitax.taxengine.domain.apportionment.SourcingMethodElection;
 import com.munitax.taxengine.repository.SaleTransactionRepository;
 import com.munitax.taxengine.repository.SalesFactorRepository;
@@ -236,5 +238,150 @@ public class SalesFactorService {
 
         // For now, return placeholder
         return BigDecimal.ZERO;
+    }
+
+    // ========================================
+    // User Story 3: Service Sourcing Validation (T096)
+    // ========================================
+
+    /**
+     * T096: Validate service transaction has required data for sourcing method.
+     * Market-based requires customer location.
+     * Cost-of-performance requires employee location data.
+     *
+     * @param transaction          the sale transaction to validate
+     * @param serviceSourcingMethod the service sourcing method election
+     * @throws IllegalArgumentException if required data is missing
+     */
+    public void validateServiceTransaction(SaleTransaction transaction,
+                                          ServiceSourcingMethod serviceSourcingMethod) {
+        // Only validate service transactions
+        if (transaction.getSaleType() != SaleType.SERVICES) {
+            return;
+        }
+
+        if (serviceSourcingMethod == null) {
+            throw new IllegalArgumentException(
+                    "Service sourcing method is required for service transactions. " +
+                    "Transaction ID: " + transaction.getTransactionId());
+        }
+
+        switch (serviceSourcingMethod) {
+            case MARKET_BASED:
+                validateMarketBasedServiceTransaction(transaction);
+                break;
+
+            case COST_OF_PERFORMANCE:
+                // Cost-of-performance validation is done at the business level
+                // (requires employee location data which is not per-transaction)
+                log.debug("Cost-of-performance sourcing selected for transaction: {}",
+                        transaction.getTransactionId());
+                break;
+
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown service sourcing method: " + serviceSourcingMethod);
+        }
+    }
+
+    /**
+     * T096: Validate market-based service transaction has customer location.
+     */
+    private void validateMarketBasedServiceTransaction(SaleTransaction transaction) {
+        String customerState = transaction.getCustomerState();
+        
+        if (customerState == null || customerState.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Customer location (state) is required for market-based service sourcing. " +
+                    "Transaction ID: " + transaction.getTransactionId() + ". " +
+                    "Please provide customer state or use cost-of-performance sourcing.");
+        }
+
+        // Validate customer state is a valid 2-letter state code
+        if (!customerState.matches("^[A-Z]{2}$")) {
+            throw new IllegalArgumentException(
+                    "Invalid customer state code: " + customerState + ". " +
+                    "Expected 2-letter uppercase state code (e.g., 'NY', 'CA', 'OH'). " +
+                    "Transaction ID: " + transaction.getTransactionId());
+        }
+
+        log.debug("Market-based service transaction validated: customer state = {}",
+                customerState);
+    }
+
+    /**
+     * T096: Validate all service transactions in a sales factor have required data.
+     *
+     * @param salesFactorId        the sales factor ID
+     * @param serviceSourcingMethod the service sourcing method election
+     * @throws IllegalArgumentException if any service transaction is invalid
+     */
+    @Transactional(readOnly = true)
+    public void validateAllServiceTransactions(UUID salesFactorId,
+                                               ServiceSourcingMethod serviceSourcingMethod) {
+        log.debug("Validating all service transactions for sales factor: {}", salesFactorId);
+
+        List<SaleTransaction> serviceTransactions = saleTransactionRepository
+                .findServiceTransactions(salesFactorId);
+
+        if (serviceTransactions.isEmpty()) {
+            log.debug("No service transactions to validate");
+            return;
+        }
+
+        log.info("Validating {} service transactions with {} method",
+                serviceTransactions.size(), serviceSourcingMethod);
+
+        int validatedCount = 0;
+        for (SaleTransaction transaction : serviceTransactions) {
+            validateServiceTransaction(transaction, serviceSourcingMethod);
+            validatedCount++;
+        }
+
+        log.info("Successfully validated {} service transactions", validatedCount);
+    }
+
+    /**
+     * T097: Calculate service revenue breakdown by sourcing method.
+     *
+     * @param salesFactorId the sales factor ID
+     * @return map with market-based and cost-of-performance service revenue amounts
+     */
+    @Transactional(readOnly = true)
+    public Map<String, BigDecimal> getServiceRevenueBreakdown(UUID salesFactorId) {
+        log.debug("Calculating service revenue breakdown for sales factor: {}", salesFactorId);
+
+        List<SaleTransaction> serviceTransactions = saleTransactionRepository
+                .findServiceTransactions(salesFactorId);
+
+        BigDecimal marketBasedRevenue = BigDecimal.ZERO;
+        BigDecimal costOfPerformanceRevenue = BigDecimal.ZERO;
+
+        for (SaleTransaction transaction : serviceTransactions) {
+            ServiceSourcingMethod method = transaction.getServiceSourcingMethod();
+            if (method == null) {
+                log.warn("Service transaction {} missing sourcing method, skipping",
+                        transaction.getTransactionId());
+                continue;
+            }
+
+            switch (method) {
+                case MARKET_BASED:
+                    marketBasedRevenue = marketBasedRevenue.add(transaction.getAmount());
+                    break;
+                case COST_OF_PERFORMANCE:
+                    costOfPerformanceRevenue = costOfPerformanceRevenue.add(transaction.getAmount());
+                    break;
+            }
+        }
+
+        log.info("Service revenue breakdown: Market-based={}, Cost-of-performance={}",
+                marketBasedRevenue, costOfPerformanceRevenue);
+
+        return Map.of(
+                "marketBased", marketBasedRevenue,
+                "costOfPerformance", costOfPerformanceRevenue,
+                "total", marketBasedRevenue.add(costOfPerformanceRevenue)
+        );
     }
 }

@@ -56,6 +56,21 @@ public class SaleTransaction {
     @Column(name = "destination_state", length = 2)
     private String destinationState;
 
+    /**
+     * Customer state for market-based service sourcing.
+     * T097 [US3]: Added for service revenue sourcing.
+     */
+    @Column(name = "customer_state", length = 2)
+    private String customerState;
+
+    /**
+     * Service sourcing method used (market-based or cost-of-performance).
+     * T097 [US3]: Added for service revenue tracking.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "service_sourcing_method", length = 30)
+    private ServiceSourcingMethod serviceSourcingMethod;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "sourcing_method", nullable = false, length = 30)
     private SourcingMethod sourcingMethod;

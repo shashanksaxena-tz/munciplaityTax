@@ -228,8 +228,8 @@ This is a web application with:
 - [X] T093 [US3] Enhance SourcingService with market-based sourcing logic (source to customer location, handle multi-location customers)
 - [X] T094 [US3] Add cost-of-performance sourcing to SourcingService (prorate by employee location/payroll from WithholdingIntegrationService)
 - [X] T095 [US3] Implement cascading sourcing rules in SourcingService (try market-based → fallback to cost-of-performance → fallback to pro-rata)
-- [ ] T096 [US3] Add service sourcing method validation in SalesFactorService (require customer location for market-based)
-- [ ] T097 [US3] Add service revenue breakdown to SalesFactorResponse DTO (tangible goods vs services, sourcing method per transaction)
+- [X] T096 [US3] Add service sourcing method validation in SalesFactorService (require customer location for market-based)
+- [X] T097 [US3] Add service revenue breakdown to SalesFactorResponse DTO (tangible goods vs services, sourcing method per transaction)
 
 ### Backend Integration Tests for User Story 3
 

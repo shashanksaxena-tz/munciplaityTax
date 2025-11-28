@@ -1,6 +1,7 @@
 package com.munitax.taxengine.dto;
 
 import com.munitax.taxengine.domain.apportionment.SaleType;
+import com.munitax.taxengine.domain.apportionment.ServiceSourcingMethod;
 import com.munitax.taxengine.domain.apportionment.SourcingMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,6 +60,20 @@ public class SaleTransactionDto {
      */
     @Size(max = 200, message = "Customer location cannot exceed 200 characters")
     private String customerLocation;
+
+    /**
+     * Customer state for market-based sourcing (service transactions).
+     * T097 [US3]: Added for service revenue sourcing.
+     */
+    @Size(min = 2, max = 2, message = "State code must be 2 characters")
+    @Pattern(regexp = "^[A-Z]{2}$", message = "State code must be uppercase letters")
+    private String customerState;
+
+    /**
+     * Service sourcing method used for this transaction (market-based or cost-of-performance).
+     * T097 [US3]: Added for service revenue breakdown display.
+     */
+    private ServiceSourcingMethod serviceSourcingMethod;
 
     /**
      * Sourcing method applied to this transaction.
