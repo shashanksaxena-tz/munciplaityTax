@@ -61,10 +61,10 @@ public interface AuditQueueRepository extends JpaRepository<AuditQueue, String> 
     long countByPriority(Priority priority);
     
     // Find high-priority pending items
-    @Query("SELECT aq FROM AuditQueue aq WHERE aq.status = 'PENDING' AND aq.priority = 'HIGH'")
-    List<AuditQueue> findHighPriorityPending();
+    @Query("SELECT aq FROM AuditQueue aq WHERE aq.status = :status AND aq.priority = :priority")
+    List<AuditQueue> findHighPriorityPending(@Param("status") AuditStatus status, @Param("priority") Priority priority);
     
     // Find items overdue for review (in queue > 7 days)
-    @Query("SELECT aq FROM AuditQueue aq WHERE aq.status = 'PENDING' AND aq.submissionDate < :cutoffDate")
-    List<AuditQueue> findOverdueItems(@Param("cutoffDate") Instant cutoffDate);
+    @Query("SELECT aq FROM AuditQueue aq WHERE aq.status = :status AND aq.submissionDate < :cutoffDate")
+    List<AuditQueue> findOverdueItems(@Param("status") AuditStatus status, @Param("cutoffDate") Instant cutoffDate);
 }

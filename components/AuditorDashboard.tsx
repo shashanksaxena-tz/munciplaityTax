@@ -198,7 +198,7 @@ export function AuditorDashboard({ userId, onReviewReturn }: AuditorDashboardPro
           
           <select
             value={filters.status || ''}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value as AuditStatus || undefined, page: 0 })}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value ? (e.target.value as AuditStatus) : undefined, page: 0 })}
             className="px-3 py-2 border border-gray-300 rounded-lg"
           >
             <option value="">All Statuses</option>
@@ -211,7 +211,7 @@ export function AuditorDashboard({ userId, onReviewReturn }: AuditorDashboardPro
           
           <select
             value={filters.priority || ''}
-            onChange={(e) => setFilters({ ...filters, priority: e.target.value as AuditPriority || undefined, page: 0 })}
+            onChange={(e) => setFilters({ ...filters, priority: e.target.value ? (e.target.value as AuditPriority) : undefined, page: 0 })}
             className="px-3 py-2 border border-gray-300 rounded-lg"
           >
             <option value="">All Priorities</option>

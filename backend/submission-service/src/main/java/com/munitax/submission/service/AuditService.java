@@ -290,6 +290,6 @@ public class AuditService {
     }
     
     public List<DocumentRequest> getOverdueDocumentRequests() {
-        return documentRequestRepository.findOverdueRequests(LocalDate.now());
+        return documentRequestRepository.findOverdueRequests(LocalDate.now(), DocumentRequest.RequestStatus.PENDING);
     }
 }

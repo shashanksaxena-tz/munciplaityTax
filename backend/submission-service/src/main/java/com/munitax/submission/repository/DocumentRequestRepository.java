@@ -31,12 +31,12 @@ public interface DocumentRequestRepository extends JpaRepository<DocumentRequest
     List<DocumentRequest> findByDocumentType(DocumentType documentType);
     
     // Find overdue requests
-    @Query("SELECT dr FROM DocumentRequest dr WHERE dr.status = 'PENDING' AND dr.deadline < :today")
-    List<DocumentRequest> findOverdueRequests(@Param("today") LocalDate today);
+    @Query("SELECT dr FROM DocumentRequest dr WHERE dr.status = :status AND dr.deadline < :today")
+    List<DocumentRequest> findOverdueRequests(@Param("today") LocalDate today, @Param("status") RequestStatus status);
     
     // Find requests approaching deadline (within days)
-    @Query("SELECT dr FROM DocumentRequest dr WHERE dr.status = 'PENDING' AND dr.deadline <= :targetDate AND dr.deadline >= :today")
-    List<DocumentRequest> findApproachingDeadline(@Param("today") LocalDate today, @Param("targetDate") LocalDate targetDate);
+    @Query("SELECT dr FROM DocumentRequest dr WHERE dr.status = :status AND dr.deadline <= :targetDate AND dr.deadline >= :today")
+    List<DocumentRequest> findApproachingDeadline(@Param("today") LocalDate today, @Param("targetDate") LocalDate targetDate, @Param("status") RequestStatus status);
     
     // Find by tenant
     List<DocumentRequest> findByTenantId(String tenantId);
