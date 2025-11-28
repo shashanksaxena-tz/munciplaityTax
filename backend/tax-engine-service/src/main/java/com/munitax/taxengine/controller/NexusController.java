@@ -277,7 +277,7 @@ public class NexusController {
         dto.setHasNexus(nexusTracking.getHasNexus());
         dto.setBusinessId(nexusTracking.getBusinessId());
         dto.setNexusReasons(nexusTracking.getNexusReasons());
-        dto.setLastUpdated(nexusTracking.getUpdatedAt());
+        dto.setLastUpdated(nexusTracking.getLastModifiedDate());
         return dto;
     }
 

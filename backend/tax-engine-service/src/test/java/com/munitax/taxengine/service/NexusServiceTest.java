@@ -344,7 +344,7 @@ class NexusServiceTest {
     // Helper method to create nexus tracking test data
     private NexusTracking createNexusTracking(String state, boolean hasNexus, NexusReason reason) {
         NexusTracking tracking = new NexusTracking();
-        tracking.setId(UUID.randomUUID());
+        tracking.setNexusId(UUID.randomUUID());
         tracking.setBusinessId(businessId);
         tracking.setState(state);
         tracking.setHasNexus(hasNexus);

@@ -220,14 +220,14 @@ This is a web application with:
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T091 [P] [US3] Add market-based sourcing tests in SourcingServiceTest (test customer location sourcing, cascading fallback rules)
-- [ ] T092 [P] [US3] Add cost-of-performance tests in SourcingServiceTest (test employee location proration by payroll)
+- [X] T091 [P] [US3] Add market-based sourcing tests in SourcingServiceTest (test customer location sourcing, cascading fallback rules)
+- [X] T092 [P] [US3] Add cost-of-performance tests in SourcingServiceTest (test employee location proration by payroll)
 
 ### Backend Implementation for User Story 3
 
-- [ ] T093 [US3] Enhance SourcingService with market-based sourcing logic (source to customer location, handle multi-location customers)
-- [ ] T094 [US3] Add cost-of-performance sourcing to SourcingService (prorate by employee location/payroll from WithholdingIntegrationService)
-- [ ] T095 [US3] Implement cascading sourcing rules in SourcingService (try market-based → fallback to cost-of-performance → fallback to pro-rata)
+- [X] T093 [US3] Enhance SourcingService with market-based sourcing logic (source to customer location, handle multi-location customers)
+- [X] T094 [US3] Add cost-of-performance sourcing to SourcingService (prorate by employee location/payroll from WithholdingIntegrationService)
+- [X] T095 [US3] Implement cascading sourcing rules in SourcingService (try market-based → fallback to cost-of-performance → fallback to pro-rata)
 - [ ] T096 [US3] Add service sourcing method validation in SalesFactorService (require customer location for market-based)
 - [ ] T097 [US3] Add service revenue breakdown to SalesFactorResponse DTO (tangible goods vs services, sourcing method per transaction)
 

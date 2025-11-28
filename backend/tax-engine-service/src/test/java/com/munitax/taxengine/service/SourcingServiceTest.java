@@ -1,5 +1,6 @@
 package com.munitax.taxengine.service;
 
+import com.munitax.taxengine.domain.apportionment.ServiceSourcingMethod;
 import com.munitax.taxengine.domain.apportionment.SourcingMethodElection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -81,11 +82,6 @@ class SourcingServiceTest {
         nexusStatus.put("parent", true);  // Has OH nexus
         nexusStatus.put("subA", true);    // Has OH nexus
         nexusStatus.put("subB", false);   // No OH nexus
-
-        when(nexusService.hasNexus(any(), eq("OH"), eq(tenantId))).thenAnswer(invocation -> {
-            // Simulate nexus determination
-            return true; // For testing, assume parent and subA have nexus
-        });
 
         // When: Calculate sales factor with Joyce election
         BigDecimal denominator = sourcingService.calculateSalesDenominator(
@@ -200,5 +196,225 @@ class SourcingServiceTest {
 
         // Then: Denominator is zero
         assertEquals(BigDecimal.ZERO, denominator);
+    }
+
+    // ========================================
+    // User Story 3: Market-Based Service Sourcing Tests (T091-T092)
+    // ========================================
+
+    @Test
+    @DisplayName("T091: Market-Based Sourcing - Source service revenue to customer location")
+    void testMarketBasedSourcingToCustomerLocation() {
+        // Given: IT consulting firm (OH office) provides $1M project to NY customer
+        // Market-based: 100% to NY (where customer receives benefit)
+        
+        String customerState = "NY";
+        BigDecimal serviceRevenue = new BigDecimal("1000000"); // $1M
+        
+        // When: Apply market-based sourcing
+        Map<String, BigDecimal> sourcedRevenue = sourcingService.sourceServiceRevenue(
+                serviceRevenue, 
+                customerState, 
+                ServiceSourcingMethod.MARKET_BASED,
+                null, // No employee locations needed for market-based
+                tenantId
+        );
+        
+        // Then: 100% sourced to NY (customer location)
+        assertEquals(new BigDecimal("1000000"), sourcedRevenue.get("NY"));
+        assertEquals(1, sourcedRevenue.size()); // Only NY should be present
+    }
+
+    @Test
+    @DisplayName("T091: Market-Based Sourcing - Handle multi-location customer")
+    void testMarketBasedSourcingMultiLocationCustomer() {
+        // Given: Fortune 500 customer with offices in multiple states
+        // Customer has 60% operations in NY, 40% in CA
+        
+        Map<String, BigDecimal> customerLocations = new HashMap<>();
+        customerLocations.put("NY", new BigDecimal("0.60")); // 60% in NY
+        customerLocations.put("CA", new BigDecimal("0.40")); // 40% in CA
+        
+        BigDecimal serviceRevenue = new BigDecimal("1000000"); // $1M
+        
+        // When: Apply market-based sourcing with customer location proration
+        Map<String, BigDecimal> sourcedRevenue = sourcingService.sourceServiceRevenueMultiLocation(
+                serviceRevenue, 
+                customerLocations, 
+                ServiceSourcingMethod.MARKET_BASED,
+                tenantId
+        );
+        
+        // Then: Revenue prorated by customer locations
+        assertEquals(new BigDecimal("600000"), sourcedRevenue.get("NY")); // $600K to NY
+        assertEquals(new BigDecimal("400000"), sourcedRevenue.get("CA")); // $400K to CA
+    }
+
+    @Test
+    @DisplayName("T091: Market-Based Sourcing - Cascading fallback when customer location unknown")
+    void testMarketBasedSourcingCascadingFallback() {
+        // Given: Service revenue but customer location is unknown
+        BigDecimal serviceRevenue = new BigDecimal("500000"); // $500K
+        String customerState = null; // Unknown customer location
+        
+        Map<String, BigDecimal> employeeLocations = new HashMap<>();
+        employeeLocations.put("OH", new BigDecimal("0.70")); // 70% employees in OH
+        employeeLocations.put("CA", new BigDecimal("0.30")); // 30% employees in CA
+        
+        // When: Apply cascading sourcing rules
+        // Should fallback from market-based → cost-of-performance (employee location)
+        Map<String, BigDecimal> sourcedRevenue = sourcingService.sourceServiceRevenueWithFallback(
+                serviceRevenue, 
+                customerState, 
+                employeeLocations,
+                ServiceSourcingMethod.MARKET_BASED,
+                tenantId
+        );
+        
+        // Then: Falls back to cost-of-performance (employee locations)
+        assertEquals(new BigDecimal("350000"), sourcedRevenue.get("OH")); // $350K to OH (70%)
+        assertEquals(new BigDecimal("150000"), sourcedRevenue.get("CA")); // $150K to CA (30%)
+    }
+
+    @Test
+    @DisplayName("T092: Cost-of-Performance - Prorate service revenue by employee location")
+    void testCostOfPerformanceSourcingByEmployeeLocation() {
+        // Given: IT consulting firm with OH office (5 employees) and CA office (2 employees)
+        // Provides $1M project to NY customer
+        // Cost-of-performance: Prorate by employee location (70% OH, 30% CA)
+        
+        BigDecimal serviceRevenue = new BigDecimal("1000000"); // $1M
+        String customerState = "NY"; // Customer location (ignored for cost-of-performance)
+        
+        Map<String, BigDecimal> employeeLocations = new HashMap<>();
+        employeeLocations.put("OH", new BigDecimal("0.70")); // 70% of employees in OH
+        employeeLocations.put("CA", new BigDecimal("0.30")); // 30% of employees in CA
+        
+        // When: Apply cost-of-performance sourcing
+        Map<String, BigDecimal> sourcedRevenue = sourcingService.sourceServiceRevenue(
+                serviceRevenue, 
+                customerState, 
+                ServiceSourcingMethod.COST_OF_PERFORMANCE,
+                employeeLocations,
+                tenantId
+        );
+        
+        // Then: Revenue prorated by employee locations (NY gets $0)
+        assertEquals(new BigDecimal("700000"), sourcedRevenue.get("OH")); // $700K to OH
+        assertEquals(new BigDecimal("300000"), sourcedRevenue.get("CA")); // $300K to CA
+        assertNull(sourcedRevenue.get("NY")); // NY gets nothing (no employees there)
+    }
+
+    @Test
+    @DisplayName("T092: Cost-of-Performance - Prorate by payroll when available")
+    void testCostOfPerformanceSourcingByPayroll() {
+        // Given: Service revenue with payroll data available
+        // OH payroll: $3.5M (70%), CA payroll: $1.5M (30%)
+        
+        BigDecimal serviceRevenue = new BigDecimal("1000000"); // $1M service revenue
+        
+        Map<String, BigDecimal> payrollByState = new HashMap<>();
+        payrollByState.put("OH", new BigDecimal("3500000")); // $3.5M payroll
+        payrollByState.put("CA", new BigDecimal("1500000")); // $1.5M payroll
+        
+        // When: Apply cost-of-performance with payroll proration
+        Map<String, BigDecimal> sourcedRevenue = sourcingService.sourceServiceRevenueByPayroll(
+                serviceRevenue, 
+                payrollByState,
+                tenantId
+        );
+        
+        // Then: Revenue prorated by payroll percentages
+        assertEquals(new BigDecimal("700000"), sourcedRevenue.get("OH")); // 70% → $700K
+        assertEquals(new BigDecimal("300000"), sourcedRevenue.get("CA")); // 30% → $300K
+    }
+
+    @Test
+    @DisplayName("T092: Cost-of-Performance - Handle remote employees")
+    void testCostOfPerformanceWithRemoteEmployees() {
+        // Given: Company has remote employees in multiple states
+        Map<String, Integer> employeeCountsByState = new HashMap<>();
+        employeeCountsByState.put("OH", 5);  // 5 employees in OH
+        employeeCountsByState.put("CA", 2);  // 2 employees in CA
+        employeeCountsByState.put("TX", 1);  // 1 remote employee in TX
+        
+        BigDecimal serviceRevenue = new BigDecimal("800000"); // $800K
+        
+        // When: Apply cost-of-performance with employee counts
+        Map<String, BigDecimal> sourcedRevenue = sourcingService.sourceServiceRevenueByEmployeeCount(
+                serviceRevenue, 
+                employeeCountsByState,
+                tenantId
+        );
+        
+        // Then: Revenue prorated by employee counts (5/8, 2/8, 1/8)
+        assertEquals(new BigDecimal("500000"), sourcedRevenue.get("OH")); // 5/8 = $500K
+        assertEquals(new BigDecimal("200000"), sourcedRevenue.get("CA")); // 2/8 = $200K
+        assertEquals(new BigDecimal("100000"), sourcedRevenue.get("TX")); // 1/8 = $100K
+    }
+
+    @Test
+    @DisplayName("T091: Cascading Rules - Market-Based → Cost-of-Performance → Pro-Rata")
+    void testCascadingSourcingRulesFallbackChain() {
+        // Given: Service revenue with no customer location and no employee location data
+        BigDecimal serviceRevenue = new BigDecimal("600000"); // $600K
+        String customerState = null; // Unknown
+        Map<String, BigDecimal> employeeLocations = null; // Unknown
+        
+        // Assume overall apportionment is 40% OH
+        BigDecimal overallApportionment = new BigDecimal("0.40");
+        String filingState = "OH";
+        
+        // When: Apply cascading rules (all fallbacks exhausted → pro-rata)
+        Map<String, BigDecimal> sourcedRevenue = sourcingService.sourceServiceRevenueWithFullCascade(
+                serviceRevenue, 
+                customerState, 
+                employeeLocations,
+                overallApportionment,
+                filingState,
+                tenantId
+        );
+        
+        // Then: Falls back to pro-rata based on overall apportionment
+        assertEquals(new BigDecimal("240000"), sourcedRevenue.get("OH")); // 40% → $240K
+        assertEquals(new BigDecimal("360000"), sourcedRevenue.get("EVERYWHERE_ELSE")); // 60% → $360K
+    }
+
+    @Test
+    @DisplayName("T091: Validate customer location required for market-based")
+    void testMarketBasedRequiresCustomerLocation() {
+        // Given: Market-based sourcing without customer location
+        BigDecimal serviceRevenue = new BigDecimal("500000");
+        String customerState = null; // Missing customer location
+        
+        // When/Then: Should throw exception when customer location missing and no fallback allowed
+        assertThrows(IllegalArgumentException.class, () -> {
+            sourcingService.sourceServiceRevenue(
+                    serviceRevenue, 
+                    customerState, 
+                    ServiceSourcingMethod.MARKET_BASED,
+                    null,
+                    tenantId
+            );
+        });
+    }
+
+    @Test
+    @DisplayName("T092: Validate employee locations required for cost-of-performance")
+    void testCostOfPerformanceRequiresEmployeeLocations() {
+        // Given: Cost-of-performance sourcing without employee location data
+        BigDecimal serviceRevenue = new BigDecimal("500000");
+        Map<String, BigDecimal> employeeLocations = null; // Missing employee data
+        
+        // When/Then: Should throw exception when employee locations missing
+        assertThrows(IllegalArgumentException.class, () -> {
+            sourcingService.sourceServiceRevenue(
+                    serviceRevenue, 
+                    "NY", // Customer state (ignored for cost-of-performance)
+                    ServiceSourcingMethod.COST_OF_PERFORMANCE,
+                    employeeLocations,
+                    tenantId
+            );
+        });
     }
 }
