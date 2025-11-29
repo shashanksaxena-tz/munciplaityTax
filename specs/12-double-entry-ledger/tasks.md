@@ -200,26 +200,26 @@ The following components are already implemented and working:
 3. Total debits = $3.5M, Total credits = $3.5M
 4. Status: BALANCED
 
-**Status**: ❌ NOT IMPLEMENTED
+**Status**: ✅ COMPLETE
 
 ### Tests for User Story 5
 
-- [ ] T041 [P] [US5] Create TrialBalanceServiceTest with balanced ledger test in backend/ledger-service/src/test/java/com/munitax/ledger/service/TrialBalanceServiceTest.java
-- [ ] T042 [P] [US5] Add test for unbalanced trial balance detection in backend/ledger-service/src/test/java/com/munitax/ledger/service/TrialBalanceServiceTest.java
-- [ ] T043 [P] [US5] Add integration test for trial balance API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/TrialBalanceControllerTest.java
+- [X] T041 [P] [US5] Create TrialBalanceServiceTest with balanced ledger test in backend/ledger-service/src/test/java/com/munitax/ledger/service/TrialBalanceServiceTest.java
+- [X] T042 [P] [US5] Add test for unbalanced trial balance detection in backend/ledger-service/src/test/java/com/munitax/ledger/service/TrialBalanceServiceTest.java
+- [X] T043 [P] [US5] Add integration test for trial balance API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/TrialBalanceControllerTest.java
 
 ### Implementation for User Story 5
 
-- [ ] T044 [P] [US5] Create TrialBalanceService with generateTrialBalance method in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
-- [ ] T045 [P] [US5] Create TrialBalanceResponse DTO in backend/ledger-service/src/main/java/com/munitax/ledger/dto/TrialBalanceResponse.java
-- [ ] T046 [P] [US5] Create AccountBalanceSummary DTO for trial balance line items in backend/ledger-service/src/main/java/com/munitax/ledger/dto/AccountBalanceSummary.java
-- [ ] T047 [US5] Implement account balance calculation from journal entries in TrialBalanceService in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
-- [ ] T048 [US5] Add account hierarchy grouping (assets, liabilities, revenue, expense) to TrialBalanceService in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
-- [ ] T049 [US5] Add date range filtering for trial balance (month-end, quarter-end, year-end) per FR-035 in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
-- [ ] T050 [P] [US5] Create TrialBalanceController with GET /api/v1/trial-balance endpoint in backend/ledger-service/src/main/java/com/munitax/ledger/controller/TrialBalanceController.java
-- [ ] T051 [P] [US5] Create frontend TrialBalance.tsx component to display trial balance in components/TrialBalance.tsx
-- [ ] T052 [US5] Add account hierarchy tree view to TrialBalance.tsx in components/TrialBalance.tsx
-- [ ] T053 [US5] Add balance validation indicator (balanced/unbalanced) to TrialBalance.tsx in components/TrialBalance.tsx
+- [X] T044 [P] [US5] Create TrialBalanceService with generateTrialBalance method in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
+- [X] T045 [P] [US5] Create TrialBalanceResponse DTO in backend/ledger-service/src/main/java/com/munitax/ledger/dto/TrialBalanceResponse.java
+- [X] T046 [P] [US5] Create AccountBalanceSummary DTO for trial balance line items in backend/ledger-service/src/main/java/com/munitax/ledger/dto/AccountBalanceSummary.java
+- [X] T047 [US5] Implement account balance calculation from journal entries in TrialBalanceService in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
+- [X] T048 [US5] Add account hierarchy grouping (assets, liabilities, revenue, expense) to TrialBalanceService in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
+- [X] T049 [US5] Add date range filtering for trial balance (month-end, quarter-end, year-end) per FR-035 in backend/ledger-service/src/main/java/com/munitax/ledger/service/TrialBalanceService.java
+- [X] T050 [P] [US5] Create TrialBalanceController with GET /api/v1/trial-balance endpoint in backend/ledger-service/src/main/java/com/munitax/ledger/controller/TrialBalanceController.java
+- [X] T051 [P] [US5] Create frontend TrialBalance.tsx component to display trial balance in components/TrialBalance.tsx
+- [X] T052 [US5] Add account hierarchy tree view to TrialBalance.tsx in components/TrialBalance.tsx
+- [X] T053 [US5] Add balance validation indicator (balanced/unbalanced) to TrialBalance.tsx in components/TrialBalance.tsx
 
 **Checkpoint**: User Story 5 complete - municipality can generate trial balance report
 
@@ -240,21 +240,21 @@ The following components are already implemented and working:
 
 ### Tests for User Story 6
 
-- [ ] T054 [P] [US6] Create RefundServiceTest with refund request and issuance test in backend/ledger-service/src/test/java/com/munitax/ledger/service/RefundServiceTest.java
-- [ ] T055 [P] [US6] Add test for refund validation (amount ≤ overpayment) in backend/ledger-service/src/test/java/com/munitax/ledger/service/RefundServiceTest.java
-- [ ] T056 [P] [US6] Add integration test for refund API endpoints in backend/ledger-service/src/test/java/com/munitax/ledger/controller/RefundControllerTest.java
+- [X] T054 [P] [US6] Create RefundServiceTest with refund request and issuance test in backend/ledger-service/src/test/java/com/munitax/ledger/service/RefundServiceTest.java
+- [X] T055 [P] [US6] Add test for refund validation (amount ≤ overpayment) in backend/ledger-service/src/test/java/com/munitax/ledger/service/RefundServiceTest.java
+- [X] T056 [P] [US6] Add integration test for refund API endpoints in backend/ledger-service/src/test/java/com/munitax/ledger/controller/RefundControllerTest.java
 
 ### Implementation for User Story 6
 
-- [ ] T057 [US6] Add overpayment detection method to RefundService per FR-036 in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
-- [ ] T058 [US6] Verify RefundService handles all FR-038 through FR-042 requirements in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
-- [ ] T059 [US6] Add refund approval workflow to RefundService per FR-039 in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
-- [ ] T060 [US6] Add refund method selection (ACH, Check, Wire) to RefundService per FR-041 in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
-- [ ] T061 [P] [US6] Create RefundRequest DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/RefundRequest.java
-- [ ] T062 [P] [US6] Create RefundResponse DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/RefundResponse.java
-- [ ] T063 [P] [US6] Create frontend RefundRequest.tsx component for filers to request refunds in components/RefundRequest.tsx
-- [ ] T064 [US6] Add overpayment amount display to RefundRequest.tsx in components/RefundRequest.tsx
-- [ ] T065 [US6] Add refund method selector to RefundRequest.tsx in components/RefundRequest.tsx
+- [X] T057 [US6] Add overpayment detection method to RefundService per FR-036 in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
+- [X] T058 [US6] Verify RefundService handles all FR-038 through FR-042 requirements in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
+- [X] T059 [US6] Add refund approval workflow to RefundService per FR-039 in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
+- [X] T060 [US6] Add refund method selection (ACH, Check, Wire) to RefundService per FR-041 in backend/ledger-service/src/main/java/com/munitax/ledger/service/RefundService.java
+- [X] T061 [P] [US6] Create RefundRequest DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/RefundRequest.java
+- [X] T062 [P] [US6] Create RefundResponse DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/RefundResponse.java
+- [X] T063 [P] [US6] Create frontend RefundRequest.tsx component for filers to request refunds in components/RefundRequest.tsx
+- [X] T064 [US6] Add overpayment amount display to RefundRequest.tsx in components/RefundRequest.tsx
+- [X] T065 [US6] Add refund method selector to RefundRequest.tsx in components/RefundRequest.tsx
 
 **Checkpoint**: User Story 6 complete - filers can request and receive refunds with proper ledger tracking
 
@@ -336,13 +336,13 @@ The following components are already implemented and working:
 
 ### Error Handling & Resilience
 
-- [ ] T095 [P] Add global exception handler for ledger-service in backend/ledger-service/src/main/java/com/munitax/ledger/exception/GlobalExceptionHandler.java
+- [X] T095 [P] Add global exception handler for ledger-service in backend/ledger-service/src/main/java/com/munitax/ledger/exception/GlobalExceptionHandler.java
 - [ ] T096 Add circuit breaker for external payment provider integration (future real gateway) in backend/ledger-service/src/main/java/com/munitax/ledger/config/CircuitBreakerConfig.java
 - [ ] T097 Add retry logic for journal entry creation failures in backend/ledger-service/src/main/java/com/munitax/ledger/service/JournalEntryService.java
 
 ### Documentation
 
-- [ ] T098 [P] Create feature README documenting all user stories and capabilities in backend/ledger-service/README.md
+- [X] T098 [P] Create feature README documenting all user stories and capabilities in backend/ledger-service/README.md
 - [ ] T099 [P] Create accounting concepts guide for developers unfamiliar with double-entry bookkeeping in backend/ledger-service/docs/accounting-primer.md
 - [ ] T100 Create troubleshooting guide for common ledger issues in backend/ledger-service/docs/troubleshooting.md
 
