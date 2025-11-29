@@ -272,8 +272,8 @@ describe('Schedule X Calculations', () => {
       expect(excessAddBack).toBe(0);
     });
 
-    it('should return negative when paid below FMV (bargain purchase)', () => {
-      // Arrange - Paid $5K, FMV $10K → Excess -$5K (unusual but possible)
+    it('should return 0 when paid below FMV (bargain purchase)', () => {
+      // Arrange - Paid $5K, FMV $10K → No add-back (bargain purchase, not an adjustment)
       const paidAmount = 5000;
       const fairMarketValue = 10000;
 
@@ -281,7 +281,7 @@ describe('Schedule X Calculations', () => {
       const excessAddBack = calculateRelatedPartyExcess(paidAmount, fairMarketValue);
 
       // Assert
-      expect(excessAddBack).toBe(-5000);
+      expect(excessAddBack).toBe(0); // Bargain purchases don't create add-backs
     });
   });
 });
