@@ -22,9 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@TestPropertySource(properties = {
-        "ledger.payment.mode=TEST"
-})
+@TestPropertySource(locations = "classpath:application-test.properties")
 class PaymentControllerTest {
     
     @Autowired

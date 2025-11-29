@@ -24,9 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-@TestPropertySource(properties = {
-        "ledger.payment.mode=TEST"
-})
+@TestPropertySource(locations = "classpath:application-test.properties")
 class PaymentServiceTest {
     
     @Autowired
