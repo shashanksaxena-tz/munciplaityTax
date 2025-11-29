@@ -80,10 +80,12 @@ export const ServiceTestDashboard: React.FC = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service) => {
             const Icon = service.icon;
-            const bgColor = `bg-${service.color}-50`;
-            const borderColor = `border-${service.color}-200`;
-            const textColor = `text-${service.color}-900`;
-            const iconColor = `text-${service.color}-600`;
+            // Use explicit classes instead of dynamic generation for Tailwind
+            const cardStyles = service.color === 'indigo' 
+              ? { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', icon: 'text-indigo-600', dot: 'bg-indigo-500' }
+              : service.color === 'green'
+              ? { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', icon: 'text-green-600', dot: 'bg-green-500' }
+              : { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', icon: 'text-purple-600', dot: 'bg-purple-500' };
 
             return (
               <Link
@@ -91,9 +93,9 @@ export const ServiceTestDashboard: React.FC = () => {
                 to={service.path}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-slate-200 overflow-hidden group"
               >
-                <div className={`${bgColor} border-b ${borderColor} p-6`}>
-                  <Icon className={`w-12 h-12 ${iconColor} mb-3`} />
-                  <h3 className={`text-xl font-bold ${textColor} mb-2`}>{service.name}</h3>
+                <div className={`${cardStyles.bg} border-b ${cardStyles.border} p-6`}>
+                  <Icon className={`w-12 h-12 ${cardStyles.icon} mb-3`} />
+                  <h3 className={`text-xl font-bold ${cardStyles.text} mb-2`}>{service.name}</h3>
                   <p className="text-sm text-slate-600">{service.description}</p>
                 </div>
 
@@ -108,7 +110,7 @@ export const ServiceTestDashboard: React.FC = () => {
                     <div className="space-y-1">
                       {service.features.map((feature, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-sm text-slate-700">
-                          <div className={`w-1.5 h-1.5 rounded-full bg-${service.color}-500`}></div>
+                          <div className={`w-1.5 h-1.5 rounded-full ${cardStyles.dot}`}></div>
                           {feature}
                         </div>
                       ))}
