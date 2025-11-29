@@ -1,0 +1,876 @@
+openapi: 3.0.3
+info:
+  title: Form Generation API
+  description: API for generating municipal tax forms (Form 27-EXT, 27-ES, 27-NOL, etc.)
+  version: 1.0.0
+  contact:
+    name: MuniTax Support
+    email: support@munitax.com
+
+servers:
+  - url: http://localhost:8082/api/v1
+    description: Local development (pdf-service)
+  - url: https://api.munitax.com/v1
+    description: Production
+
+tags:
+  - name: Form Generation
+    description: Generate individual tax forms
+  - name: Filing Packages
+    description: Assemble complete filing packages
+  - name: Form Templates
+    description: Manage form templates (admin)
+  - name: Form History
+    description: View form generation history and audit trail
+
+paths:
+  /forms/generate:
+    post:
+      tags:
+        - Form Generation
+      summary: Generate a single tax form
+      description: Generates a PDF tax form (27-EXT, 27-ES, 27-NOL, etc.) with data pre-filled from return
+      operationId: generateForm
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateFormRequest'
+            examples:
+              extensionRequest:
+                summary: Generate Form 27-EXT
+                value:
+                  formCode: "27-EXT"
+                  returnId: "return-uuid-123"
+                  taxYear: 2024
+                  isDraft: true
+                  addWatermark: true
+              estimatedTaxVoucher:
+                summary: Generate Form 27-ES Q1
+                value:
+                  formCode: "27-ES"
+                  returnId: "return-uuid-123"
+                  taxYear: 2024
+                  quarter: 1
+                  isDraft: false
+                  addWatermark: false
+      responses:
+        '201':
+          description: Form generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedFormResponse'
+              example:
+                generatedFormId: "form-uuid-789"
+                formCode: "27-EXT"
+                formName: "Extension Request"
+                version: 1
+                status: "DRAFT"
+                pdfFilePath: "s3://munitax-forms/dublin/2024/return-123/27-EXT-v1.pdf"
+                downloadUrl: "http://localhost:8082/api/v1/forms/download/form-uuid-789"
+                pageCount: 2
+                fileSizeBytes: 87654
+                isWatermarked: true
+                generatedAt: "2024-04-10T10:05:00Z"
+        '400':
+          description: Invalid request (missing required data)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "VALIDATION_ERROR"
+                message: "Required data missing for Form 27-EXT"
+                details:
+                  - field: "extension_request.estimated_tax_liability"
+                    error: "Field is required"
+        '404':
+          description: Template not found for form code and year
+        '500':
+          description: PDF generation failed
+
+  /forms/batch-generate:
+    post:
+      tags:
+        - Form Generation
+      summary: Generate multiple forms in batch
+      description: Generates multiple forms concurrently (e.g., all 4 estimated tax vouchers)
+      operationId: batchGenerateForms
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchGenerateRequest'
+            example:
+              formRequests:
+                - formCode: "27-ES"
+                  quarter: 1
+                  returnId: "return-uuid-123"
+                  taxYear: 2024
+                - formCode: "27-ES"
+                  quarter: 2
+                  returnId: "return-uuid-123"
+                  taxYear: 2024
+                - formCode: "27-ES"
+                  quarter: 3
+                  returnId: "return-uuid-123"
+                  taxYear: 2024
+                - formCode: "27-ES"
+                  quarter: 4
+                  returnId: "return-uuid-123"
+                  taxYear: 2024
+      responses:
+        '201':
+          description: Batch generation initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchGenerateResponse'
+
+  /forms/download/{formId}:
+    get:
+      tags:
+        - Form Generation
+      summary: Download generated form PDF
+      description: Downloads the PDF file for a generated form
+      operationId: downloadForm
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: formId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Form not found
+        '403':
+          description: Access denied
+
+  /forms/{formId}/finalize:
+    post:
+      tags:
+        - Form Generation
+      summary: Finalize a draft form
+      description: Removes watermark, optionally flattens fields, and marks form as FINAL
+      operationId: finalizeForm
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: formId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalizeFormRequest'
+      responses:
+        '200':
+          description: Form finalized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedFormResponse'
+
+  /forms/{formId}/regenerate:
+    post:
+      tags:
+        - Form Generation
+      summary: Regenerate form with updated data
+      description: Creates new version of form with current data from database
+      operationId: regenerateForm
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: formId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  example: "Updated estimated tax amount based on Q1 actuals"
+              required:
+                - reason
+      responses:
+        '201':
+          description: Form regenerated (new version created)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedFormResponse'
+
+  /forms/{formId}/history:
+    get:
+      tags:
+        - Form History
+      summary: Get form generation history
+      description: Returns all versions of a form with generation timestamps and status changes
+      operationId: getFormHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: formId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Form history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormHistoryResponse'
+
+  /forms:
+    get:
+      tags:
+        - Form Generation
+      summary: List generated forms
+      description: Returns all forms for a return or business with optional filtering
+      operationId: listForms
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: returnId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: businessId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: formCode
+          in: query
+          schema:
+            type: string
+            example: "27-EXT"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [DRAFT, FINAL, SUBMITTED, AMENDED, SUPERSEDED]
+        - name: taxYear
+          in: query
+          schema:
+            type: integer
+            example: 2024
+      responses:
+        '200':
+          description: List of forms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormListResponse'
+
+  /packages/assemble:
+    post:
+      tags:
+        - Filing Packages
+      summary: Assemble complete filing package
+      description: Merges multiple forms into single PDF with TOC and bookmarks
+      operationId: assemblePackage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssemblePackageRequest'
+            example:
+              returnId: "return-uuid-123"
+              taxYear: 2024
+              packageType: "ORIGINAL"
+              includeFormIds:
+                - "form-27-uuid"
+                - "form-27Y-uuid"
+                - "form-27X-uuid"
+                - "form-27NOL-uuid"
+              includeCoverPage: true
+              includeTableOfContents: true
+              addBookmarks: true
+              optimizeFileSize: true
+              targetFileSizeMB: 10
+      responses:
+        '201':
+          description: Package assembled (synchronous)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilingPackageResponse'
+        '202':
+          description: Package queued for assembly (asynchronous for large packages)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilingPackageQueuedResponse'
+
+  /packages/{packageId}/validate:
+    post:
+      tags:
+        - Filing Packages
+      summary: Validate filing package
+      description: Runs cross-form validation rules on package
+      operationId: validatePackage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageValidationResponse'
+
+  /packages/download/{packageId}:
+    get:
+      tags:
+        - Filing Packages
+      summary: Download filing package PDF
+      description: Downloads the complete merged PDF package
+      operationId: downloadPackage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: PDF file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  /packages/{packageId}/submit:
+    post:
+      tags:
+        - Filing Packages
+      summary: Submit filing package
+      description: Marks package as submitted and records confirmation number
+      operationId: submitPackage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                submissionMethod:
+                  type: string
+                  enum: [ELECTRONIC, MAIL, IN_PERSON]
+                confirmationNumber:
+                  type: string
+      responses:
+        '200':
+          description: Package submitted successfully
+
+  /templates:
+    get:
+      tags:
+        - Form Templates
+      summary: List form templates (admin)
+      description: Returns all available form templates
+      operationId: listTemplates
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: formCode
+          in: query
+          schema:
+            type: string
+        - name: taxYear
+          in: query
+          schema:
+            type: integer
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FormTemplate'
+
+    post:
+      tags:
+        - Form Templates
+      summary: Upload new form template (admin)
+      description: Uploads a new PDF template with field mappings
+      operationId: uploadTemplate
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                formCode:
+                  type: string
+                formName:
+                  type: string
+                taxYear:
+                  type: integer
+                fieldMappings:
+                  type: string
+                  description: JSON string of field mappings
+      responses:
+        '201':
+          description: Template uploaded successfully
+
+  /audit/forms/{formId}:
+    get:
+      tags:
+        - Form History
+      summary: Get audit trail for form
+      description: Returns immutable audit log of all actions on form
+      operationId: getFormAudit
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: formId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Audit trail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditTrailResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    GenerateFormRequest:
+      type: object
+      required:
+        - formCode
+        - returnId
+        - taxYear
+      properties:
+        formCode:
+          type: string
+          enum: ["27", "27-EXT", "27-ES", "27-NOL", "27-W1", "27-Y", "27-X", "27-PA", "27-AMD"]
+          description: Form identifier
+        returnId:
+          type: string
+          format: uuid
+          description: Tax return ID
+        taxYear:
+          type: integer
+          minimum: 2020
+          maximum: 2030
+          example: 2024
+        quarter:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Quarter number (for Form 27-ES only)
+        isDraft:
+          type: boolean
+          default: true
+          description: Generate as draft (editable fields)
+        addWatermark:
+          type: boolean
+          default: true
+          description: Add DRAFT watermark
+        templateId:
+          type: string
+          format: uuid
+          description: Specific template to use (optional, defaults to current template)
+
+    GeneratedFormResponse:
+      type: object
+      properties:
+        generatedFormId:
+          type: string
+          format: uuid
+        formCode:
+          type: string
+        formName:
+          type: string
+        version:
+          type: integer
+        status:
+          type: string
+          enum: [DRAFT, FINAL, SUBMITTED, AMENDED, SUPERSEDED]
+        pdfFilePath:
+          type: string
+        downloadUrl:
+          type: string
+        pageCount:
+          type: integer
+        fileSizeBytes:
+          type: integer
+        isWatermarked:
+          type: boolean
+        isFillable:
+          type: boolean
+        generatedAt:
+          type: string
+          format: date-time
+        generatedBy:
+          type: string
+          format: uuid
+
+    BatchGenerateRequest:
+      type: object
+      required:
+        - formRequests
+      properties:
+        formRequests:
+          type: array
+          items:
+            $ref: '#/components/schemas/GenerateFormRequest'
+          minItems: 1
+          maxItems: 20
+
+    BatchGenerateResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        totalForms:
+          type: integer
+        generatedForms:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeneratedFormResponse'
+        failedForms:
+          type: array
+          items:
+            type: object
+            properties:
+              formCode:
+                type: string
+              error:
+                type: string
+        completedAt:
+          type: string
+          format: date-time
+
+    FinalizeFormRequest:
+      type: object
+      required:
+        - removeWatermark
+        - reason
+      properties:
+        removeWatermark:
+          type: boolean
+        flattenFields:
+          type: boolean
+          default: false
+          description: Make PDF read-only (flatten AcroForm)
+        reason:
+          type: string
+          example: "Reviewed and approved for submission"
+
+    AssemblePackageRequest:
+      type: object
+      required:
+        - returnId
+        - taxYear
+        - includeFormIds
+      properties:
+        returnId:
+          type: string
+          format: uuid
+        taxYear:
+          type: integer
+        packageType:
+          type: string
+          enum: [ORIGINAL, AMENDED, EXTENSION, QUARTERLY]
+        includeFormIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          minItems: 1
+        includeCoverPage:
+          type: boolean
+          default: true
+        includeTableOfContents:
+          type: boolean
+          default: true
+        addBookmarks:
+          type: boolean
+          default: true
+        optimizeFileSize:
+          type: boolean
+          default: true
+        targetFileSizeMB:
+          type: number
+          default: 10
+          description: Target file size for compression
+
+    FilingPackageResponse:
+      type: object
+      properties:
+        packageId:
+          type: string
+          format: uuid
+        returnId:
+          type: string
+          format: uuid
+        taxYear:
+          type: integer
+        totalPages:
+          type: integer
+        fileSizeBytes:
+          type: integer
+        packagePdfPath:
+          type: string
+        downloadUrl:
+          type: string
+        tableOfContents:
+          type: object
+          properties:
+            entries:
+              type: array
+              items:
+                type: object
+                properties:
+                  formName:
+                    type: string
+                  startPage:
+                    type: integer
+                  endPage:
+                    type: integer
+        status:
+          type: string
+          enum: [DRAFT, READY, SUBMITTED, ACCEPTED, REJECTED]
+        createdAt:
+          type: string
+          format: date-time
+
+    FilingPackageQueuedResponse:
+      type: object
+      properties:
+        packageId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [QUEUED]
+        message:
+          type: string
+          example: "Package is being assembled. Estimated time: 30-60 seconds."
+        estimatedCompletionTime:
+          type: string
+          format: date-time
+
+    PackageValidationResponse:
+      type: object
+      properties:
+        packageId:
+          type: string
+          format: uuid
+        isValid:
+          type: boolean
+        validationResults:
+          type: array
+          items:
+            type: object
+            properties:
+              rule:
+                type: string
+              status:
+                type: string
+                enum: [PASS, WARNING, FAIL]
+              message:
+                type: string
+        readyForSubmission:
+          type: boolean
+
+    FormHistoryResponse:
+      type: object
+      properties:
+        formId:
+          type: string
+          format: uuid
+        formCode:
+          type: string
+        versions:
+          type: array
+          items:
+            type: object
+            properties:
+              version:
+                type: integer
+              status:
+                type: string
+              generatedAt:
+                type: string
+                format: date-time
+              generatedBy:
+                type: string
+              isWatermarked:
+                type: boolean
+              supersededBy:
+                type: string
+                format: uuid
+              isCurrent:
+                type: boolean
+
+    FormListResponse:
+      type: object
+      properties:
+        forms:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeneratedFormResponse'
+        totalForms:
+          type: integer
+        totalPages:
+          type: integer
+
+    FormTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        formCode:
+          type: string
+        formName:
+          type: string
+        revisionDate:
+          type: string
+          format: date
+        applicableYears:
+          type: array
+          items:
+            type: integer
+        templateFilePath:
+          type: string
+        pageCount:
+          type: integer
+        category:
+          type: string
+        isActive:
+          type: boolean
+
+    AuditTrailResponse:
+      type: object
+      properties:
+        formId:
+          type: string
+          format: uuid
+        auditEntries:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              action:
+                type: string
+                enum: [GENERATED, REGENERATED, STATUS_CHANGED, DOWNLOADED, WATERMARK_REMOVED, SUBMITTED]
+              actor:
+                type: string
+              actorRole:
+                type: string
+              details:
+                type: object
+              oldValue:
+                type: object
+              newValue:
+                type: object
+              reason:
+                type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              error:
+                type: string

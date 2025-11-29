@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { BusinessProfile, NetProfitReturnData, BusinessScheduleXDetails, BusinessAllocation, TaxFormData, BusinessFederalForm } from '../types';
 import { DEFAULT_BUSINESS_RULES } from '../constants';
 import { api } from '../services/api';
 import { UploadSection } from './UploadSection';
 import { PaymentGateway } from './PaymentGateway';
+import { ScheduleXAccordion } from '../src/components/business/ScheduleXAccordion';
+import { createEmptyScheduleXDetails, recalculateTotals } from '../src/types/scheduleX';
 import { ArrowRight, DollarSign, ChevronLeft, Upload, Table2, TrendingDown, Calculator } from 'lucide-react';
 
 interface Props {
@@ -17,12 +18,8 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
   const [step, setStep] = useState(1);
   const [taxYear, setTaxYear] = useState(new Date().getFullYear() - 1);
 
-  // Data State
-  const [schX, setSchX] = useState<BusinessScheduleXDetails>({
-    fedTaxableIncome: 0,
-    addBacks: { interestAndStateTaxes: 0, wagesCredit: 0, losses1231: 0, guaranteedPayments: 0, expensesOnIntangibleIncome: 0, other: 0 },
-    deductions: { interestIncome: 0, dividends: 0, capitalGains: 0, section179Excess: 0, other: 0 }
-  });
+  // Data State - Use new 27-field Schedule X structure
+  const [schX, setSchX] = useState<BusinessScheduleXDetails>(createEmptyScheduleXDetails(0));
 
   const [schY, setSchY] = useState<BusinessAllocation>({
     property: { dublin: 0, everywhere: 0, pct: 0 },
@@ -41,20 +38,11 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
     // Auto-fill from extracted Business Federal Forms
     const bizForm = forms.find(f => ["Federal 1120", "Federal 1065", "Form 27"].some(t => f.formType.includes(t))) as BusinessFederalForm;
     if (bizForm) {
-      if (bizForm.reconciliation) setSchX(bizForm.reconciliation);
+      if (bizForm.reconciliation) setSchX(recalculateTotals(bizForm.reconciliation));
       if (bizForm.allocation) setSchY(bizForm.allocation);
       alert("Extracted Schedule X & Y data from " + bizForm.formType);
     }
     setStep(2);
-  };
-
-  const calculate5PercentRule = () => {
-    const totalNonTaxable = schX.deductions.interestIncome + schX.deductions.dividends + schX.deductions.capitalGains;
-    const expenseAddBack = totalNonTaxable * DEFAULT_BUSINESS_RULES.intangibleExpenseRate; // 5% default
-    setSchX({
-      ...schX,
-      addBacks: { ...schX.addBacks, expensesOnIntangibleIncome: expenseAddBack }
-    });
   };
 
   const handleCalculate = async () => {
@@ -99,38 +87,56 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
           </div>
         )}
 
-        {/* Step 2: Schedule X */}
+        {/* Step 2: Schedule X Reconciliation (EXPANDED: 27 fields) */}
         {step === 2 && (
           <div className="space-y-6 animate-slideLeft">
-            <h3 className="font-bold text-lg flex items-center gap-2"><Table2 className="w-5 h-5 text-indigo-600" /> 2. Schedule X Reconciliation</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="col-span-2">
-                <label className="block text-sm font-bold text-slate-700">Federal Taxable Income (Form 1120/1065)</label>
-                <input type="number" value={schX.fedTaxableIncome} onChange={e => setSchX({ ...schX, fedTaxableIncome: parseFloat(e.target.value) })} className="w-full border p-3 rounded-xl text-lg font-mono font-bold" />
-              </div>
-
-              {/* Add Backs */}
-              <div className="bg-red-50 p-5 rounded-xl space-y-4 border border-red-100">
-                <h4 className="font-bold text-red-800 text-sm border-b border-red-200 pb-2 mb-2">ADD-BACKS (Not Deductible)</h4>
-                <Input label="Income Taxes (State/Local)" val={schX.addBacks.interestAndStateTaxes} set={v => setSchX({ ...schX, addBacks: { ...schX.addBacks, interestAndStateTaxes: v } })} />
-                <Input label="Capital Losses (1231)" val={schX.addBacks.losses1231} set={v => setSchX({ ...schX, addBacks: { ...schX.addBacks, losses1231: v } })} />
-                <Input label="Guaranteed Payments (Partners)" val={schX.addBacks.guaranteedPayments} set={v => setSchX({ ...schX, addBacks: { ...schX.addBacks, guaranteedPayments: v } })} />
-
-                <div className="relative">
-                  <Input label="Exp. on Non-Taxable Income (5% Rule)" val={schX.addBacks.expensesOnIntangibleIncome} set={v => setSchX({ ...schX, addBacks: { ...schX.addBacks, expensesOnIntangibleIncome: v } })} />
-                  <button onClick={calculate5PercentRule} className="absolute right-0 top-0 text-xs text-indigo-600 font-bold flex items-center gap-1 hover:underline" title="Auto-calculate 5% of Deductions"><Calculator className="w-3 h-3" /> Auto-Calc</button>
-                </div>
-              </div>
-
-              {/* Deductions */}
-              <div className="bg-green-50 p-5 rounded-xl space-y-4 border border-green-100">
-                <h4 className="font-bold text-green-800 text-sm border-b border-green-200 pb-2 mb-2">DEDUCTIONS (Non-Taxable)</h4>
-                <Input label="Interest Income" val={schX.deductions.interestIncome} set={v => setSchX({ ...schX, deductions: { ...schX.deductions, interestIncome: v } })} />
-                <Input label="Dividends" val={schX.deductions.dividends} set={v => setSchX({ ...schX, deductions: { ...schX.deductions, dividends: v } })} />
-                <Input label="Capital Gains" val={schX.deductions.capitalGains} set={v => setSchX({ ...schX, deductions: { ...schX.deductions, capitalGains: v } })} />
-              </div>
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Table2 className="w-5 h-5 text-indigo-600" /> 
+              2. Schedule X Reconciliation (Federal to Municipal)
+            </h3>
+            <p className="text-sm text-slate-600">
+              Reconcile federal taxable income with municipal taxable income using comprehensive M-1 adjustments.
+            </p>
+            
+            {/* Federal Taxable Income Input */}
+            <div className="bg-blue-50 p-5 rounded-xl border border-blue-200">
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Federal Taxable Income (Form 1120 Line 30 / Form 1065 Line 22)
+              </label>
+              <input 
+                type="number" 
+                value={schX.fedTaxableIncome} 
+                onChange={e => {
+                  const updated = { ...schX, fedTaxableIncome: parseFloat(e.target.value) || 0 };
+                  setSchX(recalculateTotals(updated));
+                }}
+                className="w-full border p-3 rounded-xl text-lg font-mono font-bold" 
+                placeholder="0.00"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Enter net income from your federal return before municipal adjustments
+              </p>
             </div>
-            <div className="flex justify-end"><button onClick={() => setStep(3)} className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Next: Allocation</button></div>
+
+            {/* Schedule X Accordion with all 27 fields */}
+            <ScheduleXAccordion
+              scheduleX={schX}
+              onUpdate={(updated) => setSchX(recalculateTotals(updated))}
+              entityType={profile.entityType as 'C-CORP' | 'PARTNERSHIP' | 'S-CORP'}
+              className="mt-6"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setStep(1)} className="px-4 py-2 border rounded-lg">
+                Back
+              </button>
+              <button 
+                onClick={() => setStep(3)} 
+                className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold"
+              >
+                Next: Allocation & Credits
+              </button>
+            </div>
           </div>
         )}
 

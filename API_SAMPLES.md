@@ -430,3 +430,424 @@ After implementing the REST controllers, these endpoints will be available at:
 - `POST /api/v1/w1-filings/{id}/amend` - File amended W-1
 - `GET /api/v1/w1-filings/{id}/penalties` - Calculate penalties
 - `GET /api/v1/cumulative-totals` - Query YTD cumulative totals
+
+---
+
+# Auditor Workflow API - Sample Requests and Responses
+
+This section documents the auditor workflow endpoints for reviewing, approving, and rejecting tax returns.
+
+## Base URL
+```
+http://localhost:8085/api/v1/audit
+```
+
+---
+
+## 1. Get Audit Queue
+
+Retrieve the submission queue with filtering, sorting, and pagination.
+
+### Endpoint
+```
+GET /queue?status=PENDING&priority=HIGH&page=0&size=20&sortBy=submissionDate&sortDirection=DESC
+```
+
+### Query Parameters
+- `status` (optional): Filter by status (PENDING, IN_REVIEW, AWAITING_DOCUMENTATION, APPROVED, REJECTED)
+- `priority` (optional): Filter by priority (LOW, MEDIUM, HIGH)
+- `auditorId` (optional): Filter by assigned auditor
+- `tenantId` (optional): Filter by tenant
+- `fromDate` (optional): Filter by submission date (epoch milliseconds)
+- `toDate` (optional): Filter by submission date (epoch milliseconds)
+- `page` (default: 0): Page number
+- `size` (default: 20): Items per page
+- `sortBy` (default: submissionDate): Sort field
+- `sortDirection` (default: DESC): Sort direction (ASC/DESC)
+
+### Success Response (200 OK)
+```json
+{
+  "content": [
+    {
+      "queueId": "q-123",
+      "returnId": "ret-456",
+      "priority": "HIGH",
+      "status": "PENDING",
+      "submissionDate": "2024-11-15T10:30:00Z",
+      "assignedAuditorId": null,
+      "riskScore": 75,
+      "flaggedIssuesCount": 3,
+      "daysInQueue": 5,
+      "taxpayerName": "ABC Corp",
+      "returnType": "BUSINESS",
+      "taxYear": "2024",
+      "taxDue": 125000.00
+    }
+  ],
+  "totalElements": 125,
+  "totalPages": 7,
+  "size": 20,
+  "number": 0
+}
+```
+
+---
+
+## 2. Get Queue Statistics
+
+Get summary statistics for the audit queue.
+
+### Endpoint
+```
+GET /queue/stats
+```
+
+### Success Response (200 OK)
+```json
+{
+  "pending": 45,
+  "highPriority": 12
+}
+```
+
+---
+
+## 3. Assign Auditor
+
+Assign a return to an auditor.
+
+### Endpoint
+```
+POST /assign
+```
+
+### Request Body
+```json
+{
+  "queueId": "q-123",
+  "auditorId": "aud-789",
+  "assignedBy": "supervisor-001"
+}
+```
+
+### Success Response (200 OK)
+```json
+{
+  "queueId": "q-123",
+  "returnId": "ret-456",
+  "priority": "HIGH",
+  "status": "IN_REVIEW",
+  "assignedAuditorId": "aud-789",
+  "assignmentDate": "2024-11-20T14:00:00Z",
+  "reviewStartedDate": "2024-11-20T14:00:00Z"
+}
+```
+
+---
+
+## 4. Approve Return
+
+Approve a tax return with e-signature.
+
+### Endpoint
+```
+POST /approve
+```
+
+### Request Body
+```json
+{
+  "returnId": "ret-456",
+  "auditorId": "aud-789",
+  "eSignature": "base64EncodedSignature=="
+}
+```
+
+### Success Response (200 OK)
+```json
+{
+  "status": "success",
+  "message": "Return approved successfully"
+}
+```
+
+---
+
+## 5. Reject Return
+
+Reject a tax return with detailed explanation.
+
+### Endpoint
+```
+POST /reject
+```
+
+### Request Body
+```json
+{
+  "returnId": "ret-456",
+  "auditorId": "aud-789",
+  "reason": "MISSING_SCHEDULES",
+  "detailedExplanation": "Schedule X (book-tax reconciliation) is missing. The reported federal taxable income does not match the amounts on the federal return. Please complete Schedule X showing all book-tax adjustments and resubmit.",
+  "resubmitDeadline": "2024-12-15"
+}
+```
+
+### Success Response (200 OK)
+```json
+{
+  "status": "success",
+  "message": "Return rejected successfully"
+}
+```
+
+---
+
+## 6. Request Additional Documentation
+
+Request additional supporting documents from taxpayer.
+
+### Endpoint
+```
+POST /request-docs
+```
+
+### Request Body
+```json
+{
+  "returnId": "ret-456",
+  "auditorId": "aud-789",
+  "documentType": "DEPRECIATION_SCHEDULE",
+  "description": "Please provide detailed depreciation schedules for all assets over $50,000 including purchase dates, cost basis, and depreciation method.",
+  "deadline": "2024-12-01",
+  "tenantId": "tenant-001"
+}
+```
+
+### Success Response (200 OK)
+```json
+{
+  "requestId": "doc-req-001",
+  "returnId": "ret-456",
+  "auditorId": "aud-789",
+  "requestDate": "2024-11-20T15:00:00Z",
+  "documentType": "DEPRECIATION_SCHEDULE",
+  "description": "Please provide detailed depreciation schedules...",
+  "deadline": "2024-12-01",
+  "status": "PENDING",
+  "uploadedFiles": []
+}
+```
+
+---
+
+## 7. Get Audit Trail
+
+Retrieve complete audit trail for a return.
+
+### Endpoint
+```
+GET /trail/{returnId}
+```
+
+### Success Response (200 OK)
+```json
+[
+  {
+    "trailId": "trail-001",
+    "returnId": "ret-456",
+    "eventType": "SUBMISSION",
+    "userId": "user-123",
+    "timestamp": "2024-11-15T10:30:00Z",
+    "eventDetails": "Return submitted and added to audit queue"
+  },
+  {
+    "trailId": "trail-002",
+    "returnId": "ret-456",
+    "eventType": "ASSIGNMENT",
+    "userId": "supervisor-001",
+    "timestamp": "2024-11-20T14:00:00Z",
+    "eventDetails": "Return assigned to auditor aud-789"
+  },
+  {
+    "trailId": "trail-003",
+    "returnId": "ret-456",
+    "eventType": "APPROVAL",
+    "userId": "aud-789",
+    "timestamp": "2024-11-22T16:30:00Z",
+    "eventDetails": "Return approved by auditor",
+    "digitalSignature": "sha256hash..."
+  }
+]
+```
+
+---
+
+## 8. Get Audit Report
+
+Retrieve automated audit report with risk assessment.
+
+### Endpoint
+```
+GET /report/{returnId}
+```
+
+### Success Response (200 OK)
+```json
+{
+  "reportId": "rpt-001",
+  "returnId": "ret-456",
+  "generatedDate": "2024-11-15T10:35:00Z",
+  "riskScore": 75,
+  "riskLevel": "HIGH",
+  "flaggedItems": [
+    "Income decreased 45% year-over-year",
+    "Deductions 150% higher than industry average",
+    "W-2 Box 18 (local wages) does not match Box 1 (federal wages)"
+  ],
+  "recommendedActions": [
+    "Request general ledger",
+    "Verify depreciation schedules",
+    "Review year-over-year income variance"
+  ],
+  "auditorOverride": false
+}
+```
+
+---
+
+## 9. Get Auditor Workload
+
+Get all returns assigned to a specific auditor.
+
+### Endpoint
+```
+GET /workload/{auditorId}
+```
+
+### Success Response (200 OK)
+```json
+[
+  {
+    "queueId": "q-123",
+    "returnId": "ret-456",
+    "priority": "HIGH",
+    "status": "IN_REVIEW",
+    "assignedAuditorId": "aud-789",
+    "daysInQueue": 5,
+    "taxpayerName": "ABC Corp"
+  },
+  {
+    "queueId": "q-124",
+    "returnId": "ret-457",
+    "priority": "MEDIUM",
+    "status": "IN_REVIEW",
+    "assignedAuditorId": "aud-789",
+    "daysInQueue": 2,
+    "taxpayerName": "XYZ Inc"
+  }
+]
+```
+
+---
+
+## 10. Update Priority
+
+Change the priority of a queue item.
+
+### Endpoint
+```
+POST /priority
+```
+
+### Request Body
+```json
+{
+  "queueId": "q-123",
+  "priority": "HIGH",
+  "userId": "supervisor-001"
+}
+```
+
+### Success Response (200 OK)
+```json
+{
+  "queueId": "q-123",
+  "returnId": "ret-456",
+  "priority": "HIGH",
+  "status": "PENDING"
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+```json
+{
+  "error": "NOT_FOUND",
+  "message": "Queue entry not found"
+}
+```
+
+### 403 Forbidden
+```json
+{
+  "error": "FORBIDDEN",
+  "message": "User does not have AUDITOR role"
+}
+```
+
+### 400 Bad Request
+```json
+{
+  "error": "BAD_REQUEST",
+  "message": "E-signature is required for approval"
+}
+```
+
+---
+
+## Workflow Examples
+
+### Example 1: Approve a Return
+
+1. Get queue items: `GET /queue?status=PENDING`
+2. Assign to yourself: `POST /assign` with your auditorId
+3. Review return details: `GET /queue/{returnId}`
+4. Check audit report: `GET /report/{returnId}`
+5. Approve: `POST /approve` with e-signature
+
+### Example 2: Reject a Return
+
+1. Get your workload: `GET /workload/{auditorId}`
+2. Review return: `GET /queue/{returnId}`
+3. Review audit trail: `GET /trail/{returnId}`
+4. Reject with details: `POST /reject` with reason and explanation
+
+### Example 3: Request Additional Documents
+
+1. Start reviewing: `POST /start-review`
+2. Identify missing documents
+3. Request documents: `POST /request-docs` with details
+4. System updates status to AWAITING_DOCUMENTATION
+5. Taxpayer uploads docs
+6. Mark received: `POST /document-requests/{requestId}/received`
+7. Continue review
+
+---
+
+## Role-Based Access
+
+Different user roles have different permissions:
+
+| Role | Permissions |
+|------|------------|
+| AUDITOR | Review returns, request docs, recommend approval/rejection |
+| SENIOR_AUDITOR | All AUDITOR permissions + approve/reject returns <$50K |
+| SUPERVISOR | All permissions + approve/reject any return + reassign + override priority |
+| MANAGER | All permissions + generate compliance reports + configure audit rules |
+| ADMIN | System configuration + user management |
+

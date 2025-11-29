@@ -24,9 +24,9 @@
 
 **Purpose**: Project initialization and configuration for 27-field Schedule X expansion
 
-- [ ] T001 Update BusinessScheduleXDetails.java to support both old 6-field and new 27-field format (runtime conversion from data-model.md)
-- [ ] T002 [P] Create scheduleXConstants.ts with field definitions, help text, and validation rules (27 fields × metadata)
-- [ ] T003 [P] Update TypeScript interfaces in src/types/scheduleX.ts (AddBacks, Deductions, CalculatedFields, Metadata)
+- [X] T001 Update BusinessScheduleXDetails.java to support both old 6-field and new 27-field format (runtime conversion from data-model.md)
+- [X] T002 [P] Create scheduleXConstants.ts with field definitions, help text, and validation rules (27 fields × metadata)
+- [X] T003 [P] Update TypeScript interfaces in src/types/scheduleX.ts (AddBacks, Deductions, CalculatedFields, Metadata)
 - [ ] T004 [P] Configure Gemini Vision API bounding box extraction in extraction-service application.properties
 
 ---
@@ -39,36 +39,36 @@
 
 ### Backend Foundation
 
-- [ ] T005 Implement BusinessScheduleXDetails backward compatibility conversion in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/BusinessScheduleXService.java (Research R2 runtime conversion)
-- [ ] T006 [P] Create ScheduleXCalculationService.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ (FR-028, FR-029, FR-030 calculations)
-- [ ] T007 [P] Create ScheduleXValidationService.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ (FR-033 federal income match, FR-034 variance flag)
-- [ ] T008 Update BusinessTaxCalculator.java to use expanded BusinessScheduleXDetails in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/BusinessTaxCalculator.java
+- [X] T005 Implement BusinessScheduleXDetails backward compatibility conversion in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/BusinessScheduleXService.java (Research R2 runtime conversion)
+- [X] T006 [P] Create ScheduleXCalculationService.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ (FR-028, FR-029, FR-030 calculations)
+- [X] T007 [P] Create ScheduleXValidationService.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ (FR-033 federal income match, FR-034 variance flag)
+- [X] T008 Update BusinessTaxCalculator.java to use expanded BusinessScheduleXDetails in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/BusinessTaxCalculator.java
 
 ### Backend Auto-Calculation Helpers
 
-- [ ] T009 Create ScheduleXAutoCalculationService.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ (Research R3 hybrid approach for complex calculations)
-- [ ] T010 [P] Implement charitable contribution 10% limit calculation with carryforward in ScheduleXAutoCalculationService.java (FR-016, requires DB query)
-- [ ] T011 [P] Implement officer compensation reasonableness test in ScheduleXAutoCalculationService.java (FR-055 from US3)
+- [X] T009 Create ScheduleXAutoCalculationService.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/ (Research R3 hybrid approach for complex calculations)
+- [X] T010 [P] Implement charitable contribution 10% limit calculation with carryforward in ScheduleXAutoCalculationService.java (FR-016, requires DB query)
+- [X] T011 [P] Implement officer compensation reasonableness test in ScheduleXAutoCalculationService.java (FR-055 from US3)
 
 ### Frontend Foundation
 
-- [ ] T012 Create scheduleXCalculations.ts utility in src/utils/ (Research R3 frontend simple calculations: meals, 5% Rule, related-party)
-- [ ] T013 [P] Create scheduleXFormatting.ts utility in src/utils/ (currency formatting, percentages for display)
-- [ ] T014 [P] Create CollapsibleAccordion.tsx reusable component in src/components/shared/
-- [ ] T015 Create ScheduleXAccordion.tsx in src/components/business/ (collapsible Add-Backs vs Deductions sections - FR-031)
+- [X] T012 Create scheduleXCalculations.ts utility in src/utils/ (Research R3 frontend simple calculations: meals, 5% Rule, related-party)
+- [X] T013 [P] Create scheduleXFormatting.ts utility in src/utils/ (currency formatting, percentages for display)
+- [X] T014 [P] Create CollapsibleAccordion.tsx reusable component in src/components/shared/
+- [X] T015 Create ScheduleXAccordion.tsx in src/components/business/ (collapsible Add-Backs vs Deductions sections - FR-031)
 
 ### Frontend Field Components
 
-- [ ] T016 [P] Create ScheduleXFieldInput.tsx in src/components/business/ (reusable input with help icon, auto-calc button, confidence score display)
-- [ ] T017 [P] Create ScheduleXHelpTooltip.tsx in src/components/business/ (help tooltip explaining each adjustment - FR-031)
-- [ ] T018 [P] Create ScheduleXConfidenceScore.tsx in src/components/business/ (displays AI confidence score, clickable to view PDF bounding box - Research R1)
-- [ ] T019 [P] Create ScheduleXAutoCalcButton.tsx in src/components/business/ (auto-calculation button for 5% Rule, meals, etc. - FR-031)
+- [X] T016 [P] Create ScheduleXFieldInput.tsx in src/components/business/ (reusable input with help icon, auto-calc button, confidence score display)
+- [X] T017 [P] Create ScheduleXHelpTooltip.tsx in src/components/business/ (help tooltip explaining each adjustment - FR-031)
+- [X] T018 [P] Create ScheduleXConfidenceScore.tsx in src/components/business/ (displays AI confidence score, clickable to view PDF bounding box - Research R1)
+- [X] T019 [P] Create ScheduleXAutoCalcButton.tsx in src/components/business/ (auto-calculation button for 5% Rule, meals, etc. - FR-031)
 
 ### API Endpoints Foundation
 
 - [ ] T020 Update NetProfitsController.java to add Schedule X endpoints in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ (GET, PUT /api/net-profits/{returnId}/schedule-x)
-- [ ] T021 [P] Create ScheduleXController.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ (POST /auto-calculate, GET /multi-year-comparison, POST /import-from-federal)
-- [ ] T022 [P] Create DTOs: BusinessScheduleXDetailsDto, ScheduleXAutoCalcRequest, MultiYearComparisonDto, ScheduleXAutoCalcResponse in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/
+- [X] T021 [P] Create ScheduleXController.java in backend/tax-engine-service/src/main/java/com/munitax/taxengine/controller/ (POST /auto-calculate, GET /multi-year-comparison, POST /import-from-federal)
+- [X] T022 [P] Create DTOs: BusinessScheduleXDetailsDto, ScheduleXAutoCalcRequest, MultiYearComparisonDto, ScheduleXAutoCalcResponse in backend/tax-engine-service/src/main/java/com/munitax/taxengine/dto/
 
 ### AI Extraction Foundation
 
