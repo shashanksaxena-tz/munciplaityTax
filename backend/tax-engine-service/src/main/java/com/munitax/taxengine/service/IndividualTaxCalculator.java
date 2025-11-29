@@ -260,6 +260,7 @@ public class IndividualTaxCalculator {
         final double BOX_VARIANCE_THRESHOLD = 20.0; // 20% variance allowed
         final double MAX_WITHHOLDING_RATE = 3.0; // 3.0% maximum rate
         final double HIGH_WAGE_THRESHOLD = 25000.0; // Threshold for zero withholding warning
+        final double DUPLICATE_WAGE_THRESHOLD = 10.0; // Allow $10 difference for rounding/corrections
 
         for (int i = 0; i < w2Forms.size(); i++) {
             W2Form w2 = w2Forms.get(i);
@@ -293,25 +294,8 @@ public class IndividualTaxCalculator {
 
             // FR-002: Withholding rate between 0% and 3.0%
             if (box18 > 0) {
-                double withholdingRate = (box19 / box18) * 100;
-                if (withholdingRate > MAX_WITHHOLDING_RATE) {
-                    issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
-                            "DISC-" + counter++,
-                            "FR-002",
-                            "W-2 Validation",
-                            "W-2 Withholding Rate (" + w2.employer() + ")",
-                            box18,
-                            box19,
-                            box19,
-                            withholdingRate,
-                            "MEDIUM",
-                            String.format("Withholding rate of %.2f%% exceeds maximum rate of %.1f%%. Employer may have over-withheld.",
-                                    withholdingRate, MAX_WITHHOLDING_RATE),
-                            "Contact employer to verify correct withholding rate or check Box 19 entry.",
-                            false,
-                            null,
-                            null));
-                } else if (withholdingRate == 0 && box18 > HIGH_WAGE_THRESHOLD) {
+                // Check for zero withholding first
+                if (box19 == 0 && box18 > HIGH_WAGE_THRESHOLD) {
                     issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                             "DISC-" + counter++,
                             "FR-002",
@@ -327,6 +311,27 @@ public class IndividualTaxCalculator {
                             false,
                             null,
                             null));
+                } else if (box19 > 0) {
+                    // Check withholding rate only if there is withholding
+                    double withholdingRate = (box19 / box18) * 100;
+                    if (withholdingRate > MAX_WITHHOLDING_RATE) {
+                        issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
+                                "DISC-" + counter++,
+                                "FR-002",
+                                "W-2 Validation",
+                                "W-2 Withholding Rate (" + w2.employer() + ")",
+                                box18,
+                                box19,
+                                box19,
+                                withholdingRate,
+                                "MEDIUM",
+                                String.format("Withholding rate of %.2f%% exceeds maximum rate of %.1f%%. Employer may have over-withheld.",
+                                        withholdingRate, MAX_WITHHOLDING_RATE),
+                                "Contact employer to verify correct withholding rate or check Box 19 entry.",
+                                false,
+                                null,
+                                null));
+                    }
                 }
             }
 
@@ -335,7 +340,7 @@ public class IndividualTaxCalculator {
                 W2Form other = w2Forms.get(j);
                 if (w2.employerEin() != null && w2.employerEin().equals(other.employerEin()) &&
                     Math.abs((w2.federalWages() != null ? w2.federalWages() : 0) - 
-                             (other.federalWages() != null ? other.federalWages() : 0)) < 1) {
+                             (other.federalWages() != null ? other.federalWages() : 0)) < DUPLICATE_WAGE_THRESHOLD) {
                     issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                             "DISC-" + counter++,
                             "FR-003",
@@ -387,7 +392,6 @@ public class IndividualTaxCalculator {
         final double SAFE_HARBOR_PERCENT = 0.90; // 90% safe harbor rule
         final double PASSIVE_LOSS_AGI_THRESHOLD = 150000.0; // IRS passive loss threshold
 
-        double totalScheduleIncome = 0;
         int rentalPropertyCount = 0;
         int rentalPropertiesWithData = 0;
         double totalRentalLoss = 0;
@@ -405,7 +409,6 @@ public class IndividualTaxCalculator {
             // FR-006: Schedule C estimated tax validation
             if (form instanceof ScheduleC schedC) {
                 double netProfit = schedC.netProfit() != null ? schedC.netProfit() : 0;
-                totalScheduleIncome += netProfit;
                 
                 if (netProfit > SCHEDULE_C_THRESHOLD) {
                     // Calculate required estimated payment using safe harbor
@@ -434,11 +437,17 @@ public class IndividualTaxCalculator {
                 if (schedE.rentals() != null) {
                     rentalPropertyCount = schedE.rentals().size();
                     for (ScheduleE.RentalProperty rental : schedE.rentals()) {
-                        if (rental.streetAddress() != null && !rental.streetAddress().isEmpty()) {
+                        // Check if property has complete address data
+                        boolean hasCompleteAddress = rental.streetAddress() != null && 
+                                                    !rental.streetAddress().isEmpty() &&
+                                                    rental.city() != null &&
+                                                    !rental.city().isEmpty();
+                        
+                        if (hasCompleteAddress) {
                             rentalPropertiesWithData++;
                             
                             // FR-008: Check if property is outside Dublin
-                            if (rental.city() != null && !rental.city().toLowerCase().contains("dublin")) {
+                            if (!rental.city().toLowerCase().contains("dublin")) {
                                 issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                                         "DISC-" + counter++,
                                         "FR-008",

@@ -48,7 +48,7 @@ export const DiscrepancyView: React.FC<DiscrepancyViewProps> = ({ report, onAcce
     const isExpanded = expandedIssues[issue.issueId];
 
     return (
-      <div key={issue.issueId} className={`${colors.bg} border ${colors.border} rounded-lg p-4 space-y-3`}>
+      <div className={`${colors.bg} border ${colors.border} rounded-lg p-4 space-y-3`}>
         {/* Issue Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1">
@@ -214,7 +214,11 @@ export const DiscrepancyView: React.FC<DiscrepancyViewProps> = ({ report, onAcce
       {highIssues.length > 0 && (
         <div className="space-y-3">
           <h5 className="font-bold text-red-900 text-sm uppercase tracking-wide">High Severity - Must Fix</h5>
-          {highIssues.map(issue => renderIssue(issue, getSeverityColor('HIGH')))}
+          {highIssues.map(issue => (
+            <React.Fragment key={issue.issueId}>
+              {renderIssue(issue, getSeverityColor('HIGH'))}
+            </React.Fragment>
+          ))}
         </div>
       )}
 
@@ -222,7 +226,11 @@ export const DiscrepancyView: React.FC<DiscrepancyViewProps> = ({ report, onAcce
       {mediumIssues.length > 0 && (
         <div className="space-y-3">
           <h5 className="font-bold text-yellow-900 text-sm uppercase tracking-wide">Medium Severity - Warnings</h5>
-          {mediumIssues.map(issue => renderIssue(issue, getSeverityColor('MEDIUM')))}
+          {mediumIssues.map(issue => (
+            <React.Fragment key={issue.issueId}>
+              {renderIssue(issue, getSeverityColor('MEDIUM'))}
+            </React.Fragment>
+          ))}
         </div>
       )}
 
@@ -230,7 +238,11 @@ export const DiscrepancyView: React.FC<DiscrepancyViewProps> = ({ report, onAcce
       {lowIssues.length > 0 && (
         <div className="space-y-3">
           <h5 className="font-bold text-blue-900 text-sm uppercase tracking-wide">Low Severity - Informational</h5>
-          {lowIssues.map(issue => renderIssue(issue, getSeverityColor('LOW')))}
+          {lowIssues.map(issue => (
+            <React.Fragment key={issue.issueId}>
+              {renderIssue(issue, getSeverityColor('LOW'))}
+            </React.Fragment>
+          ))}
         </div>
       )}
     </div>
