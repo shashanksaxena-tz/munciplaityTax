@@ -54,13 +54,14 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() {
         testUser = new User();
-        testUser.setId(1L);
+        testUser.setId("test-id-123");
         testUser.setEmail("test@example.com");
-        testUser.setPassword(passwordEncoder.encode("password123"));
+        testUser.setPasswordHash(passwordEncoder.encode("password123"));
         testUser.setFirstName("Test");
         testUser.setLastName("User");
-        testUser.setRoles(Set.of("ROLE_INDIVIDUAL"));
-        testUser.setEnabled(true);
+        testUser.setPhoneNumber("555-1234");
+        testUser.addRole(User.UserRole.ROLE_INDIVIDUAL);
+        testUser.setActive(true);
     }
 
     @Test
@@ -69,7 +70,7 @@ class AuthControllerTest {
         
         UserDetails userDetails = org.springframework.security.core.userdetails.User
             .withUsername("test@example.com")
-            .password(testUser.getPassword())
+            .password(testUser.getPasswordHash())
             .authorities("ROLE_INDIVIDUAL")
             .build();
         

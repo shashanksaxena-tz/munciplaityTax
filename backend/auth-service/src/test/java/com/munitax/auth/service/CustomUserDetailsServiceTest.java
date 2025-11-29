@@ -31,13 +31,14 @@ class CustomUserDetailsServiceTest {
     @BeforeEach
     void setUp() {
         testUser = new User();
-        testUser.setId(1L);
+        testUser.setId("test-id-123");
         testUser.setEmail("test@example.com");
-        testUser.setPassword("encodedPassword");
+        testUser.setPasswordHash("encodedPassword");
         testUser.setFirstName("Test");
         testUser.setLastName("User");
-        testUser.setRoles(Set.of("ROLE_INDIVIDUAL"));
-        testUser.setEnabled(true);
+        testUser.setPhoneNumber("555-1234");
+        testUser.addRole(User.UserRole.ROLE_INDIVIDUAL);
+        testUser.setActive(true);
     }
 
     @Test
@@ -64,7 +65,7 @@ class CustomUserDetailsServiceTest {
 
     @Test
     void loadUserByUsername_DisabledUser() {
-        testUser.setEnabled(false);
+        testUser.setActive(false);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername("test@example.com");
@@ -75,7 +76,7 @@ class CustomUserDetailsServiceTest {
 
     @Test
     void loadUserByUsername_MultipleRoles() {
-        testUser.setRoles(Set.of("ROLE_INDIVIDUAL", "ROLE_BUSINESS"));
+        testUser.addRole(User.UserRole.ROLE_BUSINESS);
         when(userRepository.findByEmail("test@example.com")).thenReturn(Optional.of(testUser));
 
         UserDetails userDetails = userDetailsService.loadUserByUsername("test@example.com");
