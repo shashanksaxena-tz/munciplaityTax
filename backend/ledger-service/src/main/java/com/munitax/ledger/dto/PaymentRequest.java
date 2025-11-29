@@ -22,8 +22,6 @@ public class PaymentRequest {
     
     // Credit Card fields
     private String cardNumber;
-    private String cardExpiration;
-    private String cardCvv;
     private String cardholderName;
     private Integer expirationMonth;
     private Integer expirationYear;

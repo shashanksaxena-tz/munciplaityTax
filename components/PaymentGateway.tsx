@@ -51,6 +51,7 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
   const [step, setStep] = useState<'ENTRY' | 'PROCESSING' | 'SUCCESS' | 'ERROR'>('ENTRY');
   const [paymentResponse, setPaymentResponse] = useState<PaymentResponse | null>(null);
   const [showTestCards, setShowTestCards] = useState(false);
+  const [showTestACH, setShowTestACH] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   
   // Form fields
@@ -75,8 +76,9 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
         description: `Tax payment to ${recipient}`,
         ...(method === 'CARD' ? {
           cardNumber,
-          cardExpiration: cardExpiry,
-          cardCvv: cardCvv,
+          cvv: cardCvv,
+          expirationMonth: parseInt(cardExpiry.split('/')[0]),
+          expirationYear: parseInt('20' + cardExpiry.split('/')[1]),
         } : {
           achRouting,
           achAccount,
@@ -314,13 +316,13 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                      <button 
                        type="button"
-                       onClick={() => setShowTestCards(!showTestCards)}
+                       onClick={() => setShowTestACH(!showTestACH)}
                        className="w-full flex items-center justify-between text-sm font-medium text-blue-800"
                      >
                        <span>📋 Test ACH Accounts</span>
-                       <span className="text-xs">{showTestCards ? '▲' : '▼'}</span>
+                       <span className="text-xs">{showTestACH ? '▲' : '▼'}</span>
                      </button>
-                     {showTestCards && (
+                     {showTestACH && (
                        <div className="mt-3 space-y-2 text-xs">
                          {TEST_ACH_ACCOUNTS.map((account, idx) => (
                            <div key={idx} className="py-1 border-b border-blue-100 last:border-0">
