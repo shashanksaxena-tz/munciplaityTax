@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -363,6 +364,28 @@ public class RuleManagementService {
             "approvalStatus", rule.getApprovalStatus().toString(),
             "version", rule.getVersion()
         );
+    }
+    
+    /**
+     * Get rule by ID.
+     */
+    public TaxRule getRule(UUID ruleId) {
+        return ruleRepository.findById(ruleId)
+                .orElseThrow(() -> new RuleNotFoundException("Rule not found: " + ruleId));
+    }
+    
+    /**
+     * Get all rules for a tenant and category.
+     */
+    public List<TaxRule> getRulesByTenantAndCategory(String tenantId, RuleCategory category) {
+        return ruleRepository.findByTenantIdAndCategory(tenantId, category);
+    }
+    
+    /**
+     * Get all rules.
+     */
+    public List<TaxRule> getAllRules() {
+        return ruleRepository.findAll();
     }
     
     // Exception class

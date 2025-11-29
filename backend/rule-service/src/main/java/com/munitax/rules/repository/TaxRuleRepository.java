@@ -142,4 +142,29 @@ public interface TaxRuleRepository extends JpaRepository<TaxRule, UUID> {
         @Param("tenantId") String tenantId,
         @Param("asOfDate") LocalDate asOfDate
     );
+    
+    /**
+     * Find rules by tenant ID and category.
+     */
+    List<TaxRule> findByTenantIdAndCategory(String tenantId, RuleCategory category);
+    
+    /**
+     * Find rules by tenant ID.
+     */
+    List<TaxRule> findByTenantId(String tenantId);
+    
+    /**
+     * Find rules by tenant ID and effective date after.
+     */
+    List<TaxRule> findByTenantIdAndEffectiveDateGreaterThan(String tenantId, LocalDate fromDate);
+    
+    /**
+     * Find rules by rule code and tenant ordered by version descending.
+     */
+    List<TaxRule> findByRuleCodeAndTenantIdOrderByVersionDesc(String ruleCode, String tenantId);
+    
+    /**
+     * Find rules by rule code and tenant.
+     */
+    List<TaxRule> findByRuleCodeAndTenantId(String ruleCode, String tenantId);
 }
