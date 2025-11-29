@@ -46,7 +46,8 @@ public class FormWatermarkUtil {
             contentStream.setGraphicsStateParameters(graphicsState);
             
             // Set font and color
-            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 60);
+            PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+            contentStream.setFont(font, 60);
             contentStream.setNonStrokingColor(Color.RED);
             
             // Calculate position (center, diagonal)

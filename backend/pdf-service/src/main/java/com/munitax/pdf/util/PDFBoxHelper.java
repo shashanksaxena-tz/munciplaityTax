@@ -77,7 +77,8 @@ public class PDFBoxHelper {
             
             String pageText = String.format("Page %d of %d", pageNum, totalPages);
             
-            contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA), 10);
+            PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
+            contentStream.setFont(font, 10);
             PDRectangle mediaBox = page.getMediaBox();
             float x = (mediaBox.getWidth() - 80) / 2;
             float y = 30;

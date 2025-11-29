@@ -1,13 +1,10 @@
 package com.munitax.pdf.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
-import io.hypersistence.utils.hibernate.type.json.JsonType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -12,6 +12,7 @@ import com.munitax.pdf.util.PDFBoxHelper;
 import com.munitax.pdf.util.PDFCompressionUtil;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,7 +192,7 @@ public class FormGenerationService {
         // 3. Flatten the form
         
         // Placeholder: Add a blank page for demonstration
-        document.addPage(new org.apache.pdfbox.pdmodel.PDPage());
+        document.addPage(new PDPage());
         
         // Add watermark if requested
         if (includeWatermark) {
