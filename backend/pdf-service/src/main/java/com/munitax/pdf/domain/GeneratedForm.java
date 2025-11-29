@@ -1,10 +1,7 @@
 package com.munitax.pdf.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -15,10 +12,13 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "generated_forms")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"template", "supersededBy"})
+@EqualsAndHashCode(exclude = {"template", "supersededBy"})
 public class GeneratedForm {
 
     @Id

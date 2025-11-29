@@ -51,8 +51,18 @@ public class PDFBoxHelper {
             }
         }
         
-        // Flatten the form to make it read-only
-        acroForm.flatten();
+        // Do not flatten the form; keep it fillable for manual corrections (FR-005)
+    }
+
+    /**
+     * Fill and flatten PDF form fields
+     */
+    public void fillAndFlattenFormFields(PDDocument document, Map<String, String> fieldData) throws IOException {
+        fillFormFields(document, fieldData);
+        PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
+        if (acroForm != null) {
+            acroForm.flatten();
+        }
     }
 
     /**

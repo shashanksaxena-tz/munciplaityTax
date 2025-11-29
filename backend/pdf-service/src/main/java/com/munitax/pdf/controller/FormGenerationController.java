@@ -24,7 +24,6 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/api/forms")
-@CrossOrigin(origins = "*")
 public class FormGenerationController {
 
     private static final Logger log = LoggerFactory.getLogger(FormGenerationController.class);
@@ -53,7 +52,7 @@ public class FormGenerationController {
             log.error("Error in form generation endpoint: {}", e.getMessage(), e);
             FormGenerationResponse errorResponse = FormGenerationResponse.builder()
                 .success(false)
-                .message("Internal server error: " + e.getMessage())
+                .message("An error occurred while generating the form. Please try again.")
                 .build();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

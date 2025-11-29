@@ -79,6 +79,7 @@ public class FormGenerationService {
      */
     @Transactional
     public FormGenerationResponse generateForm(FormGenerationRequest request) {
+        PDDocument pdfDocument = null;
         try {
             log.info("Generating form {} for return {}", request.getFormCode(), request.getReturnId());
 
@@ -102,7 +103,7 @@ public class FormGenerationService {
             if (!validationErrors.isEmpty()) {
                 return FormGenerationResponse.builder()
                     .success(false)
-                    .message("Validation failed: " + String.join(", ", validationErrors))
+                    .message("Validation failed. Please check all required fields.")
                     .build();
             }
 
@@ -111,7 +112,7 @@ public class FormGenerationService {
             Map<String, String> pdfFieldData = fieldMappingService.mapFormData(request.getFormData(), fieldMappings);
 
             // 4. Generate PDF
-            PDDocument pdfDocument = generatePDFDocument(template, pdfFieldData, request.getIncludeWatermark());
+            pdfDocument = generatePDFDocument(template, pdfFieldData, request.getIncludeWatermark());
 
             // 5. Save PDF to storage
             String pdfFilePath = savePDFToStorage(
@@ -122,10 +123,13 @@ public class FormGenerationService {
                 request.getTaxYear()
             );
 
-            // 6. Calculate version number
+            // 6. Get actual file size after saving
+            long actualFileSize = java.nio.file.Files.size(java.nio.file.Paths.get(pdfFilePath));
+
+            // 7. Calculate version number
             Integer version = calculateNextVersion(request.getReturnId(), request.getFormCode());
 
-            // 7. Save generated form entity
+            // 8. Save generated form entity
             GeneratedForm generatedForm = GeneratedForm.builder()
                 .tenantId(request.getTenantId())
                 .template(template)
@@ -139,17 +143,14 @@ public class FormGenerationService {
                 .pdfFilePath(pdfFilePath)
                 .isWatermarked(request.getIncludeWatermark())
                 .pageCount(pdfDocument.getNumberOfPages())
-                .fileSizeBytes(pdfBoxHelper.estimateFileSize(pdfDocument))
+                .fileSizeBytes(actualFileSize)
                 .formData(objectMapper.writeValueAsString(request.getFormData()))
                 .build();
 
             generatedForm = generatedFormRepository.save(generatedForm);
 
-            // 8. Create audit log entry
+            // 9. Create audit log entry
             createAuditLogEntry(generatedForm, "GENERATED", "Form generated successfully");
-
-            // 9. Close PDF document
-            pdfDocument.close();
 
             // 10. Build response
             return FormGenerationResponse.builder()
@@ -172,8 +173,17 @@ public class FormGenerationService {
             log.error("Error generating form: {}", e.getMessage(), e);
             return FormGenerationResponse.builder()
                 .success(false)
-                .message("Error generating form: " + e.getMessage())
+                .message("Error generating form. Please try again.")
                 .build();
+        } finally {
+            // Always close PDF document to prevent resource leak
+            if (pdfDocument != null) {
+                try {
+                    pdfDocument.close();
+                } catch (IOException e) {
+                    log.error("Error closing PDF document: {}", e.getMessage());
+                }
+            }
         }
     }
 
@@ -207,6 +217,11 @@ public class FormGenerationService {
      */
     private String savePDFToStorage(PDDocument document, String tenantId, UUID businessId, String formCode, Integer taxYear) 
             throws IOException {
+        // Validate formCode to prevent path traversal
+        if (!formCode.matches("^[a-zA-Z0-9-]+$")) {
+            throw new IllegalArgumentException("Invalid form code format");
+        }
+        
         // Create directory structure
         Path dirPath = Paths.get(storageBasePath, "generated", tenantId, taxYear.toString(), businessId.toString());
         Files.createDirectories(dirPath);
@@ -252,9 +267,20 @@ public class FormGenerationService {
     }
 
     /**
-     * Get PDF file for form
+     * Get PDF file for form with path validation
      */
-    public File getPDFFile(GeneratedForm form) {
-        return new File(form.getPdfFilePath());
+    public File getPDFFile(GeneratedForm form) throws IOException {
+        File pdfFile = new File(form.getPdfFilePath());
+        
+        // Validate that file is within expected storage directory
+        Path expectedBasePath = Paths.get(storageBasePath, "generated").toAbsolutePath().normalize();
+        Path actualPath = pdfFile.toPath().toAbsolutePath().normalize();
+        
+        if (!actualPath.startsWith(expectedBasePath)) {
+            log.error("Security violation: Attempted to access file outside storage directory: {}", actualPath);
+            throw new SecurityException("Invalid file path");
+        }
+        
+        return pdfFile;
     }
 }

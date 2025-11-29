@@ -6,9 +6,9 @@ spring:
     name: pdf-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/munitax_pdf
-    username: munitax
-    password: munitax
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/munitax_pdf}
+    username: ${DB_USERNAME:munitax}
+    password: ${DB_PASSWORD:munitax}
     driver-class-name: org.postgresql.Driver
   
   jpa:

@@ -48,6 +48,7 @@ public class FilingPackageForm {
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 class FilingPackageFormId implements Serializable {
     private UUID filingPackage;
     private UUID generatedForm;

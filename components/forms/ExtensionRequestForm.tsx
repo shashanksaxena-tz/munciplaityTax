@@ -43,8 +43,8 @@ export const ExtensionRequestForm: React.FC<ExtensionRequestFormProps> = ({
   };
 
   const calculateExtendedDeadline = () => {
-    const originalDeadline = new Date(taxYear, 3, 15); // April 15
-    const extendedDeadline = new Date(taxYear, 9, 15); // October 15
+    // Extension deadline is October 15 of the year following the tax year
+    const extendedDeadline = new Date(taxYear + 1, 9, 15); // October 15 of following year
     return extendedDeadline.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -229,7 +229,7 @@ export const ExtensionRequestForm: React.FC<ExtensionRequestFormProps> = ({
           formData={getFormData()}
           onSuccess={onSuccess}
           onError={onError}
-          className={!isFormValid() ? 'opacity-50 cursor-not-allowed' : ''}
+          disabled={!isFormValid()}
         />
       </div>
 

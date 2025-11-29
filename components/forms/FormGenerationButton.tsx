@@ -19,6 +19,7 @@ interface FormGenerationButtonProps {
   onSuccess?: (response: any) => void;
   onError?: (error: any) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export const FormGenerationButton: React.FC<FormGenerationButtonProps> = ({
@@ -32,6 +33,7 @@ export const FormGenerationButton: React.FC<FormGenerationButtonProps> = ({
   onSuccess,
   onError,
   className = '',
+  disabled = false,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedFormId, setGeneratedFormId] = useState<string | null>(null);
@@ -87,7 +89,7 @@ export const FormGenerationButton: React.FC<FormGenerationButtonProps> = ({
   return (
     <button
       onClick={handleGenerate}
-      disabled={isGenerating}
+      disabled={isGenerating || disabled}
       className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors ${className}`}
     >
       {isGenerating ? (
