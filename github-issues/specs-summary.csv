@@ -1,0 +1,13 @@
+Spec Number,Title,Priority,Status,Estimated Hours,Feature Branch,File
+1,Withholding Reconciliation System,HIGH,0%,40,1-withholding-reconciliation,spec-01-withholding-reconciliation.md
+2,Expand Schedule X (Book-Tax Reconciliation),HIGH,65%,9,2-expand-schedule-x,spec-02-expand-schedule-x.md
+3,Enhanced Discrepancy Detection (10+ Validation Rules),HIGH,30%,30,3-enhanced-discrepancy-detection,spec-03-enhanced-discrepancy-detection.md
+4,Dynamic Rule Configuration System,HIGH,0%,60,4-rule-configuration-ui,spec-04-rule-configuration-ui.md
+5,Multi-State Income Sourcing & Apportionment (Schedule Y),HIGH,0%,50,5-schedule-y-sourcing,spec-05-schedule-y-sourcing.md
+6,Net Operating Loss (NOL) Carryforward & Carryback System,HIGH,20%,35,6-nol-carryforward-tracker,spec-06-nol-carryforward-tracker.md
+7,Comprehensive Tax Penalty & Interest Engine,HIGH,20%,25,7-enhanced-penalty-interest,spec-07-enhanced-penalty-interest.md
+8,Comprehensive Municipal Tax Form Generation System,HIGH,10%,45,8-business-form-library,spec-08-business-form-library.md
+9,Municipal Tax Auditor Review & Approval Workflow,MEDIUM,0%,40,9-auditor-workflow,spec-09-auditor-workflow.md
+10,Joint Economic Development District (JEDD) Tax Allocation,MEDIUM,0%,30,10-jedd-zone-support,spec-10-jedd-zone-support.md
+11,Affiliated Group Consolidated Tax Return Filing,MEDIUM,0%,50,11-consolidated-returns,spec-11-consolidated-returns.md
+12,Double-Entry Ledger System with Mock Payment Provider,MEDIUM,0%,55,12-double-entry-ledger,spec-12-double-entry-ledger.md
