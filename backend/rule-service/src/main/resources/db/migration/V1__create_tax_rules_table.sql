@@ -28,8 +28,8 @@ CREATE TABLE tax_rules (
     
     -- Check constraints for enum values
     CONSTRAINT chk_category CHECK (category IN (
-        'TaxRates', 'IncomeInclusion', 'Deductions', 'Penalties', 
-        'Filing', 'Allocation', 'Withholding', 'Validation'
+        'TAX_RATES', 'INCOME_INCLUSION', 'DEDUCTIONS', 'PENALTIES', 
+        'FILING', 'ALLOCATION', 'WITHHOLDING', 'VALIDATION'
     )),
     CONSTRAINT chk_value_type CHECK (value_type IN (
         'NUMBER', 'PERCENTAGE', 'ENUM', 'BOOLEAN', 'FORMULA', 'CONDITIONAL'

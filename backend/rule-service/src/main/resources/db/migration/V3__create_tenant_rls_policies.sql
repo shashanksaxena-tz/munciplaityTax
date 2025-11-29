@@ -16,8 +16,8 @@ USING (
 -- Policy: Only TAX_ADMINISTRATOR role can modify rules
 -- This enforces role-based access control at the database level
 CREATE POLICY admin_write_only ON tax_rules
-FOR INSERT, UPDATE, DELETE
-USING (current_setting('app.user_role', true) = 'TAX_ADMINISTRATOR');
+FOR ALL
+WITH CHECK (current_setting('app.user_role', true) = 'TAX_ADMINISTRATOR');
 
 -- Note: RLS policies will be enforced when application sets session variables:
 -- SET app.tenant_id = 'dublin';

@@ -40,9 +40,9 @@ public class RuleFacadeService {
     /**
      * Update an existing tax rule.
      */
-    public RuleResponse updateRule(Long ruleId, UpdateRuleRequest request) {
+    public RuleResponse updateRule(String ruleId, UpdateRuleRequest request) {
         String userId = "system"; // TODO: Extract from SecurityContext
-        UUID uuid = UUID.fromString(String.valueOf(ruleId));
+        UUID uuid = UUID.fromString(ruleId);
         TaxRule rule = ruleManagementService.updateRule(uuid, request, userId);
         return ruleMapper.toResponse(rule);
     }
@@ -50,8 +50,8 @@ public class RuleFacadeService {
     /**
      * Approve a pending tax rule.
      */
-    public RuleResponse approveRule(Long ruleId, String approverId) {
-        UUID uuid = UUID.fromString(String.valueOf(ruleId));
+    public RuleResponse approveRule(String ruleId, String approverId) {
+        UUID uuid = UUID.fromString(ruleId);
         TaxRule rule = ruleManagementService.approveRule(uuid, approverId, "Approved");
         return ruleMapper.toResponse(rule);
     }
@@ -59,9 +59,9 @@ public class RuleFacadeService {
     /**
      * Reject a pending tax rule.
      */
-    public RuleResponse rejectRule(Long ruleId, String reason) {
+    public RuleResponse rejectRule(String ruleId, String reason) {
         String userId = "system"; // TODO: Extract from SecurityContext
-        UUID uuid = UUID.fromString(String.valueOf(ruleId));
+        UUID uuid = UUID.fromString(ruleId);
         TaxRule rule = ruleManagementService.rejectRule(uuid, userId, reason);
         return ruleMapper.toResponse(rule);
     }
@@ -95,8 +95,8 @@ public class RuleFacadeService {
     /**
      * Get a specific rule by ID.
      */
-    public RuleResponse getRule(Long ruleId) {
-        UUID uuid = UUID.fromString(String.valueOf(ruleId));
+    public RuleResponse getRule(String ruleId) {
+        UUID uuid = UUID.fromString(ruleId);
         TaxRule rule = ruleManagementService.getRule(uuid);
         return ruleMapper.toResponse(rule);
     }
@@ -104,9 +104,9 @@ public class RuleFacadeService {
     /**
      * Void/delete a rule (soft delete).
      */
-    public void voidRule(Long ruleId, String reason) {
+    public void voidRule(String ruleId, String reason) {
         String userId = "system"; // TODO: Extract from SecurityContext
-        UUID uuid = UUID.fromString(String.valueOf(ruleId));
+        UUID uuid = UUID.fromString(ruleId);
         ruleManagementService.voidRule(uuid, userId, reason);
     }
     

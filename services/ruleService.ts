@@ -75,21 +75,25 @@ export const ruleService = {
 
   /**
    * Approve a pending rule
+   * @param ruleId Rule ID to approve
+   * @param approverId User ID of the person approving the rule
    */
-  async approveRule(ruleId: string, approvalReason: string): Promise<TaxRule> {
-    const response: AxiosResponse<TaxRule> = await axios.post(`${API_BASE}/${ruleId}/approve`, {
-      approvalReason
-    });
+  async approveRule(ruleId: string, approverId: string): Promise<TaxRule> {
+    const response: AxiosResponse<TaxRule> = await axios.post(
+      `${API_BASE}/${ruleId}/approve?approverId=${encodeURIComponent(approverId)}`
+    );
     return response.data;
   },
 
   /**
    * Reject a pending rule
+   * @param ruleId Rule ID to reject
+   * @param reason Rejection reason
    */
-  async rejectRule(ruleId: string, rejectionReason: string): Promise<TaxRule> {
-    const response: AxiosResponse<TaxRule> = await axios.post(`${API_BASE}/${ruleId}/reject`, {
-      rejectionReason
-    });
+  async rejectRule(ruleId: string, reason: string): Promise<TaxRule> {
+    const response: AxiosResponse<TaxRule> = await axios.post(
+      `${API_BASE}/${ruleId}/reject?reason=${encodeURIComponent(reason)}`
+    );
     return response.data;
   },
 

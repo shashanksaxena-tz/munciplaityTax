@@ -51,7 +51,7 @@ public class RuleConfigController {
     @PutMapping("/{ruleId}")
     @PreAuthorize("hasRole('TAX_ADMINISTRATOR')")
     public ResponseEntity<RuleResponse> updateRule(
-            @PathVariable Long ruleId,
+            @PathVariable String ruleId,
             @Valid @RequestBody UpdateRuleRequest request) {
         RuleResponse response = ruleFacadeService.updateRule(ruleId, request);
         return ResponseEntity.ok(response);
@@ -69,7 +69,7 @@ public class RuleConfigController {
     @PostMapping("/{ruleId}/approve")
     @PreAuthorize("hasRole('TAX_ADMINISTRATOR')")
     public ResponseEntity<RuleResponse> approveRule(
-            @PathVariable Long ruleId,
+            @PathVariable String ruleId,
             @RequestParam String approverId) {
         RuleResponse response = ruleFacadeService.approveRule(ruleId, approverId);
         return ResponseEntity.ok(response);
@@ -86,7 +86,7 @@ public class RuleConfigController {
     @PostMapping("/{ruleId}/reject")
     @PreAuthorize("hasRole('TAX_ADMINISTRATOR')")
     public ResponseEntity<RuleResponse> rejectRule(
-            @PathVariable Long ruleId,
+            @PathVariable String ruleId,
             @RequestParam String reason) {
         RuleResponse response = ruleFacadeService.rejectRule(ruleId, reason);
         return ResponseEntity.ok(response);
@@ -116,7 +116,7 @@ public class RuleConfigController {
      * @return Rule details
      */
     @GetMapping("/{ruleId}")
-    public ResponseEntity<RuleResponse> getRule(@PathVariable Long ruleId) {
+    public ResponseEntity<RuleResponse> getRule(@PathVariable String ruleId) {
         RuleResponse response = ruleFacadeService.getRule(ruleId);
         return ResponseEntity.ok(response);
     }
@@ -133,7 +133,7 @@ public class RuleConfigController {
     @DeleteMapping("/{ruleId}")
     @PreAuthorize("hasRole('TAX_ADMINISTRATOR')")
     public ResponseEntity<Void> voidRule(
-            @PathVariable Long ruleId,
+            @PathVariable String ruleId,
             @RequestParam String reason) {
         ruleFacadeService.voidRule(ruleId, reason);
         return ResponseEntity.noContent().build();

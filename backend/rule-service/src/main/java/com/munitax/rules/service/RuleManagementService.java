@@ -76,17 +76,19 @@ public class RuleManagementService {
         // Increment version if this is a new version of existing rule
         if (request.getPreviousVersionId() != null) {
             ruleRepository.findById(request.getPreviousVersionId())
-                .ifPresent(prevRule -> rule.setVersion(prevRule.getVersion() + 1));
+                .ifPresent(prevRule -> {
+                    rule.setVersion(prevRule.getVersion() + 1);
+                });
         }
         
         // Save to database
-        rule = ruleRepository.save(rule);
+        TaxRule savedRule = ruleRepository.save(rule);
         
         // Log creation in audit trail
-        logRuleChange(rule, ChangeType.CREATE, null, rule);
+        logRuleChange(savedRule, ChangeType.CREATE, null, savedRule);
         
-        log.info("Created rule: {} with ID: {}", rule.getRuleCode(), rule.getRuleId());
-        return rule;
+        log.info("Created rule: {} with ID: {}", savedRule.getRuleCode(), savedRule.getRuleId());
+        return savedRule;
     }
     
     /**
@@ -298,14 +300,6 @@ public class RuleManagementService {
         
         log.info("Voided rule: {}", ruleId);
         return rule;
-    }
-    
-    /**
-     * Get rule by ID.
-     */
-    public TaxRule getRuleById(UUID ruleId) {
-        return ruleRepository.findById(ruleId)
-            .orElseThrow(() -> new RuleNotFoundException("Rule not found: " + ruleId));
     }
     
     /**

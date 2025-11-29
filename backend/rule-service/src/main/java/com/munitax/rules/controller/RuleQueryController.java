@@ -38,7 +38,7 @@ public class RuleQueryController {
             @RequestParam int taxYear,
             @RequestParam(required = false) String entityType) {
         
-        LocalDate queryDate = LocalDate.of(taxYear, 12, 31); // End of tax year
+        LocalDate queryDate = LocalDate.of(taxYear, 1, 1); // Start of tax year
         List<RuleResponse> rules = ruleFacadeService.getActiveRules(tenantId, queryDate, entityType);
         return ResponseEntity.ok(rules);
     }

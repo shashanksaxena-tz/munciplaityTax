@@ -8,50 +8,40 @@ public enum RuleCategory {
     /**
      * Tax rates (municipal rate, state rate, etc.)
      */
-    TAX_RATES("TaxRates"),
+    TAX_RATES,
     
     /**
      * Income inclusion rules (what counts as taxable income)
      */
-    INCOME_INCLUSION("IncomeInclusion"),
+    INCOME_INCLUSION,
     
     /**
      * Deduction rules (standard deduction, itemized deductions)
      */
-    DEDUCTIONS("Deductions"),
+    DEDUCTIONS,
     
     /**
      * Penalty calculation rules (late filing, underpayment)
      */
-    PENALTIES("Penalties"),
+    PENALTIES,
     
     /**
      * Filing requirement rules (who must file, thresholds)
      */
-    FILING("Filing"),
+    FILING,
     
     /**
      * Allocation rules (apportionment formulas, nexus)
      */
-    ALLOCATION("Allocation"),
+    ALLOCATION,
     
     /**
      * Withholding rules (employer withholding, estimated tax)
      */
-    WITHHOLDING("Withholding"),
+    WITHHOLDING,
     
     /**
      * Validation rules (data quality, consistency checks)
      */
-    VALIDATION("Validation");
-    
-    private final String displayName;
-    
-    RuleCategory(String displayName) {
-        this.displayName = displayName;
-    }
-    
-    public String getDisplayName() {
-        return displayName;
-    }
+    VALIDATION
 }

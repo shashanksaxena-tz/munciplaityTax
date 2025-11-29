@@ -62,16 +62,36 @@ public class RuleCacheService {
     /**
      * Invalidate all cached rules for a specific tenant.
      * Called when any rule is modified for that tenant.
+     * Uses SCAN instead of KEYS for production safety.
      * 
      * @param tenantId Tenant identifier
      */
     public void invalidateTenantCache(String tenantId) {
         try {
             String pattern = tenantCachePrefix + tenantId + ":*";
-            Set<String> keys = redisTemplate.keys(pattern);
-            if (keys != null && !keys.isEmpty()) {
-                redisTemplate.delete(keys);
-                log.info("Invalidated {} cache keys for tenant: {}", keys.size(), tenantId);
+            
+            // Use SCAN instead of KEYS for production safety (non-blocking operation)
+            Set<String> keysToDelete = new java.util.HashSet<>();
+            redisTemplate.execute((org.springframework.data.redis.core.RedisCallback<Void>) connection -> {
+                org.springframework.data.redis.core.ScanOptions options = 
+                    org.springframework.data.redis.core.ScanOptions.scanOptions()
+                        .match(pattern)
+                        .count(100)
+                        .build();
+                
+                org.springframework.data.redis.core.Cursor<byte[]> cursor = 
+                    connection.scan(options);
+                
+                while (cursor.hasNext()) {
+                    keysToDelete.add(new String(cursor.next()));
+                }
+                cursor.close();
+                return null;
+            });
+            
+            if (!keysToDelete.isEmpty()) {
+                redisTemplate.delete(keysToDelete);
+                log.info("Invalidated {} cache keys for tenant: {}", keysToDelete.size(), tenantId);
             }
         } catch (Exception e) {
             log.error("Redis cache invalidation failed for tenant: {}", tenantId, e);
@@ -94,14 +114,34 @@ public class RuleCacheService {
     
     /**
      * Invalidate all rules cache (use sparingly - global operation).
+     * Uses SCAN instead of KEYS for production safety.
      */
     public void invalidateAllRules() {
         try {
             String pattern = tenantCachePrefix + "*";
-            Set<String> keys = redisTemplate.keys(pattern);
-            if (keys != null && !keys.isEmpty()) {
-                redisTemplate.delete(keys);
-                log.warn("Invalidated ALL rule cache keys: {} total", keys.size());
+            
+            // Use SCAN instead of KEYS for production safety (non-blocking operation)
+            Set<String> keysToDelete = new java.util.HashSet<>();
+            redisTemplate.execute((org.springframework.data.redis.core.RedisCallback<Void>) connection -> {
+                org.springframework.data.redis.core.ScanOptions options = 
+                    org.springframework.data.redis.core.ScanOptions.scanOptions()
+                        .match(pattern)
+                        .count(100)
+                        .build();
+                
+                org.springframework.data.redis.core.Cursor<byte[]> cursor = 
+                    connection.scan(options);
+                
+                while (cursor.hasNext()) {
+                    keysToDelete.add(new String(cursor.next()));
+                }
+                cursor.close();
+                return null;
+            });
+            
+            if (!keysToDelete.isEmpty()) {
+                redisTemplate.delete(keysToDelete);
+                log.warn("Invalidated ALL rule cache keys: {} total", keysToDelete.size());
             }
         } catch (Exception e) {
             log.error("Global cache invalidation failed", e);

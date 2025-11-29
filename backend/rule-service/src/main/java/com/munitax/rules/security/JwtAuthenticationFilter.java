@@ -35,13 +35,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             
             try {
-                // TODO: Implement actual JWT parsing and validation
-                // For now, accept any valid-looking token
+                // ⚠️ SECURITY WARNING: This is a placeholder implementation for development only!
+                // TODO: Implement actual JWT parsing and validation before production deployment
+                // Current behavior: Accepts ANY Bearer token without validation
                 
-                // Extract user ID and role from token (simplified)
-                String userId = "admin";  // TODO: Parse from JWT
-                String role = "TAX_ADMINISTRATOR";  // TODO: Parse from JWT
-                String tenantId = "dublin";  // TODO: Parse from JWT
+                // Check if running in production and log critical warning
+                String profile = System.getProperty("spring.profiles.active", "dev");
+                if ("prod".equalsIgnoreCase(profile) || "production".equalsIgnoreCase(profile)) {
+                    log.error("⚠️ CRITICAL SECURITY ISSUE: Hardcoded JWT credentials in production! " +
+                             "This accepts ANY token. Implement proper JWT validation immediately.");
+                }
+                
+                // Extract user ID and role from token (simplified - INSECURE)
+                String userId = "admin";  // TODO: Parse from JWT payload
+                String role = "TAX_ADMINISTRATOR";  // TODO: Parse from JWT claims
+                String tenantId = "dublin";  // TODO: Parse from JWT claims
                 
                 // Create authentication
                 List<SimpleGrantedAuthority> authorities = List.of(

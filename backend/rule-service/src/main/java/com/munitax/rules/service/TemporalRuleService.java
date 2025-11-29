@@ -6,6 +6,7 @@ import com.munitax.rules.repository.TaxRuleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +32,9 @@ public class TemporalRuleService {
      * @return List of active rules
      */
     public List<TaxRule> getActiveRules(String tenantId, LocalDate asOfDate) {
+        Assert.hasText(tenantId, "Tenant ID cannot be blank");
+        Assert.notNull(asOfDate, "As-of date cannot be null");
+        
         log.debug("Getting active rules for tenant: {} as of: {}", tenantId, asOfDate);
         return ruleRepository.findActiveRules(tenantId, asOfDate);
     }
@@ -45,6 +49,10 @@ public class TemporalRuleService {
      */
     public List<TaxRule> getActiveRulesByCategory(String tenantId, RuleCategory category, 
                                                    LocalDate asOfDate) {
+        Assert.hasText(tenantId, "Tenant ID cannot be blank");
+        Assert.notNull(category, "Category cannot be null");
+        Assert.notNull(asOfDate, "As-of date cannot be null");
+        
         log.debug("Getting active rules for tenant: {} category: {} as of: {}", 
                   tenantId, category, asOfDate);
         return ruleRepository.findActiveRulesByCategory(tenantId, category, asOfDate);
@@ -60,6 +68,10 @@ public class TemporalRuleService {
      */
     public Optional<TaxRule> getActiveRuleByCode(String ruleCode, String tenantId, 
                                                   LocalDate asOfDate) {
+        Assert.hasText(ruleCode, "Rule code cannot be blank");
+        Assert.hasText(tenantId, "Tenant ID cannot be blank");
+        Assert.notNull(asOfDate, "As-of date cannot be null");
+        
         log.debug("Getting active rule by code: {} for tenant: {} as of: {}", 
                   ruleCode, tenantId, asOfDate);
         return ruleRepository.findActiveRuleByCode(ruleCode, tenantId, asOfDate);
