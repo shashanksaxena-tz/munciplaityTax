@@ -2,6 +2,8 @@ package com.munitax.submission.service;
 
 import com.munitax.submission.model.*;
 import com.munitax.submission.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -16,42 +18,70 @@ import java.util.Optional;
 @Transactional
 public class AuditService {
     
+    private static final Logger logger = LoggerFactory.getLogger(AuditService.class);
+    
     private final AuditQueueRepository auditQueueRepository;
     private final AuditActionRepository auditActionRepository;
     private final AuditTrailRepository auditTrailRepository;
     private final SubmissionRepository submissionRepository;
     private final DocumentRequestRepository documentRequestRepository;
+    private final AuditReportService auditReportService;
+    private final EmailNotificationService emailNotificationService;
     
     public AuditService(
             AuditQueueRepository auditQueueRepository,
             AuditActionRepository auditActionRepository,
             AuditTrailRepository auditTrailRepository,
             SubmissionRepository submissionRepository,
-            DocumentRequestRepository documentRequestRepository) {
+            DocumentRequestRepository documentRequestRepository,
+            AuditReportService auditReportService,
+            EmailNotificationService emailNotificationService) {
         this.auditQueueRepository = auditQueueRepository;
         this.auditActionRepository = auditActionRepository;
         this.auditTrailRepository = auditTrailRepository;
         this.submissionRepository = submissionRepository;
         this.documentRequestRepository = documentRequestRepository;
+        this.auditReportService = auditReportService;
+        this.emailNotificationService = emailNotificationService;
     }
     
     // ===== Queue Management =====
     
     public AuditQueue createQueueEntry(String returnId, String tenantId) {
+        Submission submission = submissionRepository.findById(returnId)
+                .orElseThrow(() -> new RuntimeException("Submission not found"));
+        
         AuditQueue queue = new AuditQueue();
         queue.setReturnId(returnId);
         queue.setSubmissionDate(Instant.now());
         queue.setStatus(AuditQueue.AuditStatus.PENDING);
-        queue.setPriority(AuditQueue.Priority.MEDIUM);
         queue.setTenantId(tenantId);
         queue.setRiskScore(0);
         queue.setFlaggedIssuesCount(0);
+        
+        // Auto-assign priority based on tax amount
+        double taxDue = submission.getTaxDue() != null ? submission.getTaxDue() : 0.0;
+        if (taxDue > 50000 || Boolean.TRUE.equals(submission.getHasDiscrepancies())) {
+            queue.setPriority(AuditQueue.Priority.HIGH);
+        } else if (taxDue > 10000) {
+            queue.setPriority(AuditQueue.Priority.MEDIUM);
+        } else {
+            queue.setPriority(AuditQueue.Priority.LOW);
+        }
         
         AuditQueue saved = auditQueueRepository.save(queue);
         
         // Create audit trail entry
         createTrailEntry(returnId, "SYSTEM", AuditTrail.EventType.SUBMISSION, 
                         "Return submitted and added to audit queue");
+        
+        // Generate automated audit report
+        try {
+            auditReportService.generateAuditReport(returnId);
+        } catch (Exception e) {
+            // Log error but don't fail queue creation
+            logger.error("Failed to generate audit report for {}", returnId, e);
+        }
         
         return saved;
     }
@@ -166,6 +196,16 @@ public class AuditService {
                                           "Return approved by auditor", eSignature);
         trail.setTenantId(queue.getTenantId());
         auditTrailRepository.save(trail);
+        
+        // Send approval notification email
+        try {
+            String paymentDueDate = submission.getDueDate() != null ? 
+                submission.getDueDate().toString() : "within 30 days";
+            emailNotificationService.sendApprovalNotification(submission, auditorId, paymentDueDate);
+        } catch (Exception e) {
+            // Log error but don't fail approval
+            logger.error("Failed to send approval email", e);
+        }
     }
     
     // ===== Rejection Workflow =====
@@ -199,6 +239,15 @@ public class AuditService {
         
         createTrailEntry(returnId, auditorId, AuditTrail.EventType.REJECTION,
                         actionDetails);
+        
+        // Send rejection notification email
+        try {
+            emailNotificationService.sendRejectionNotification(
+                submission, reason, detailedExplanation, resubmitDeadline);
+        } catch (Exception e) {
+            // Log error but don't fail rejection
+            logger.error("Failed to send rejection email", e);
+        }
     }
     
     // ===== Document Request Management =====
@@ -207,6 +256,9 @@ public class AuditService {
                                                  DocumentRequest.DocumentType documentType,
                                                  String description, LocalDate deadline,
                                                  String tenantId) {
+        Submission submission = submissionRepository.findById(returnId)
+                .orElseThrow(() -> new RuntimeException("Submission not found"));
+        
         DocumentRequest request = new DocumentRequest();
         request.setReturnId(returnId);
         request.setAuditorId(auditorId);
@@ -233,6 +285,14 @@ public class AuditService {
         
         createTrailEntry(returnId, auditorId, AuditTrail.EventType.DOCUMENT_REQUEST,
                         actionDetails);
+        
+        // Send document request notification email
+        try {
+            emailNotificationService.sendDocumentRequestNotification(submission, saved);
+        } catch (Exception e) {
+            // Log error but don't fail request creation
+            logger.error("Failed to send document request email", e);
+        }
         
         return saved;
     }

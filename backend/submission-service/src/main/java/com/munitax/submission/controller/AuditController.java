@@ -3,10 +3,14 @@ package com.munitax.submission.controller;
 import com.munitax.submission.model.*;
 import com.munitax.submission.repository.AuditReportRepository;
 import com.munitax.submission.service.AuditService;
+import com.munitax.submission.service.AuditReportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,11 +24,18 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class AuditController {
     
+    private static final Logger logger = LoggerFactory.getLogger(AuditController.class);
+    
     private final AuditService auditService;
+    private final AuditReportService auditReportService;
     private final AuditReportRepository auditReportRepository;
     
-    public AuditController(AuditService auditService, AuditReportRepository auditReportRepository) {
+    public AuditController(
+            AuditService auditService,
+            AuditReportService auditReportService,
+            AuditReportRepository auditReportRepository) {
         this.auditService = auditService;
+        this.auditReportService = auditReportService;
         this.auditReportRepository = auditReportRepository;
     }
     
@@ -199,6 +210,17 @@ public class AuditController {
     }
     
     // ===== Audit Reports =====
+    
+    @PostMapping("/report/generate/{returnId}")
+    public ResponseEntity<AuditReport> generateAuditReport(@PathVariable String returnId) {
+        try {
+            AuditReport report = auditReportService.generateAuditReport(returnId);
+            return ResponseEntity.ok(report);
+        } catch (RuntimeException e) {
+            logger.error("Failed to generate audit report for return {}", returnId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
     
     @GetMapping("/report/{returnId}")
     public ResponseEntity<AuditReport> getAuditReport(@PathVariable String returnId) {
