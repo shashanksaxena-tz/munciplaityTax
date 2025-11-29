@@ -21,7 +21,12 @@ import { AlertTriangle, Info, TrendingDown, TrendingUp, Calendar, DollarSign, Fi
  * @see NOLScheduleService.java
  */
 
+// CARES Act eligibility constants
+const CARES_ACT_START_YEAR = 2018;
+const CARES_ACT_END_YEAR = 2020;
+
 interface NOLVintage {
+  nolId: string;
   taxYear: number;
   originalAmount: number;
   previouslyUsed: number;
@@ -81,12 +86,10 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
   const [alerts, setAlerts] = useState<ExpirationAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showCarrybackModal, setShowCarrybackModal] = useState(false);
-  const [selectedNOL, setSelectedNOL] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNOLData();
-  }, [businessId, taxYear]);
+  }, [businessId, taxYear, returnId]);
 
   const fetchNOLData = async () => {
     try {
@@ -97,30 +100,47 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
       const vintageResponse = await fetch(
         `/api/nol/schedule/${businessId}/vintages/${taxYear}`
       );
-      if (vintageResponse.ok) {
-        const vintageData = await vintageResponse.json();
-        setVintages(vintageData);
+      if (!vintageResponse.ok) {
+        throw new Error(`Failed to fetch NOL vintages: ${vintageResponse.status} ${vintageResponse.statusText}`);
       }
+      const vintageData = await vintageResponse.json();
+      // Validate response is an array
+      if (!Array.isArray(vintageData)) {
+        throw new Error('Invalid vintage data format: expected array');
+      }
+      setVintages(vintageData);
 
       // Fetch NOL schedule if return exists
       if (returnId) {
         const scheduleResponse = await fetch(`/api/nol/schedule/${returnId}`);
-        if (scheduleResponse.ok) {
+        if (!scheduleResponse.ok) {
+          console.warn(`Failed to fetch NOL schedule: ${scheduleResponse.status} ${scheduleResponse.statusText}`);
+        } else {
           const scheduleData = await scheduleResponse.json();
-          setSchedule(scheduleData);
+          // Validate schedule data has required fields
+          if (scheduleData && typeof scheduleData === 'object') {
+            setSchedule(scheduleData);
+          }
         }
       }
 
       // Fetch expiration alerts
       const alertsResponse = await fetch(`/api/nol/alerts/${businessId}`);
-      if (alertsResponse.ok) {
+      if (!alertsResponse.ok) {
+        console.warn(`Failed to fetch expiration alerts: ${alertsResponse.status} ${alertsResponse.statusText}`);
+      } else {
         const alertsData = await alertsResponse.json();
-        setAlerts(alertsData);
+        // Validate response is an array
+        if (Array.isArray(alertsData)) {
+          setAlerts(alertsData);
+        }
       }
 
       setLoading(false);
     } catch (err) {
-      setError('Failed to load NOL data');
+      console.error('Failed to load NOL data:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load NOL data';
+      setError(errorMessage);
       setLoading(false);
     }
   };
@@ -153,11 +173,6 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
-  };
-
-  const handleCarrybackElection = (nolId: string) => {
-    setSelectedNOL(nolId);
-    setShowCarrybackModal(true);
   };
 
   if (loading) {
@@ -397,7 +412,7 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
             {vintages.length > 0 && (
               <tfoot className="bg-gray-100 font-semibold">
                 <tr>
-                  <td className="px-6 py-4 text-sm text-gray-900">Total</td>
+                  <th scope="row" className="px-6 py-4 text-sm text-gray-900">Total</th>
                   <td className="px-6 py-4 text-sm text-right text-gray-900">
                     {formatCurrency(vintages.reduce((sum, v) => sum + v.originalAmount, 0))}
                   </td>
@@ -425,40 +440,44 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
       </div>
 
       {/* CARES Act Carryback Information */}
-      {taxYear >= 2018 && taxYear <= 2020 && vintages.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-start">
-            <Info className="h-6 w-6 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h4 className="text-lg font-semibold text-blue-900 mb-2">
-                CARES Act NOL Carryback Available
-              </h4>
-              <p className="text-blue-800 mb-4">
-                NOLs from tax years 2018-2020 are eligible for 5-year carryback under the CARES Act.
-                You can carry this NOL back to prior years and claim a refund of taxes previously paid.
-              </p>
-              {vintages
-                .filter(v => !v.isCarriedBack && v.taxYear >= 2018 && v.taxYear <= 2020 && v.availableThisYear > 0)
-                .map((vintage, idx) => (
+      {taxYear >= CARES_ACT_START_YEAR && taxYear <= CARES_ACT_END_YEAR && vintages.length > 0 && (() => {
+        const eligibleCarrybackVintages = vintages.filter(
+          v => !v.isCarriedBack && v.taxYear >= CARES_ACT_START_YEAR && v.taxYear <= CARES_ACT_END_YEAR && v.availableThisYear > 0
+        );
+        
+        return (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="flex items-start">
+              <Info className="h-6 w-6 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h4 className="text-lg font-semibold text-blue-900 mb-2">
+                  CARES Act NOL Carryback Available
+                </h4>
+                <p className="text-blue-800 mb-4">
+                  NOLs from tax years {CARES_ACT_START_YEAR}-{CARES_ACT_END_YEAR} are eligible for 5-year carryback under the CARES Act.
+                  You can carry this NOL back to prior years and claim a refund of taxes previously paid.
+                </p>
+                {eligibleCarrybackVintages.map((vintage, index) => (
                   <button
-                    key={idx}
-                    onClick={() => onCarrybackElect && onCarrybackElect(`nol-${vintage.taxYear}`)}
+                    key={index}
+                    onClick={() => onCarrybackElect && onCarrybackElect(vintage.nolId)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-2 mb-2"
                     disabled={!onCarrybackElect}
+                    aria-label={`Elect carryback for ${vintage.taxYear} Net Operating Loss of ${vintage.availableThisYear.toFixed(2)} dollars`}
                   >
                     Elect Carryback for {vintage.taxYear} NOL ({formatCurrency(vintage.availableThisYear)})
                   </button>
-                ))
-              }
-              {vintages.filter(v => !v.isCarriedBack && v.taxYear >= 2018 && v.taxYear <= 2020 && v.availableThisYear > 0).length === 0 && (
-                <p className="text-sm text-blue-700 italic">
-                  No eligible NOLs available for carryback. NOLs must not already be carried back and must have a remaining balance.
-                </p>
-              )}
+                ))}
+                {eligibleCarrybackVintages.length === 0 && (
+                  <p className="text-sm text-blue-700 italic">
+                    No eligible NOLs available for carryback. NOLs must not already be carried back and must have a remaining balance.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Footer Info */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">

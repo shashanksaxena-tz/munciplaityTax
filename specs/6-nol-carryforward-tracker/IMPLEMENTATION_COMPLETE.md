@@ -67,7 +67,7 @@ The Net Operating Loss (NOL) Carryforward & Carryback System (Spec 6) has been *
 
 #### 2. Frontend Components (New - Implemented)
 
-**NOLScheduleView.tsx** (477 lines)
+**NOLScheduleView.tsx** (475 lines)
 
 A comprehensive React component providing:
 
@@ -116,7 +116,7 @@ A comprehensive React component providing:
 
 #### 3. Documentation (New - Implemented)
 
-**IMPLEMENTATION_GUIDE.md** (785 lines)
+**IMPLEMENTATION_GUIDE.md** (672 lines)
 
 Comprehensive documentation covering:
 

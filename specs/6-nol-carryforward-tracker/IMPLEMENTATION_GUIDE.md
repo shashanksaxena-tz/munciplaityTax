@@ -443,6 +443,11 @@ Response 201:
 
 Note: `isExpired` and `hasRemainingBalance` are computed properties derived from persisted fields.
 They are calculated on-demand via helper methods in the NOL entity class.
+
+**Important:** The example response above includes `isExpired` and `hasRemainingBalance` for illustration. 
+These computed properties are calculated server-side and included in the response by default. 
+If your integration requires these fields, the current API implementation provides them automatically 
+via the NOL entity's helper methods (`isExpired()` and `hasRemainingBalance()`).
 ```
 
 ### Apply NOL Deduction
