@@ -3,9 +3,13 @@ package com.munitax.rules.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Set;
 
@@ -72,16 +76,15 @@ public class RuleCacheService {
             
             // Use SCAN instead of KEYS for production safety (non-blocking operation)
             Set<String> keysToDelete = new java.util.HashSet<>();
-            redisTemplate.execute((org.springframework.data.redis.core.RedisCallback<Void>) connection -> {
-                org.springframework.data.redis.core.ScanOptions options = 
-                    org.springframework.data.redis.core.ScanOptions.scanOptions()
+            redisTemplate.execute((RedisCallback<Void>) connection -> {
+                ScanOptions options = ScanOptions.scanOptions()
                         .match(pattern)
                         .count(100)
                         .build();
                 
-                try (org.springframework.data.redis.core.Cursor<byte[]> cursor = connection.scan(options)) {
+                try (Cursor<byte[]> cursor = connection.scan(options)) {
                     while (cursor.hasNext()) {
-                        keysToDelete.add(new String(cursor.next(), java.nio.charset.StandardCharsets.UTF_8));
+                        keysToDelete.add(new String(cursor.next(), StandardCharsets.UTF_8));
                     }
                 } catch (Exception e) {
                     log.error("Error scanning Redis keys", e);
@@ -122,16 +125,15 @@ public class RuleCacheService {
             
             // Use SCAN instead of KEYS for production safety (non-blocking operation)
             Set<String> keysToDelete = new java.util.HashSet<>();
-            redisTemplate.execute((org.springframework.data.redis.core.RedisCallback<Void>) connection -> {
-                org.springframework.data.redis.core.ScanOptions options = 
-                    org.springframework.data.redis.core.ScanOptions.scanOptions()
+            redisTemplate.execute((RedisCallback<Void>) connection -> {
+                ScanOptions options = ScanOptions.scanOptions()
                         .match(pattern)
                         .count(100)
                         .build();
                 
-                try (org.springframework.data.redis.core.Cursor<byte[]> cursor = connection.scan(options)) {
+                try (Cursor<byte[]> cursor = connection.scan(options)) {
                     while (cursor.hasNext()) {
-                        keysToDelete.add(new String(cursor.next(), java.nio.charset.StandardCharsets.UTF_8));
+                        keysToDelete.add(new String(cursor.next(), StandardCharsets.UTF_8));
                     }
                 } catch (Exception e) {
                     log.error("Error scanning Redis keys", e);
