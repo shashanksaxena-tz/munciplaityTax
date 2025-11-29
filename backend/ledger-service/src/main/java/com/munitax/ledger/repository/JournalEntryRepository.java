@@ -16,6 +16,7 @@ public interface JournalEntryRepository extends JpaRepository<JournalEntry, UUID
     List<JournalEntry> findByTenantIdAndEntityIdAndEntryDateBetweenOrderByEntryDateDesc(
             UUID tenantId, UUID entityId, LocalDate startDate, LocalDate endDate);
     List<JournalEntry> findByTenantIdAndStatus(UUID tenantId, EntryStatus status);
+    List<JournalEntry> findBySourceIdOrderByEntryDateDesc(UUID sourceId);
     
     @Query("SELECT MAX(e.entryNumber) FROM JournalEntry e WHERE e.tenantId = :tenantId AND e.entryNumber LIKE CONCAT(:prefix, '%')")
     String findMaxEntryNumberByPrefix(UUID tenantId, String prefix);

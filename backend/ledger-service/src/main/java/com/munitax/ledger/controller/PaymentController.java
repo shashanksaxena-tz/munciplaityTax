@@ -1,5 +1,6 @@
 package com.munitax.ledger.controller;
 
+import com.munitax.ledger.dto.PaymentReceipt;
 import com.munitax.ledger.dto.PaymentRequest;
 import com.munitax.ledger.dto.PaymentResponse;
 import com.munitax.ledger.model.PaymentTransaction;
@@ -37,6 +38,13 @@ public class PaymentController {
     public ResponseEntity<PaymentTransaction> getPayment(@PathVariable UUID paymentId) {
         PaymentTransaction payment = paymentService.getPaymentByPaymentId(paymentId);
         return ResponseEntity.ok(payment);
+    }
+    
+    @GetMapping("/{paymentId}/receipt")
+    public ResponseEntity<PaymentReceipt> getPaymentReceipt(@PathVariable UUID paymentId) {
+        log.info("Generating receipt for payment {}", paymentId);
+        PaymentReceipt receipt = paymentService.generatePaymentReceipt(paymentId);
+        return ResponseEntity.ok(receipt);
     }
     
     @GetMapping("/test-mode-indicator")

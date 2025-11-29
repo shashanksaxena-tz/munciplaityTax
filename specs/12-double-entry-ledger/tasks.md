@@ -75,19 +75,19 @@ The following components are already implemented and working:
 
 ### Tests for User Story 1
 
-- [ ] T001 [P] [US1] Enhance MockPaymentProviderServiceTest to verify all test card scenarios in backend/ledger-service/src/test/java/com/munitax/ledger/service/MockPaymentProviderServiceTest.java
-- [ ] T002 [P] [US1] Create PaymentServiceTest for end-to-end payment flow with journal entries in backend/ledger-service/src/test/java/com/munitax/ledger/service/PaymentServiceTest.java
-- [ ] T003 [P] [US1] Add integration test for payment API endpoints in backend/ledger-service/src/test/java/com/munitax/ledger/controller/PaymentControllerTest.java
+- [X] T001 [P] [US1] Enhance MockPaymentProviderServiceTest to verify all test card scenarios in backend/ledger-service/src/test/java/com/munitax/ledger/service/MockPaymentProviderServiceTest.java
+- [X] T002 [P] [US1] Create PaymentServiceTest for end-to-end payment flow with journal entries in backend/ledger-service/src/test/java/com/munitax/ledger/service/PaymentServiceTest.java
+- [X] T003 [P] [US1] Add integration test for payment API endpoints in backend/ledger-service/src/test/java/com/munitax/ledger/controller/PaymentControllerTest.java
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Add test mode indicator to PaymentGateway.tsx frontend component in components/PaymentGateway.tsx
-- [ ] T005 [US1] Enhance PaymentGateway.tsx to integrate with backend /api/v1/payments/process endpoint in components/PaymentGateway.tsx
-- [ ] T006 [US1] Add test card helper text to PaymentGateway.tsx showing available test cards (4111..., 4000...0002, etc.) in components/PaymentGateway.tsx
-- [ ] T007 [US1] Add receipt display to PaymentGateway.tsx showing transaction ID, amount, and journal entry number in components/PaymentGateway.tsx
-- [ ] T008 [P] [US1] Add environment configuration for payment mode toggle (TEST/PRODUCTION) in backend/ledger-service/src/main/resources/application.properties
-- [ ] T009 [US1] Verify MockPaymentProviderService handles all FR-002 and FR-003 test scenarios in backend/ledger-service/src/main/java/com/munitax/ledger/service/MockPaymentProviderService.java
-- [ ] T010 [US1] Add payment receipt generation endpoint GET /api/v1/payments/{paymentId}/receipt in backend/ledger-service/src/main/java/com/munitax/ledger/controller/PaymentController.java
+- [X] T004 [US1] Add test mode indicator to PaymentGateway.tsx frontend component in components/PaymentGateway.tsx
+- [X] T005 [US1] Enhance PaymentGateway.tsx to integrate with backend /api/v1/payments/process endpoint in components/PaymentGateway.tsx
+- [X] T006 [US1] Add test card helper text to PaymentGateway.tsx showing available test cards (4111..., 4000...0002, etc.) in components/PaymentGateway.tsx
+- [X] T007 [US1] Add receipt display to PaymentGateway.tsx showing transaction ID, amount, and journal entry number in components/PaymentGateway.tsx
+- [X] T008 [P] [US1] Add environment configuration for payment mode toggle (TEST/PRODUCTION) in backend/ledger-service/src/main/resources/application.properties
+- [X] T009 [US1] Verify MockPaymentProviderService handles all FR-002 and FR-003 test scenarios in backend/ledger-service/src/main/java/com/munitax/ledger/service/MockPaymentProviderService.java
+- [X] T010 [US1] Add payment receipt generation endpoint GET /api/v1/payments/{paymentId}/receipt in backend/ledger-service/src/main/java/com/munitax/ledger/controller/PaymentController.java
 
 **Checkpoint**: User Story 1 complete - filers can make test payments with full ledger integration
 

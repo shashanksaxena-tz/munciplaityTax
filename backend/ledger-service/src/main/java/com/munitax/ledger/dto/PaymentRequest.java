@@ -24,6 +24,10 @@ public class PaymentRequest {
     private String cardNumber;
     private String cardExpiration;
     private String cardCvv;
+    private String cardholderName;
+    private Integer expirationMonth;
+    private Integer expirationYear;
+    private String cvv;
     
     // ACH fields
     private String achRouting;
