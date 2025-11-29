@@ -91,13 +91,12 @@ public interface WithholdingPaymentRepository extends JpaRepository<WithholdingP
     @Query("""
         SELECT p FROM WithholdingPayment p
         WHERE p.tenantId = :tenantId
-        AND p.status = :pendingStatus
+        AND p.status = com.munitax.taxengine.domain.withholding.PaymentStatus.PENDING
         AND p.paymentDate < :cutoffDate
         """)
     List<WithholdingPayment> findStalePendingPayments(
         @Param("tenantId") UUID tenantId,
-        @Param("cutoffDate") LocalDateTime cutoffDate,
-        @Param("pendingStatus") PaymentStatus pendingStatus
+        @Param("cutoffDate") LocalDateTime cutoffDate
     );
     
     /**
