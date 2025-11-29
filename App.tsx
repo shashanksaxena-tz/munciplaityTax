@@ -9,6 +9,10 @@ import { ResetPassword } from './components/auth/ResetPassword';
 import TaxFilingApp from './TaxFilingApp';
 import { AuditorDashboard } from './components/AuditorDashboard';
 import { ReturnReviewPanel } from './components/ReturnReviewPanel';
+import { ServiceTestDashboard } from './components/test/ServiceTestDashboard';
+import { RuleServiceTestUI } from './components/test/RuleServiceTestUI';
+import { LedgerServiceTestUI } from './components/test/LedgerServiceTestUI';
+import { ExtractionServiceTestUI } from './components/test/ExtractionServiceTestUI';
 import { AppStep } from './types';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -64,6 +68,12 @@ export default function App() {
                         <Route path="/register" element={<RegistrationForm />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
+                        
+                        {/* Service Testing Routes - No authentication required */}
+                        <Route path="/test" element={<ServiceTestDashboard />} />
+                        <Route path="/test/rules" element={<RuleServiceTestUI />} />
+                        <Route path="/test/ledger" element={<LedgerServiceTestUI />} />
+                        <Route path="/test/extraction" element={<ExtractionServiceTestUI />} />
                         
                         {/* Auditor Routes */}
                         <Route path="/auditor" element={
