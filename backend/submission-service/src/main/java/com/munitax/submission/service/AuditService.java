@@ -22,6 +22,7 @@ public class AuditService {
     private final SubmissionRepository submissionRepository;
     private final DocumentRequestRepository documentRequestRepository;
     private final AuditReportService auditReportService;
+    private final EmailNotificationService emailNotificationService;
     
     public AuditService(
             AuditQueueRepository auditQueueRepository,
@@ -29,13 +30,15 @@ public class AuditService {
             AuditTrailRepository auditTrailRepository,
             SubmissionRepository submissionRepository,
             DocumentRequestRepository documentRequestRepository,
-            AuditReportService auditReportService) {
+            AuditReportService auditReportService,
+            EmailNotificationService emailNotificationService) {
         this.auditQueueRepository = auditQueueRepository;
         this.auditActionRepository = auditActionRepository;
         this.auditTrailRepository = auditTrailRepository;
         this.submissionRepository = submissionRepository;
         this.documentRequestRepository = documentRequestRepository;
         this.auditReportService = auditReportService;
+        this.emailNotificationService = emailNotificationService;
     }
     
     // ===== Queue Management =====
@@ -189,6 +192,16 @@ public class AuditService {
                                           "Return approved by auditor", eSignature);
         trail.setTenantId(queue.getTenantId());
         auditTrailRepository.save(trail);
+        
+        // Send approval notification email
+        try {
+            String paymentDueDate = submission.getDueDate() != null ? 
+                submission.getDueDate().toString() : "within 30 days";
+            emailNotificationService.sendApprovalNotification(submission, auditorId, paymentDueDate);
+        } catch (Exception e) {
+            // Log error but don't fail approval
+            System.err.println("Failed to send approval email: " + e.getMessage());
+        }
     }
     
     // ===== Rejection Workflow =====
@@ -222,6 +235,15 @@ public class AuditService {
         
         createTrailEntry(returnId, auditorId, AuditTrail.EventType.REJECTION,
                         actionDetails);
+        
+        // Send rejection notification email
+        try {
+            emailNotificationService.sendRejectionNotification(
+                submission, reason, detailedExplanation, resubmitDeadline);
+        } catch (Exception e) {
+            // Log error but don't fail rejection
+            System.err.println("Failed to send rejection email: " + e.getMessage());
+        }
     }
     
     // ===== Document Request Management =====
@@ -230,6 +252,9 @@ public class AuditService {
                                                  DocumentRequest.DocumentType documentType,
                                                  String description, LocalDate deadline,
                                                  String tenantId) {
+        Submission submission = submissionRepository.findById(returnId)
+                .orElseThrow(() -> new RuntimeException("Submission not found"));
+        
         DocumentRequest request = new DocumentRequest();
         request.setReturnId(returnId);
         request.setAuditorId(auditorId);
@@ -256,6 +281,14 @@ public class AuditService {
         
         createTrailEntry(returnId, auditorId, AuditTrail.EventType.DOCUMENT_REQUEST,
                         actionDetails);
+        
+        // Send document request notification email
+        try {
+            emailNotificationService.sendDocumentRequestNotification(submission, saved);
+        } catch (Exception e) {
+            // Log error but don't fail request creation
+            System.err.println("Failed to send document request email: " + e.getMessage());
+        }
         
         return saved;
     }
