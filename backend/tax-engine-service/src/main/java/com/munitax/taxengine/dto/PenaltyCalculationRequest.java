@@ -40,8 +40,8 @@ public class PenaltyCalculationRequest {
     
     /**
      * Type of penalty to calculate: LATE_FILING, LATE_PAYMENT, ESTIMATED_UNDERPAYMENT.
+     * If null or empty, calculates both LATE_FILING and LATE_PAYMENT with combined cap.
      */
-    @NotBlank(message = "Penalty type is required")
     private String penaltyType;
     
     /**

@@ -156,4 +156,34 @@ public class PenaltyCalculationResponse {
      * Whether combined penalty cap was applied.
      */
     private Boolean combinedCapApplied;
+    
+    /**
+     * Late payment penalty amount (FR-007 to FR-011).
+     * Formula:
+     * - Months late (rounded up) × 1% × unpaid tax
+     * - Maximum: 25% of unpaid tax
+     */
+    private BigDecimal latePaymentPenalty;
+    
+    /**
+     * Late payment penalty rate applied (as percentage).
+     * Example: 3 months late × 1% = 3.0%
+     */
+    private BigDecimal latePaymentPenaltyRate;
+    
+    /**
+     * Explanation of late payment penalty calculation.
+     * Example: "Paid 90 days late (3 months). Penalty: 3 months × 1% × $2,500 = $75"
+     */
+    private String latePaymentPenaltyExplanation;
+    
+    /**
+     * Payment date (for late payment penalties).
+     */
+    private LocalDate paymentDate;
+    
+    /**
+     * Combined penalty explanation when both filing and payment penalties apply.
+     */
+    private String combinedPenaltyExplanation;
 }
