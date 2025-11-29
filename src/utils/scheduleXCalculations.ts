@@ -80,7 +80,7 @@ export function calculateRelatedPartyExcess(
 export function calculateTotalAddBacks(addBacks: {
   depreciationAdjustment?: number;
   amortizationAdjustment?: number;
-  interestAndStateTaxes?: number;
+  incomeAndStateTaxes?: number;
   guaranteedPayments?: number;
   mealsAndEntertainment?: number;
   relatedPartyExcess?: number;
@@ -102,7 +102,7 @@ export function calculateTotalAddBacks(addBacks: {
   return (
     (addBacks.depreciationAdjustment || 0) +
     (addBacks.amortizationAdjustment || 0) +
-    (addBacks.interestAndStateTaxes || 0) +
+    (addBacks.incomeAndStateTaxes || 0) +
     (addBacks.guaranteedPayments || 0) +
     (addBacks.mealsAndEntertainment || 0) +
     (addBacks.relatedPartyExcess || 0) +
