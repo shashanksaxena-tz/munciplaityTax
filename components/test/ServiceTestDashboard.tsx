@@ -4,11 +4,20 @@
  */
 
 import React from 'react';
-import { Settings, BookOpen, FileSearch, FileText, Home } from 'lucide-react';
+import { Settings, BookOpen, FileSearch, FileText, Home, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const ServiceTestDashboard: React.FC = () => {
   const services = [
+    {
+      name: 'Auth Service',
+      description: 'Test user authentication and authorization',
+      icon: Shield,
+      color: 'blue',
+      path: '/test/auth',
+      port: 8081,
+      features: ['User Registration', 'Login/Logout', 'JWT Tokens', 'Protected Endpoints']
+    },
     {
       name: 'Rule Service',
       description: 'Test tax rules configuration and management',
@@ -35,6 +44,15 @@ export const ServiceTestDashboard: React.FC = () => {
       path: '/test/extraction',
       port: 8083,
       features: ['Document Upload', 'AI Extraction', 'W-2/1099 Processing', 'Confidence Scoring']
+    },
+    {
+      name: 'PDF Service',
+      description: 'Test PDF form generation and manipulation',
+      icon: FileText,
+      color: 'orange',
+      path: '/test/pdf',
+      port: 8086,
+      features: ['Form Generation', 'PDF Templates', 'Watermarks', 'Filing Packages']
     }
   ];
 
@@ -67,9 +85,11 @@ export const ServiceTestDashboard: React.FC = () => {
           <div className="text-sm text-blue-800 space-y-2">
             <p><strong>1. Start Services in Standalone Mode:</strong></p>
             <div className="bg-white bg-opacity-50 rounded p-3 font-mono text-xs space-y-1">
+              <div>cd backend/auth-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
               <div>cd backend/rule-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
               <div>cd backend/ledger-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
               <div>cd backend/extraction-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
+              <div>cd backend/pdf-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
             </div>
             <p className="mt-3"><strong>2.</strong> Click on any service card below to open its test interface</p>
             <p><strong>3.</strong> Test endpoints, view responses, and validate functionality</p>
@@ -81,11 +101,15 @@ export const ServiceTestDashboard: React.FC = () => {
           {services.map((service) => {
             const Icon = service.icon;
             // Use explicit classes instead of dynamic generation for Tailwind
-            const cardStyles = service.color === 'indigo' 
+            const cardStyles = service.color === 'blue'
+              ? { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', icon: 'text-blue-600', dot: 'bg-blue-500' }
+              : service.color === 'indigo' 
               ? { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', icon: 'text-indigo-600', dot: 'bg-indigo-500' }
               : service.color === 'green'
               ? { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', icon: 'text-green-600', dot: 'bg-green-500' }
-              : { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', icon: 'text-purple-600', dot: 'bg-purple-500' };
+              : service.color === 'purple'
+              ? { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', icon: 'text-purple-600', dot: 'bg-purple-500' }
+              : { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', icon: 'text-orange-600', dot: 'bg-orange-500' };
 
             return (
               <Link
