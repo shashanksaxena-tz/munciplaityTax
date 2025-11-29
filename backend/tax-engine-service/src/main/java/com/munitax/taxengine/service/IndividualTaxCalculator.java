@@ -164,11 +164,11 @@ public class IndividualTaxCalculator {
                 liabilityFinal,
                 balance,
                 breakdown,
-                analyzeDiscrepancies(forms, totalTaxableIncome));
+                analyzeDiscrepancies(forms, totalTaxableIncome, rules));
     }
 
     private TaxCalculationResult.DiscrepancyReport analyzeDiscrepancies(List<TaxFormData> forms,
-            double calculatedIncome) {
+            double calculatedIncome, TaxRulesConfig rules) {
         List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues = new ArrayList<>();
         int issueCounter = 1;
 
@@ -197,21 +197,17 @@ public class IndividualTaxCalculator {
         }
 
         // FR-001 to FR-005: W-2 Validation Rules
-        issues.addAll(validateW2Forms(w2Forms, issueCounter));
-        issueCounter += issues.size();
+        issueCounter = validateW2Forms(w2Forms, issues, issueCounter, rules);
 
         // FR-006 to FR-010: Schedule C/E/F Validation
-        issues.addAll(validateScheduleForms(forms, issueCounter));
-        issueCounter += issues.size();
+        issueCounter = validateScheduleForms(forms, issues, issueCounter, rules);
 
         // FR-014 to FR-016: Municipal Credit Validation (K-1 validation FR-011-013 requires more complex parsing)
-        issues.addAll(validateMunicipalCredits(forms, calculatedIncome * 0.02, issueCounter));
-        issueCounter += issues.size();
+        issueCounter = validateMunicipalCredits(forms, calculatedIncome * rules.municipalRate(), issues, issueCounter);
 
         // FR-017 to FR-019: Federal Form Reconciliation
         if (federalForm != null) {
-            issues.addAll(validateFederalReconciliation(federalForm, totalW2Wages, totalW2LocalWages, calculatedIncome, issueCounter));
-            issueCounter += issues.size();
+            issueCounter = validateFederalReconciliation(federalForm, totalW2Wages, totalW2LocalWages, calculatedIncome, issues, issueCounter);
         }
 
         // Compare Local vs Calculated
@@ -256,10 +252,14 @@ public class IndividualTaxCalculator {
     }
 
     // FR-001 to FR-005: W-2 Validation
-    private List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> validateW2Forms(
-            List<W2Form> w2Forms, int startCounter) {
-        List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues = new ArrayList<>();
-        int counter = startCounter;
+    private int validateW2Forms(
+            List<W2Form> w2Forms, List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues,
+            int counter, TaxRulesConfig rules) {
+        
+        // Constants for validation
+        final double BOX_VARIANCE_THRESHOLD = 20.0; // 20% variance allowed
+        final double MAX_WITHHOLDING_RATE = 3.0; // 3.0% maximum rate
+        final double HIGH_WAGE_THRESHOLD = 25000.0; // Threshold for zero withholding warning
 
         for (int i = 0; i < w2Forms.size(); i++) {
             W2Form w2 = w2Forms.get(i);
@@ -271,7 +271,7 @@ public class IndividualTaxCalculator {
             if (box1 > 0 && box18 > 0) {
                 double variance = Math.abs(box1 - box18);
                 double variancePercent = (variance / box1) * 100;
-                if (variancePercent > 20) {
+                if (variancePercent > BOX_VARIANCE_THRESHOLD) {
                     issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                             "DISC-" + counter++,
                             "FR-001",
@@ -294,7 +294,7 @@ public class IndividualTaxCalculator {
             // FR-002: Withholding rate between 0% and 3.0%
             if (box18 > 0) {
                 double withholdingRate = (box19 / box18) * 100;
-                if (withholdingRate > 3.0) {
+                if (withholdingRate > MAX_WITHHOLDING_RATE) {
                     issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                             "DISC-" + counter++,
                             "FR-002",
@@ -305,13 +305,13 @@ public class IndividualTaxCalculator {
                             box19,
                             withholdingRate,
                             "MEDIUM",
-                            String.format("Withholding rate of %.2f%% exceeds maximum Dublin rate of 2.5%%. Employer may have over-withheld.",
-                                    withholdingRate),
+                            String.format("Withholding rate of %.2f%% exceeds maximum rate of %.1f%%. Employer may have over-withheld.",
+                                    withholdingRate, MAX_WITHHOLDING_RATE),
                             "Contact employer to verify correct withholding rate or check Box 19 entry.",
                             false,
                             null,
                             null));
-                } else if (withholdingRate == 0 && box18 > 25000) {
+                } else if (withholdingRate == 0 && box18 > HIGH_WAGE_THRESHOLD) {
                     issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                             "DISC-" + counter++,
                             "FR-002",
@@ -374,14 +374,18 @@ public class IndividualTaxCalculator {
             }
         }
 
-        return issues;
+        return counter;
     }
 
     // FR-006 to FR-010: Schedule C/E/F Validation
-    private List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> validateScheduleForms(
-            List<TaxFormData> forms, int startCounter) {
-        List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues = new ArrayList<>();
-        int counter = startCounter;
+    private int validateScheduleForms(
+            List<TaxFormData> forms, List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues,
+            int counter, TaxRulesConfig rules) {
+        
+        // Constants for validation
+        final double SCHEDULE_C_THRESHOLD = 50000.0; // Trigger estimated tax warning above this
+        final double SAFE_HARBOR_PERCENT = 0.90; // 90% safe harbor rule
+        final double PASSIVE_LOSS_AGI_THRESHOLD = 150000.0; // IRS passive loss threshold
 
         double totalScheduleIncome = 0;
         int rentalPropertyCount = 0;
@@ -403,9 +407,9 @@ public class IndividualTaxCalculator {
                 double netProfit = schedC.netProfit() != null ? schedC.netProfit() : 0;
                 totalScheduleIncome += netProfit;
                 
-                if (netProfit > 50000) {
-                    // Simplified - assume 90% safe harbor rule
-                    double requiredEstimated = netProfit * 0.02 * 0.90;
+                if (netProfit > SCHEDULE_C_THRESHOLD) {
+                    // Calculate required estimated payment using safe harbor
+                    double requiredEstimated = netProfit * rules.municipalRate() * SAFE_HARBOR_PERCENT;
                     issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                             "DISC-" + counter++,
                             "FR-006",
@@ -416,8 +420,8 @@ public class IndividualTaxCalculator {
                             requiredEstimated,
                             100.0,
                             "MEDIUM",
-                            String.format("Schedule C net profit of $%.2f may require estimated tax payments of approximately $%.2f (90%% safe harbor).",
-                                    netProfit, requiredEstimated),
+                            String.format("Schedule C net profit of $%.2f may require estimated tax payments of approximately $%.2f (%.0f%% safe harbor).",
+                                    netProfit, requiredEstimated, SAFE_HARBOR_PERCENT * 100),
                             "Verify estimated tax payments were made. Underpayment penalty may apply.",
                             false,
                             null,
@@ -488,7 +492,7 @@ public class IndividualTaxCalculator {
         }
         
         // FR-009: Passive loss limitation check
-        if (totalRentalLoss > 0 && agi != null && agi > 150000) {
+        if (totalRentalLoss > 0 && agi != null && agi > PASSIVE_LOSS_AGI_THRESHOLD) {
             issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                     "DISC-" + counter++,
                     "FR-009",
@@ -499,22 +503,21 @@ public class IndividualTaxCalculator {
                     0.0,
                     0.0,
                     "LOW",
-                    String.format("AGI of $%.2f exceeds $150,000 threshold. Rental loss of $%.2f may be limited by passive activity rules.",
-                            agi, totalRentalLoss),
+                    String.format("AGI of $%.2f exceeds $%.2f threshold. Rental loss of $%.2f may be limited by passive activity rules.",
+                            agi, PASSIVE_LOSS_AGI_THRESHOLD, totalRentalLoss),
                     "Verify federal Form 8582 was prepared and passive loss limits were applied correctly.",
                     false,
                     null,
                     null));
         }
 
-        return issues;
+        return counter;
     }
 
     // FR-014 to FR-016: Municipal Credit Validation
-    private List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> validateMunicipalCredits(
-            List<TaxFormData> forms, double dublinLiability, int startCounter) {
-        List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues = new ArrayList<>();
-        int counter = startCounter;
+    private int validateMunicipalCredits(
+            List<TaxFormData> forms, double dublinLiability, 
+            List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues, int counter) {
 
         double totalCredits = 0;
 
@@ -558,21 +561,25 @@ public class IndividualTaxCalculator {
                     null));
         }
 
-        return issues;
+        return counter;
     }
 
     // FR-017 to FR-019: Federal Form Reconciliation
-    private List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> validateFederalReconciliation(
+    private int validateFederalReconciliation(
             FederalTaxForm federalForm, double totalW2Wages, double totalW2LocalWages, 
-            double localCalculatedIncome, int startCounter) {
-        List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues = new ArrayList<>();
-        int counter = startCounter;
+            double localCalculatedIncome, List<TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue> issues,
+            int counter) {
+        
+        // Constants for validation
+        final double WAGE_TOLERANCE = 100.0; // Allow $100 rounding difference
+        final double AGI_DOLLAR_TOLERANCE = 500.0; // Allow $500 difference
+        final double AGI_PERCENT_TOLERANCE = 10.0; // Or 10% difference
 
         double fedWages = federalForm.wages() != null ? federalForm.wages() : 0;
         double fedAGI = federalForm.adjustedGrossIncome() != null ? federalForm.adjustedGrossIncome() : 0;
 
         // FR-019: Federal wages vs W-2s
-        if (Math.abs(fedWages - totalW2Wages) > 100) {
+        if (Math.abs(fedWages - totalW2Wages) > WAGE_TOLERANCE) {
             double diff = totalW2Wages - fedWages;
             double diffPercent = fedWages != 0 ? (diff / fedWages) * 100 : 0;
             issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
@@ -596,8 +603,9 @@ public class IndividualTaxCalculator {
         // FR-017: Federal AGI vs Local calculation
         if (fedAGI > 0 && localCalculatedIncome > 0) {
             double diff = fedAGI - localCalculatedIncome;
-            if (Math.abs(diff) > 500) {
-                double diffPercent = localCalculatedIncome != 0 ? (diff / localCalculatedIncome) * 100 : 0;
+            double diffPercent = localCalculatedIncome != 0 ? Math.abs(diff / localCalculatedIncome) * 100 : 0;
+            
+            if (Math.abs(diff) > AGI_DOLLAR_TOLERANCE && diffPercent > AGI_PERCENT_TOLERANCE) {
                 issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                         "DISC-" + counter++,
                         "FR-017",
@@ -608,8 +616,8 @@ public class IndividualTaxCalculator {
                         diff,
                         diffPercent,
                         "MEDIUM",
-                        String.format("Federal AGI ($%.2f) differs from local calculated income ($%.2f) by $%.2f.",
-                                fedAGI, localCalculatedIncome, Math.abs(diff)),
+                        String.format("Federal AGI ($%.2f) differs from local calculated income ($%.2f) by $%.2f (%.1f%%).",
+                                fedAGI, localCalculatedIncome, Math.abs(diff), diffPercent),
                         "Common causes: Interest, dividends, unemployment, or other non-taxable local income. This may be normal.",
                         false,
                         null,
@@ -617,6 +625,6 @@ public class IndividualTaxCalculator {
             }
         }
 
-        return issues;
+        return counter;
     }
 }
