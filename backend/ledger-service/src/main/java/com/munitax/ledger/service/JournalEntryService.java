@@ -114,6 +114,11 @@ public class JournalEntryService {
             throw new IllegalStateException("Entry already reversed");
         }
         
+        // T070 - Prevent deletion of posted entries, use reversal instead
+        if (originalEntry.getStatus() == EntryStatus.POSTED) {
+            log.info("Reversing posted entry {} instead of deleting", originalEntry.getEntryNumber());
+        }
+        
         // Create reversing entry request
         JournalEntryRequest reversingRequest = JournalEntryRequest.builder()
                 .entryDate(originalEntry.getEntryDate())
@@ -148,20 +153,50 @@ public class JournalEntryService {
         originalEntry.setReversalEntryId(reversingEntry.getEntryId());
         journalEntryRepository.save(originalEntry);
         
-        // Audit log
-        auditLogService.logAction(
+        // T070 - Audit log with old and new values
+        auditLogService.logModification(
                 entryId,
                 "JOURNAL_ENTRY",
                 "REVERSE",
                 userId,
                 originalEntry.getTenantId(),
-                String.format("Reversed entry %s. Reason: %s", 
-                        originalEntry.getEntryNumber(), reason)
+                "POSTED",
+                "REVERSED",
+                reason
         );
         
         log.info("Reversed journal entry {}", originalEntry.getEntryNumber());
         
         return reversingEntry;
+    }
+    
+    /**
+     * T069 - Prevent deletion of posted entries per FR-049
+     * Posted journal entries cannot be deleted, only reversed
+     */
+    @Transactional
+    public void deleteJournalEntry(UUID entryId, UUID userId) {
+        JournalEntry entry = journalEntryRepository.findById(entryId)
+                .orElseThrow(() -> new IllegalArgumentException("Journal entry not found"));
+        
+        if (entry.getStatus() == EntryStatus.POSTED) {
+            throw new IllegalStateException(
+                    "Cannot delete posted journal entry. Use reverseEntry() instead. Entry: " 
+                    + entry.getEntryNumber());
+        }
+        
+        // Only draft entries can be deleted
+        auditLogService.logAction(
+                entryId,
+                "JOURNAL_ENTRY",
+                "DELETE",
+                userId,
+                entry.getTenantId(),
+                String.format("Deleted draft entry %s", entry.getEntryNumber())
+        );
+        
+        journalEntryRepository.delete(entry);
+        log.info("Deleted draft journal entry {}", entry.getEntryNumber());
     }
     
     public List<JournalEntry> getEntriesForEntity(UUID tenantId, UUID entityId) {

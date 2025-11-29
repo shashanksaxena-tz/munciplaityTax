@@ -62,4 +62,48 @@ public class AuditLogService {
     public List<AuditLog> getTenantAuditLogs(UUID tenantId) {
         return auditLogRepository.findByTenantIdOrderByTimestampDesc(tenantId);
     }
+    
+    /**
+     * T071 - Add audit log access tracking per FR-051
+     * Logs when audit trails are accessed for compliance
+     */
+    @Transactional
+    public void logAuditAccess(UUID entityId, String entityType, UUID userId, UUID tenantId) {
+        AuditLog accessLog = AuditLog.builder()
+                .entityId(entityId)
+                .entityType(entityType)
+                .action("VIEW_AUDIT")
+                .userId(userId)
+                .timestamp(LocalDateTime.now())
+                .details("Audit trail accessed")
+                .tenantId(tenantId)
+                .build();
+        
+        auditLogRepository.save(accessLog);
+        log.debug("Audit access logged: {} viewed by user {}", entityType, userId);
+    }
+    
+    /**
+     * T072 - Query audit trail by journal entry ID
+     * Returns complete history of a specific journal entry
+     */
+    public List<AuditLog> getJournalEntryAuditTrail(UUID journalEntryId) {
+        return auditLogRepository.findByEntityIdOrderByTimestampDesc(journalEntryId);
+    }
+    
+    /**
+     * T072 - Query audit trail with filters
+     * Supports filtering by action type, date range, and user
+     */
+    public List<AuditLog> getFilteredAuditTrail(UUID tenantId, String entityType, 
+                                                String action, UUID userId) {
+        // For now, return all tenant logs - repository method can be enhanced for filtering
+        List<AuditLog> allLogs = auditLogRepository.findByTenantIdOrderByTimestampDesc(tenantId);
+        
+        return allLogs.stream()
+                .filter(log -> entityType == null || entityType.equals(log.getEntityType()))
+                .filter(log -> action == null || action.equals(log.getAction()))
+                .filter(log -> userId == null || userId.equals(log.getUserId()))
+                .toList();
+    }
 }

@@ -108,16 +108,16 @@ The following components are already implemented and working:
 
 ### Tests for User Story 2
 
-- [ ] T011 [P] [US2] Create TaxAssessmentServiceTest to verify journal entry creation for tax assessments in backend/ledger-service/src/test/java/com/munitax/ledger/service/TaxAssessmentServiceTest.java
-- [ ] T012 [P] [US2] Add test for compound tax assessment (tax + penalty + interest) in backend/ledger-service/src/test/java/com/munitax/ledger/service/TaxAssessmentServiceTest.java
-- [ ] T013 [P] [US2] Add integration test for tax assessment API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/TaxAssessmentControllerTest.java
+- [X] T011 [P] [US2] Create TaxAssessmentServiceTest to verify journal entry creation for tax assessments in backend/ledger-service/src/test/java/com/munitax/ledger/service/TaxAssessmentServiceTest.java
+- [X] T012 [P] [US2] Add test for compound tax assessment (tax + penalty + interest) in backend/ledger-service/src/test/java/com/munitax/ledger/service/TaxAssessmentServiceTest.java
+- [X] T013 [P] [US2] Add integration test for tax assessment API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/TaxAssessmentControllerTest.java
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Verify TaxAssessmentService handles all scenarios from FR-016 (tax, penalty, interest) in backend/ledger-service/src/main/java/com/munitax/ledger/service/TaxAssessmentService.java
-- [ ] T015 [US2] Add API endpoint documentation for POST /api/v1/tax-assessments in backend/ledger-service/src/main/java/com/munitax/ledger/controller/TaxAssessmentController.java
-- [ ] T016 [P] [US2] Create TaxAssessmentRequest DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/TaxAssessmentRequest.java
-- [ ] T017 [P] [US2] Create TaxAssessmentResponse DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/TaxAssessmentResponse.java
+- [X] T014 [US2] Verify TaxAssessmentService handles all scenarios from FR-016 (tax, penalty, interest) in backend/ledger-service/src/main/java/com/munitax/ledger/service/TaxAssessmentService.java
+- [X] T015 [US2] Add API endpoint documentation for POST /api/v1/tax-assessments in backend/ledger-service/src/main/java/com/munitax/ledger/controller/TaxAssessmentController.java
+- [X] T016 [P] [US2] Create TaxAssessmentRequest DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/TaxAssessmentRequest.java
+- [X] T017 [P] [US2] Create TaxAssessmentResponse DTO if missing in backend/ledger-service/src/main/java/com/munitax/ledger/dto/TaxAssessmentResponse.java
 
 **Checkpoint**: User Story 2 complete - tax assessments automatically create proper double-entry ledger entries
 
@@ -275,20 +275,20 @@ The following components are already implemented and working:
 
 ### Tests for User Story 7
 
-- [ ] T066 [P] [US7] Create AuditLogServiceTest to verify audit trail logging in backend/ledger-service/src/test/java/com/munitax/ledger/service/AuditLogServiceTest.java
-- [ ] T067 [P] [US7] Add test for audit trail query by entity and date range in backend/ledger-service/src/test/java/com/munitax/ledger/service/AuditLogServiceTest.java
-- [ ] T068 [P] [US7] Add integration test for audit log API endpoints in backend/ledger-service/src/test/java/com/munitax/ledger/controller/AuditControllerTest.java
+- [X] T066 [P] [US7] Create AuditLogServiceTest to verify audit trail logging in backend/ledger-service/src/test/java/com/munitax/ledger/service/AuditLogServiceTest.java
+- [X] T067 [P] [US7] Add test for audit trail query by entity and date range in backend/ledger-service/src/test/java/com/munitax/ledger/service/AuditLogServiceTest.java
+- [X] T068 [P] [US7] Add integration test for audit log API endpoints in backend/ledger-service/src/test/java/com/munitax/ledger/controller/AuditControllerTest.java
 
 ### Implementation for User Story 7
 
-- [ ] T069 [US7] Verify JournalEntryService prevents deletion of posted entries per FR-049 in backend/ledger-service/src/main/java/com/munitax/ledger/service/JournalEntryService.java
-- [ ] T070 [US7] Add reversing entry method to JournalEntryService per FR-050 in backend/ledger-service/src/main/java/com/munitax/ledger/service/JournalEntryService.java
-- [ ] T071 [US7] Add audit log access tracking per FR-051 to AuditLogService in backend/ledger-service/src/main/java/com/munitax/ledger/service/AuditLogService.java
-- [ ] T072 [US7] Add query method for audit trail by journal entry ID in AuditLogService in backend/ledger-service/src/main/java/com/munitax/ledger/service/AuditLogService.java
-- [ ] T073 [US7] Add API endpoint GET /api/v1/audit/journal-entries/{entryId} in backend/ledger-service/src/main/java/com/munitax/ledger/controller/AuditController.java
-- [ ] T074 [P] [US7] Create frontend AuditTrail.tsx component to display audit history in components/AuditTrail.tsx
-- [ ] T075 [US7] Add timeline view to AuditTrail.tsx showing chronological events in components/AuditTrail.tsx
-- [ ] T076 [US7] Add filtering (by user, by action type, by date) to AuditTrail.tsx in components/AuditTrail.tsx
+- [X] T069 [US7] Verify JournalEntryService prevents deletion of posted entries per FR-049 in backend/ledger-service/src/main/java/com/munitax/ledger/service/JournalEntryService.java
+- [X] T070 [US7] Add reversing entry method to JournalEntryService per FR-050 in backend/ledger-service/src/main/java/com/munitax/ledger/service/JournalEntryService.java
+- [X] T071 [US7] Add audit log access tracking per FR-051 to AuditLogService in backend/ledger-service/src/main/java/com/munitax/ledger/service/AuditLogService.java
+- [X] T072 [US7] Add query method for audit trail by journal entry ID in AuditLogService in backend/ledger-service/src/main/java/com/munitax/ledger/service/AuditLogService.java
+- [X] T073 [US7] Add API endpoint GET /api/v1/audit/journal-entries/{entryId} in backend/ledger-service/src/main/java/com/munitax/ledger/controller/AuditController.java
+- [X] T074 [P] [US7] Create frontend AuditTrail.tsx component to display audit history in components/AuditTrail.tsx
+- [X] T075 [US7] Add timeline view to AuditTrail.tsx showing chronological events in components/AuditTrail.tsx
+- [X] T076 [US7] Add filtering (by user, by action type, by date) to AuditTrail.tsx in components/AuditTrail.tsx
 
 **Checkpoint**: User Story 7 complete - complete audit trail available for all ledger operations
 
