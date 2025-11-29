@@ -313,12 +313,12 @@ Comprehensive documentation covering:
 ## Files Modified/Created
 
 ### New Files Created
-1. `/components/NOLScheduleView.tsx` (477 lines)
+1. `/components/NOLScheduleView.tsx` (494 lines)
    - Comprehensive React component
    - TypeScript interfaces
    - Tailwind CSS styling
 
-2. `/specs/6-nol-carryforward-tracker/IMPLEMENTATION_GUIDE.md` (785 lines)
+2. `/specs/6-nol-carryforward-tracker/IMPLEMENTATION_GUIDE.md` (677 lines)
    - Architecture documentation
    - API examples
    - Business rules
