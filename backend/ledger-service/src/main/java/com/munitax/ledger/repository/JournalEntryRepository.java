@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Repository
 public interface JournalEntryRepository extends JpaRepository<JournalEntry, UUID> {
+    List<JournalEntry> findByTenantId(UUID tenantId);
     List<JournalEntry> findByTenantIdAndEntityIdOrderByEntryDateDesc(UUID tenantId, UUID entityId);
     List<JournalEntry> findByTenantIdAndEntityIdAndEntryDateBetweenOrderByEntryDateDesc(
             UUID tenantId, UUID entityId, LocalDate startDate, LocalDate endDate);

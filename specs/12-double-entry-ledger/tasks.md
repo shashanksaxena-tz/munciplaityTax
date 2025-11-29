@@ -137,20 +137,20 @@ The following components are already implemented and working:
 
 ### Tests for User Story 3
 
-- [ ] T018 [P] [US3] Create ReconciliationServiceTest with multi-filer aggregation test in backend/ledger-service/src/test/java/com/munitax/ledger/service/ReconciliationServiceTest.java
-- [ ] T019 [P] [US3] Add test for discrepancy detection (filer payment not recorded by municipality) in backend/ledger-service/src/test/java/com/munitax/ledger/service/ReconciliationServiceTest.java
-- [ ] T020 [P] [US3] Add integration test for reconciliation API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/ReconciliationControllerTest.java
+- [X] T018 [P] [US3] Create ReconciliationServiceTest with multi-filer aggregation test in backend/ledger-service/src/test/java/com/munitax/ledger/service/ReconciliationServiceTest.java
+- [X] T019 [P] [US3] Add test for discrepancy detection (filer payment not recorded by municipality) in backend/ledger-service/src/test/java/com/munitax/ledger/service/ReconciliationServiceTest.java
+- [X] T020 [P] [US3] Add integration test for reconciliation API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/ReconciliationControllerTest.java
 
 ### Implementation for User Story 3
 
-- [ ] T021 [US3] Implement production reconciliation logic in ReconciliationService to aggregate all filers per TODO comments in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
-- [ ] T022 [US3] Add method to query all filer entities for tenant in ReconciliationService in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
-- [ ] T023 [US3] Add method to sum filer tax liability accounts (2100, 2110, 2120, 2130) across all filers in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
-- [ ] T024 [US3] Add method to sum filer payment entries across all filers in ReconciliationService in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
-- [ ] T025 [US3] Add drill-down reconciliation endpoint GET /api/v1/reconciliation/{filerId} for individual filer in backend/ledger-service/src/main/java/com/munitax/ledger/controller/ReconciliationController.java
-- [ ] T026 [US3] Enhance DiscrepancyDetail DTO to include filer name and ID in backend/ledger-service/src/main/java/com/munitax/ledger/dto/DiscrepancyDetail.java
-- [ ] T027 [P] [US3] Create frontend ReconciliationReport.tsx component to display reconciliation results in components/ReconciliationReport.tsx
-- [ ] T028 [US3] Add discrepancy drill-down UI to ReconciliationReport.tsx in components/ReconciliationReport.tsx
+- [X] T021 [US3] Implement production reconciliation logic in ReconciliationService to aggregate all filers per TODO comments in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
+- [X] T022 [US3] Add method to query all filer entities for tenant in ReconciliationService in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
+- [X] T023 [US3] Add method to sum filer tax liability accounts (2100, 2110, 2120, 2130) across all filers in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
+- [X] T024 [US3] Add method to sum filer payment entries across all filers in ReconciliationService in backend/ledger-service/src/main/java/com/munitax/ledger/service/ReconciliationService.java
+- [X] T025 [US3] Add drill-down reconciliation endpoint GET /api/v1/reconciliation/{filerId} for individual filer in backend/ledger-service/src/main/java/com/munitax/ledger/controller/ReconciliationController.java
+- [X] T026 [US3] Enhance DiscrepancyDetail DTO to include filer name and ID in backend/ledger-service/src/main/java/com/munitax/ledger/dto/DiscrepancyDetail.java
+- [X] T027 [P] [US3] Create frontend ReconciliationReport.tsx component to display reconciliation results in components/ReconciliationReport.tsx
+- [X] T028 [US3] Add discrepancy drill-down UI to ReconciliationReport.tsx in components/ReconciliationReport.tsx
 
 **Checkpoint**: User Story 3 complete - municipality can verify books reconcile with all filers
 
