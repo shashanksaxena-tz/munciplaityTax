@@ -60,7 +60,7 @@ public class AuditService {
         queue.setFlaggedIssuesCount(0);
         
         // Auto-assign priority based on tax amount
-        Double taxDue = submission.getTaxDue() != null ? submission.getTaxDue() : 0.0;
+        double taxDue = submission.getTaxDue() != null ? submission.getTaxDue() : 0.0;
         if (taxDue > 50000 || Boolean.TRUE.equals(submission.getHasDiscrepancies())) {
             queue.setPriority(AuditQueue.Priority.HIGH);
         } else if (taxDue > 10000) {

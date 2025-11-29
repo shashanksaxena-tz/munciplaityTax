@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -122,9 +124,14 @@ public class AuditReportService {
     private YearOverYearAnalysis performYearOverYearAnalysis(Submission submission) {
         YearOverYearAnalysis analysis = new YearOverYearAnalysis();
         
+        // Check for required fields
+        if (submission.getTaxYear() == null || submission.getTaxpayerId() == null) {
+            return analysis; // Skip analysis if required data is missing
+        }
+        
         // Get prior year submission for same taxpayer
         Optional<Submission> priorYear = submissionRepository
-                .findPriorYearSubmission(submission.getTaxpayerId(), submission.getTaxYear() - 1);
+                .findFirstByTaxpayerIdAndTaxYearOrderByFiledDateDesc(submission.getTaxpayerId(), submission.getTaxYear() - 1);
         
         if (priorYear.isPresent()) {
             double currentTax = submission.getTaxDue() != null ? submission.getTaxDue() : 0;
@@ -216,24 +223,38 @@ public class AuditReportService {
      */
     private PatternAnalysis performPatternAnalysis(Submission submission) {
         PatternAnalysis analysis = new PatternAnalysis();
+        int riskPoints = 0;
+        StringBuilder messageBuilder = new StringBuilder();
         
         // Check for round numbers (possible estimation)
         double taxDue = submission.getTaxDue() != null ? submission.getTaxDue() : 0;
         if (taxDue > 1000 && taxDue % 1000 == 0) {
             analysis.setSuspiciousPatterns(true);
-            analysis.setMessage("Tax amount is a round number ($" + String.format("%.0f", taxDue) + 
-                    "), may indicate estimation rather than actual calculation");
-            analysis.setRiskPoints(5);
+            messageBuilder.append("Tax amount is a round number ($")
+                    .append(String.format("%.0f", taxDue))
+                    .append("), may indicate estimation rather than actual calculation");
+            riskPoints += 5;
         }
         
-        // Check for late filing
+        // Check for late filing - convert Instant to LocalDate for comparison
         if (submission.getFiledDate() != null && submission.getDueDate() != null) {
-            if (submission.getFiledDate().isAfter(submission.getDueDate())) {
+            LocalDate filedLocalDate = submission.getFiledDate()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate();
+            if (filedLocalDate.isAfter(submission.getDueDate())) {
                 analysis.setSuspiciousPatterns(true);
-                analysis.setMessage("Return filed after due date");
-                analysis.setRiskPoints(10);
+                if (messageBuilder.length() > 0) {
+                    messageBuilder.append("; ");
+                }
+                messageBuilder.append("Return filed after due date");
+                riskPoints += 10;
             }
         }
+        
+        if (messageBuilder.length() > 0) {
+            analysis.setMessage(messageBuilder.toString());
+        }
+        analysis.setRiskPoints(riskPoints);
         
         return analysis;
     }
@@ -274,13 +295,20 @@ public class AuditReportService {
             queue.setRiskScore(riskScore);
             queue.setFlaggedIssuesCount(flaggedCount);
             
-            // Auto-assign priority based on risk score
+            // Auto-assign priority based on risk score, but only upgrade (never downgrade)
+            AuditQueue.Priority riskBasedPriority;
             if (riskScore >= 61) {
-                queue.setPriority(AuditQueue.Priority.HIGH);
+                riskBasedPriority = AuditQueue.Priority.HIGH;
             } else if (riskScore >= 21) {
-                queue.setPriority(AuditQueue.Priority.MEDIUM);
+                riskBasedPriority = AuditQueue.Priority.MEDIUM;
             } else {
-                queue.setPriority(AuditQueue.Priority.LOW);
+                riskBasedPriority = AuditQueue.Priority.LOW;
+            }
+            
+            // Only upgrade priority, never downgrade
+            AuditQueue.Priority currentPriority = queue.getPriority();
+            if (currentPriority == null || riskBasedPriority.ordinal() > currentPriority.ordinal()) {
+                queue.setPriority(riskBasedPriority);
             }
             
             auditQueueRepository.save(queue);

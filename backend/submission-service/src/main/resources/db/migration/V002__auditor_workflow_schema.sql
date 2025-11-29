@@ -10,9 +10,25 @@ ADD COLUMN IF NOT EXISTS net_profit DECIMAL(12, 2),
 ADD COLUMN IF NOT EXISTS filed_date TIMESTAMP,
 ADD COLUMN IF NOT EXISTS due_date DATE;
 
--- Update tax_year to INTEGER type (if still STRING)
--- Note: This requires data migration in production
--- ALTER TABLE submissions ALTER COLUMN tax_year TYPE INTEGER USING tax_year::integer;
+-- Data migration for tax_year: convert non-integer values to NULL before altering type
+-- This ensures data integrity before type conversion
+DO $$
+BEGIN
+    -- Check if tax_year column exists and is not already INTEGER type
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'submissions' 
+        AND column_name = 'tax_year' 
+        AND data_type != 'integer'
+    ) THEN
+        -- Clean invalid data: set non-numeric tax_year values to NULL
+        UPDATE submissions SET tax_year = NULL 
+        WHERE tax_year IS NOT NULL AND tax_year !~ '^[0-9]+$';
+        
+        -- Convert column type
+        ALTER TABLE submissions ALTER COLUMN tax_year TYPE INTEGER USING tax_year::integer;
+    END IF;
+END $$;
 
 -- Create audit_queue table
 CREATE TABLE IF NOT EXISTS audit_queue (
@@ -79,8 +95,8 @@ CREATE INDEX IF NOT EXISTS idx_audit_trail_return ON audit_trail(return_id);
 CREATE INDEX IF NOT EXISTS idx_audit_trail_timestamp ON audit_trail(timestamp);
 
 -- Prevent updates and deletes on audit_trail (PostgreSQL specific)
--- CREATE RULE audit_trail_no_update AS ON UPDATE TO audit_trail DO INSTEAD NOTHING;
--- CREATE RULE audit_trail_no_delete AS ON DELETE TO audit_trail DO INSTEAD NOTHING;
+CREATE RULE audit_trail_no_update AS ON UPDATE TO audit_trail DO INSTEAD NOTHING;
+CREATE RULE audit_trail_no_delete AS ON DELETE TO audit_trail DO INSTEAD NOTHING;
 
 -- Create audit_reports table
 CREATE TABLE IF NOT EXISTS audit_reports (

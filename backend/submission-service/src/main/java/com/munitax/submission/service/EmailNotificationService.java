@@ -263,6 +263,12 @@ public class EmailNotificationService {
     // ===== Helper Methods =====
     
     private void sendEmail(String to, String subject, String body, String emailType) {
+        // Skip if no email address configured
+        if (to == null || to.isEmpty()) {
+            logger.info("Skipping email send (no recipient configured) - Type: {}, Subject: {}", emailType, subject);
+            return;
+        }
+        
         // TODO: Integrate with actual email service
         // For now, log the email for demonstration
         logger.info(String.format("""
@@ -284,9 +290,18 @@ public class EmailNotificationService {
     
     private String getSubmissionEmail(Submission submission) {
         // TODO: Retrieve actual email from user/taxpayer record
-        // Throwing exception to prevent accidental sends to placeholder email
-        throw new UnsupportedOperationException(
-            "Email service not configured. Please integrate with actual email provider (SMTP/SendGrid/AWS SES).");
+        // In development/test, return a configurable test email
+        // In production, this should query the user/taxpayer database
+        
+        String testEmail = System.getenv("AUDIT_TEST_EMAIL");
+        if (testEmail != null && !testEmail.isEmpty()) {
+            logger.info("Using test email address: {}", testEmail);
+            return testEmail;
+        }
+        
+        // Fallback to logging-only mode (email service not fully configured)
+        logger.warn("Email service not configured. Set AUDIT_TEST_EMAIL environment variable or implement production email lookup.");
+        return null; // Will skip actual email sending but continue workflow
     }
     
     private String formatRejectionReason(String reason) {

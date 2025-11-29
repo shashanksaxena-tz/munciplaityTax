@@ -546,8 +546,14 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
                   rows={4}
                   placeholder="Please describe what specific documents are needed and why..."
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  {docRequestDescription.length} / 20 characters minimum
+                <p
+                  className={`text-xs mt-1 ${
+                    docRequestDescription.length < 20 ? 'text-red-500' : 'text-green-600'
+                  }`}
+                >
+                  {docRequestDescription.length < 20
+                    ? `${20 - docRequestDescription.length} more characters required`
+                    : `${docRequestDescription.length} characters`}
                 </p>
               </div>
               
@@ -560,10 +566,10 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
                   value={docRequestDeadline}
                   onChange={(e) => setDocRequestDeadline(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  min={new Date().toISOString().split('T')[0]}
+                  min={new Date(Date.now() + 24*60*60*1000).toISOString().split('T')[0]}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Taxpayer will be notified via email with upload instructions
+                  Taxpayer will be notified via email with upload instructions (minimum 1 day from now)
                 </p>
               </div>
             </div>

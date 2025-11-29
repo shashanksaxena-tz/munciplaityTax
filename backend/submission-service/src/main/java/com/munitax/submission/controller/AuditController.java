@@ -4,10 +4,13 @@ import com.munitax.submission.model.*;
 import com.munitax.submission.repository.AuditReportRepository;
 import com.munitax.submission.service.AuditService;
 import com.munitax.submission.service.AuditReportService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +23,8 @@ import java.util.Map;
 @RequestMapping("/api/v1/audit")
 @CrossOrigin(origins = "*")
 public class AuditController {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AuditController.class);
     
     private final AuditService auditService;
     private final AuditReportService auditReportService;
@@ -211,8 +216,9 @@ public class AuditController {
         try {
             AuditReport report = auditReportService.generateAuditReport(returnId);
             return ResponseEntity.ok(report);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        } catch (RuntimeException e) {
+            logger.error("Failed to generate audit report for return {}", returnId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
