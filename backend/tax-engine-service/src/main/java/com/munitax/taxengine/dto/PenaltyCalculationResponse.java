@@ -12,14 +12,17 @@ import java.time.LocalDate;
  * DTO for Penalty Calculation response.
  * 
  * Functional Requirements:
- * - FR-011: Calculate late-filing penalties (5% per month, max 25%, min $50 if tax > $200)
- * - FR-012: Calculate underpayment penalties (90% safe harbor rule)
+ * - FR-001 to FR-006: Late filing penalty calculation (5% per month, max 25%)
+ * - FR-007 to FR-011: Late payment penalty calculation (1% per month, max 25%)
+ * - FR-012 to FR-014: Combined penalty cap (max 5% per month when both apply)
+ * - FR-015 to FR-019: Safe harbor evaluation (90% current year OR 100%/110% prior year)
  * 
  * Research R4: Late Filing Penalty Edge Cases
  * - Partial months: Round up to nearest month
  * - Safe harbor exceptions: First-time filer waiver, reasonable cause
  * - Minimum penalty: $50 if tax due > $200, otherwise waived
  * 
+ * @see com.munitax.taxengine.domain.penalty.Penalty
  * @see com.munitax.taxengine.domain.withholding.W1Filing
  */
 @Data
@@ -29,9 +32,19 @@ import java.time.LocalDate;
 public class PenaltyCalculationResponse {
     
     /**
-     * W-1 filing ID that penalties apply to.
+     * Penalty ID (UUID) if penalty was created/found.
+     */
+    private String penaltyId;
+    
+    /**
+     * W-1 filing ID that penalties apply to (for backward compatibility).
      */
     private String filingId;
+    
+    /**
+     * Tax return ID that penalties apply to.
+     */
+    private String returnId;
     
     /**
      * Tax year and period (e.g., "2024-Q1").
@@ -122,4 +135,25 @@ public class PenaltyCalculationResponse {
      * - "Reasonable cause: Hurricane damage - penalty waived"
      */
     private String safeHarborReason;
+    
+    /**
+     * Whether penalty was abated.
+     */
+    private Boolean isAbated;
+    
+    /**
+     * Abatement reason (if abated).
+     */
+    private String abatementReason;
+    
+    /**
+     * Combined penalty cap amount (if both filing and payment penalties exist).
+     * FR-012 to FR-014: Maximum 5% per month when both penalties apply.
+     */
+    private BigDecimal combinedPenaltyCap;
+    
+    /**
+     * Whether combined penalty cap was applied.
+     */
+    private Boolean combinedCapApplied;
 }
