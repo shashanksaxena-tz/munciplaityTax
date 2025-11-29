@@ -4,11 +4,19 @@ import com.munitax.ledger.dto.TaxAssessmentRequest;
 import com.munitax.ledger.dto.TaxAssessmentResponse;
 import com.munitax.ledger.model.JournalEntry;
 import com.munitax.ledger.service.TaxAssessmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,6 +37,7 @@ import java.util.UUID;
 @RequestMapping("/api/v1/tax-assessments")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Tax Assessments", description = "Record tax assessments with double-entry journal entries")
 public class TaxAssessmentController {
     
     private final TaxAssessmentService taxAssessmentService;
@@ -67,15 +76,32 @@ public class TaxAssessmentController {
      * }
      */
     @PostMapping("/record")
+    @Operation(
+        summary = "Record tax assessment (Query Parameters)",
+        description = """
+            Records a tax assessment and creates double-entry journal entries.
+            Creates entries on both filer and municipality books.
+            Supports compound assessments with tax, penalty, and interest.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Tax assessment recorded successfully",
+            content = @Content(schema = @Schema(implementation = JournalEntry.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Invalid assessment data"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<JournalEntry> recordTaxAssessment(
-            @RequestParam UUID tenantId,
-            @RequestParam UUID filerId,
-            @RequestParam UUID returnId,
-            @RequestParam BigDecimal taxAmount,
-            @RequestParam(defaultValue = "0") BigDecimal penaltyAmount,
-            @RequestParam(defaultValue = "0") BigDecimal interestAmount,
-            @RequestParam String taxYear,
-            @RequestParam String taxPeriod) {
+            @RequestParam @Parameter(description = "Tenant UUID") UUID tenantId,
+            @RequestParam @Parameter(description = "Filer UUID") UUID filerId,
+            @RequestParam @Parameter(description = "Tax Return UUID") UUID returnId,
+            @RequestParam @Parameter(description = "Base tax amount") BigDecimal taxAmount,
+            @RequestParam(defaultValue = "0") @Parameter(description = "Penalty amount") BigDecimal penaltyAmount,
+            @RequestParam(defaultValue = "0") @Parameter(description = "Interest amount") BigDecimal interestAmount,
+            @RequestParam @Parameter(description = "Tax year (e.g., 2024)") String taxYear,
+            @RequestParam @Parameter(description = "Tax period (e.g., Q1, Q2, Annual)") String taxPeriod) {
         
         log.info("Recording tax assessment for filer {}: tax={}, penalty={}, interest={}", 
                  filerId, taxAmount, penaltyAmount, interestAmount);
@@ -99,8 +125,25 @@ public class TaxAssessmentController {
      * @return TaxAssessmentResponse with assessment summary and journal entry details
      */
     @PostMapping
+    @Operation(
+        summary = "Record tax assessment (DTO)",
+        description = """
+            Records a tax assessment using a request DTO.
+            Automatically creates double-entry journal entries on both books.
+            Returns detailed assessment response with journal entry information.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Tax assessment recorded successfully",
+            content = @Content(schema = @Schema(implementation = TaxAssessmentResponse.class))
+        ),
+        @ApiResponse(responseCode = "400", description = "Invalid assessment request"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     public ResponseEntity<TaxAssessmentResponse> recordTaxAssessmentWithDTO(
-            @RequestBody TaxAssessmentRequest request) {
+            @Valid @RequestBody @Parameter(description = "Tax assessment request") TaxAssessmentRequest request) {
         
         log.info("Recording tax assessment (DTO) for filer {}: totalAmount={}", 
                  request.getFilerId(), request.getTotalAmount());

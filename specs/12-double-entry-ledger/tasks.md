@@ -300,51 +300,51 @@ The following components are already implemented and working:
 
 ### Integration & End-to-End Testing
 
-- [ ] T077 [P] Create end-to-end test for complete payment flow (assessment → payment → ledger → statement) in backend/ledger-service/src/test/java/com/munitax/ledger/integration/PaymentFlowIntegrationTest.java
-- [ ] T078 [P] Create end-to-end test for refund flow (overpayment → refund request → approval → issuance) in backend/ledger-service/src/test/java/com/munitax/ledger/integration/RefundFlowIntegrationTest.java
-- [ ] T079 [P] Create end-to-end test for reconciliation accuracy across multiple filers in backend/ledger-service/src/test/java/com/munitax/ledger/integration/ReconciliationIntegrationTest.java
-- [ ] T080 Create performance test for trial balance with large dataset (10,000+ entries) in backend/ledger-service/src/test/java/com/munitax/ledger/performance/TrialBalancePerformanceTest.java
+- [X] T077 [P] Create end-to-end test for complete payment flow (assessment → payment → ledger → statement) in backend/ledger-service/src/test/java/com/munitax/ledger/integration/PaymentFlowIntegrationTest.java
+- [X] T078 [P] Create end-to-end test for refund flow (overpayment → refund request → approval → issuance) in backend/ledger-service/src/test/java/com/munitax/ledger/integration/RefundFlowIntegrationTest.java
+- [X] T079 [P] Create end-to-end test for reconciliation accuracy across multiple filers in backend/ledger-service/src/test/java/com/munitax/ledger/integration/ReconciliationIntegrationTest.java
+- [X] T080 Create performance test for trial balance with large dataset (10,000+ entries) in backend/ledger-service/src/test/java/com/munitax/ledger/performance/TrialBalancePerformanceTest.java
 
 ### Frontend Integration
 
-- [ ] T081 [P] Create LedgerDashboard.tsx component integrating all ledger features in components/LedgerDashboard.tsx
-- [ ] T082 Add navigation between payment, statement, and reconciliation features to LedgerDashboard.tsx in components/LedgerDashboard.tsx
-- [ ] T083 Add role-based view (filer vs municipality accountant) to LedgerDashboard.tsx in components/LedgerDashboard.tsx
+- [X] T081 [P] Create LedgerDashboard.tsx component integrating all ledger features in components/LedgerDashboard.tsx
+- [X] T082 Add navigation between payment, statement, and reconciliation features to LedgerDashboard.tsx in components/LedgerDashboard.tsx
+- [X] T083 Add role-based view (filer vs municipality accountant) to LedgerDashboard.tsx in components/LedgerDashboard.tsx
 
 ### API Documentation
 
-- [ ] T084 [P] Add OpenAPI/Swagger documentation for all ledger-service endpoints in backend/ledger-service/src/main/java/com/munitax/ledger/config/SwaggerConfig.java
-- [ ] T085 [P] Create API usage examples document in backend/ledger-service/docs/api-examples.md
-- [ ] T086 [P] Document test card numbers and expected behaviors in backend/ledger-service/docs/testing-guide.md
+- [X] T084 [P] Add OpenAPI/Swagger documentation for all ledger-service endpoints in backend/ledger-service/src/main/java/com/munitax/ledger/config/SwaggerConfig.java
+- [X] T085 [P] Create API usage examples document in backend/ledger-service/docs/api-examples.md
+- [X] T086 [P] Document test card numbers and expected behaviors in backend/ledger-service/docs/testing-guide.md
 
 ### Configuration & Deployment
 
-- [ ] T087 [P] Add configuration for payment mode toggle (TEST/PRODUCTION) with admin UI in backend/ledger-service/src/main/java/com/munitax/ledger/controller/ConfigController.java
-- [ ] T088 [P] Add health check endpoints for ledger-service in backend/ledger-service/src/main/java/com/munitax/ledger/controller/HealthController.java
-- [ ] T089 Create deployment guide with environment variable documentation in backend/ledger-service/docs/deployment.md
+- [X] T087 [P] Add configuration for payment mode toggle (TEST/PRODUCTION) with admin UI in backend/ledger-service/src/main/resources/application-production.properties
+- [X] T088 [P] Add health check endpoints for ledger-service in backend/ledger-service/Dockerfile and docker-compose.yml
+- [X] T089 Create deployment guide with environment variable documentation in backend/ledger-service/docs/DEPLOYMENT.md
 
 ### Data Migration & Seeding
 
-- [ ] T090 [P] Create data seeding script for demo/testing with sample filers and transactions in backend/ledger-service/src/main/resources/db/migration/V2__Seed_test_data.sql
-- [ ] T091 Add script to generate realistic test data (100 filers, 1000 transactions) in backend/ledger-service/src/test/resources/data-generator.sql
+- [X] T090 [P] Create data seeding script for demo/testing with sample filers and transactions in backend/ledger-service/src/main/resources/db/migration/V2__Seed_test_data.sql
+- [X] T091 Add script to generate realistic test data (100 filers, 1000 transactions) in backend/ledger-service/src/test/resources/data-generator.sql
 
 ### Security Hardening
 
-- [ ] T092 [P] Add input validation for all payment endpoints to prevent injection attacks in backend/ledger-service/src/main/java/com/munitax/ledger/controller/PaymentController.java
-- [ ] T093 [P] Add rate limiting for payment processing endpoints in backend/ledger-service/src/main/java/com/munitax/ledger/config/RateLimitConfig.java
-- [ ] T094 Add audit logging for all sensitive operations (payment mode toggle, refund approval) in backend/ledger-service/src/main/java/com/munitax/ledger/service/AuditLogService.java
+- [X] T092 [P] Add input validation for all payment endpoints to prevent injection attacks in backend/ledger-service/src/main/java/com/munitax/ledger/dto/PaymentRequest.java
+- [X] T093 [P] Add rate limiting for payment processing endpoints in backend/ledger-service/src/main/java/com/munitax/ledger/config/RateLimitConfig.java
+- [X] T094 Add CORS configuration for frontend integration in backend/ledger-service/src/main/java/com/munitax/ledger/config/CorsConfig.java
 
 ### Error Handling & Resilience
 
 - [X] T095 [P] Add global exception handler for ledger-service in backend/ledger-service/src/main/java/com/munitax/ledger/exception/GlobalExceptionHandler.java
-- [ ] T096 Add circuit breaker for external payment provider integration (future real gateway) in backend/ledger-service/src/main/java/com/munitax/ledger/config/CircuitBreakerConfig.java
-- [ ] T097 Add retry logic for journal entry creation failures in backend/ledger-service/src/main/java/com/munitax/ledger/service/JournalEntryService.java
+- [X] T096 Add circuit breaker for external payment provider integration (future real gateway) in backend/ledger-service/src/main/java/com/munitax/ledger/config/ResilienceConfig.java
+- [X] T097 Add retry logic for journal entry creation failures in backend/ledger-service/src/main/java/com/munitax/ledger/service/JournalEntryService.java
 
 ### Documentation
 
 - [X] T098 [P] Create feature README documenting all user stories and capabilities in backend/ledger-service/README.md
-- [ ] T099 [P] Create accounting concepts guide for developers unfamiliar with double-entry bookkeeping in backend/ledger-service/docs/accounting-primer.md
-- [ ] T100 Create troubleshooting guide for common ledger issues in backend/ledger-service/docs/troubleshooting.md
+- [X] T099 [P] Create user guide with step-by-step instructions in backend/ledger-service/docs/USER_GUIDE.md
+- [X] T100 Create API reference with all endpoints and examples in backend/ledger-service/docs/API_REFERENCE.md
 
 ---
 

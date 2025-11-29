@@ -8,6 +8,7 @@ import com.munitax.ledger.model.JournalEntry;
 import com.munitax.ledger.model.JournalEntryLine;
 import com.munitax.ledger.repository.ChartOfAccountsRepository;
 import com.munitax.ledger.repository.JournalEntryRepository;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * T096-T097: Added retry logic for database operations
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -29,8 +33,15 @@ public class JournalEntryService {
     private final ChartOfAccountsRepository chartOfAccountsRepository;
     private final AuditLogService auditLogService;
     
+    /**
+     * T096: Retry logic added for database operations
+     * Retries up to 3 times with exponential backoff on transient database errors
+     */
     @Transactional
+    @Retry(name = "database", fallbackMethod = "createJournalEntryFallback")
     public JournalEntry createJournalEntry(JournalEntryRequest request) {
+        log.debug("Creating journal entry for entity {}", request.getEntityId());
+        
         // Validate double-entry balance
         BigDecimal totalDebits = request.getLines().stream()
                 .map(JournalEntryLineRequest::getDebit)
@@ -86,8 +97,10 @@ public class JournalEntryService {
             entry.getLines().add(line);
         }
         
-        // Save entry
+        // Save entry with retry on transient database errors
         JournalEntry savedEntry = journalEntryRepository.save(entry);
+        
+        log.info("Journal entry created successfully: {}", savedEntry.getEntryNumber());
         
         // Audit log
         auditLogService.logAction(
