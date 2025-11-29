@@ -437,9 +437,12 @@ Response 201:
   "expiredAmount": 0.00,
   "expirationDate": null,
   "carryforwardYears": null,
-  "isExpired": false,
-  "hasRemainingBalance": true
+  "isExpired": false,           // Computed: expirationDate != null && current date > expirationDate
+  "hasRemainingBalance": true   // Computed: currentNOLBalance > 0 && !isExpired
 }
+
+Note: `isExpired` and `hasRemainingBalance` are computed properties derived from persisted fields.
+They are calculated on-demand via helper methods in the NOL entity class.
 ```
 
 ### Apply NOL Deduction

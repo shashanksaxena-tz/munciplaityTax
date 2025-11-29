@@ -211,11 +211,20 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
                   <AlertTriangle className="h-5 w-5 mr-3 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="font-semibold">{alert.alertMessage}</p>
-                    <p className="text-sm mt-1">
-                      Balance: {formatCurrency(alert.nolBalance)} | 
-                      Expires: {formatDate(alert.expirationDate)} | 
-                      Years until expiration: {alert.yearsUntilExpiration}
-                    </p>
+                    <div className="text-sm mt-2 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Balance:</span>
+                        <span className="font-medium">{formatCurrency(alert.nolBalance)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Expires:</span>
+                        <span className="font-medium">{formatDate(alert.expirationDate)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Years until expiration:</span>
+                        <span className="font-medium">{alert.yearsUntilExpiration}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -416,7 +425,7 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
       </div>
 
       {/* CARES Act Carryback Information */}
-      {taxYear >= 2018 && taxYear <= 2020 && (
+      {taxYear >= 2018 && taxYear <= 2020 && vintages.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <div className="flex items-start">
             <Info className="h-6 w-6 text-blue-600 mr-3 mt-0.5 flex-shrink-0" />
@@ -428,12 +437,24 @@ export const NOLScheduleView: React.FC<NOLScheduleViewProps> = ({
                 NOLs from tax years 2018-2020 are eligible for 5-year carryback under the CARES Act.
                 You can carry this NOL back to prior years and claim a refund of taxes previously paid.
               </p>
-              <button
-                onClick={() => handleCarrybackElection('sample-nol-id')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                Elect Carryback
-              </button>
+              {vintages
+                .filter(v => !v.isCarriedBack && v.taxYear >= 2018 && v.taxYear <= 2020 && v.availableThisYear > 0)
+                .map((vintage, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => onCarrybackElect && onCarrybackElect(`nol-${vintage.taxYear}`)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mr-2 mb-2"
+                    disabled={!onCarrybackElect}
+                  >
+                    Elect Carryback for {vintage.taxYear} NOL ({formatCurrency(vintage.availableThisYear)})
+                  </button>
+                ))
+              }
+              {vintages.filter(v => !v.isCarriedBack && v.taxYear >= 2018 && v.taxYear <= 2020 && v.availableThisYear > 0).length === 0 && (
+                <p className="text-sm text-blue-700 italic">
+                  No eligible NOLs available for carryback. NOLs must not already be carried back and must have a remaining balance.
+                </p>
+              )}
             </div>
           </div>
         </div>
