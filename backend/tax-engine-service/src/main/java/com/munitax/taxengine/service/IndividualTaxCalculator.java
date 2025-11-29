@@ -386,6 +386,16 @@ public class IndividualTaxCalculator {
         double totalScheduleIncome = 0;
         int rentalPropertyCount = 0;
         int rentalPropertiesWithData = 0;
+        double totalRentalLoss = 0;
+        
+        // Get AGI from federal form if available
+        Double agi = null;
+        for (TaxFormData form : forms) {
+            if (form instanceof FederalTaxForm federal) {
+                agi = federal.adjustedGrossIncome();
+                break;
+            }
+        }
 
         for (TaxFormData form : forms) {
             // FR-006: Schedule C estimated tax validation
@@ -424,7 +434,7 @@ public class IndividualTaxCalculator {
                             rentalPropertiesWithData++;
                             
                             // FR-008: Check if property is outside Dublin
-                            if (!rental.city().toLowerCase().contains("dublin")) {
+                            if (rental.city() != null && !rental.city().toLowerCase().contains("dublin")) {
                                 issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
                                         "DISC-" + counter++,
                                         "FR-008",
@@ -441,6 +451,16 @@ public class IndividualTaxCalculator {
                                         null,
                                         null));
                             }
+                        }
+                        
+                        // Calculate rental loss for FR-009
+                        double rentalIncome = rental.line21_FairRentalDays_or_Income() != null ? 
+                                rental.line21_FairRentalDays_or_Income() : 0;
+                        double rentalDeduction = rental.line22_DeductibleLoss() != null ? 
+                                rental.line22_DeductibleLoss() : 0;
+                        double netRentalIncome = rentalIncome + rentalDeduction; // deduction is negative
+                        if (netRentalIncome < 0) {
+                            totalRentalLoss += Math.abs(netRentalIncome);
                         }
                     }
                     
@@ -465,6 +485,26 @@ public class IndividualTaxCalculator {
                     }
                 }
             }
+        }
+        
+        // FR-009: Passive loss limitation check
+        if (totalRentalLoss > 0 && agi != null && agi > 150000) {
+            issues.add(new TaxCalculationResult.DiscrepancyReport.DiscrepancyIssue(
+                    "DISC-" + counter++,
+                    "FR-009",
+                    "Schedule E Validation",
+                    "Passive Loss Limitation",
+                    agi,
+                    totalRentalLoss,
+                    0.0,
+                    0.0,
+                    "LOW",
+                    String.format("AGI of $%.2f exceeds $150,000 threshold. Rental loss of $%.2f may be limited by passive activity rules.",
+                            agi, totalRentalLoss),
+                    "Verify federal Form 8582 was prepared and passive loss limits were applied correctly.",
+                    false,
+                    null,
+                    null));
         }
 
         return issues;

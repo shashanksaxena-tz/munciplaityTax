@@ -268,4 +268,38 @@ class IndividualTaxCalculatorTest {
         assertTrue(result.discrepancyReport().summary().highSeverityCount() > 0);
         assertTrue(result.discrepancyReport().summary().blocksFiling());
     }
+
+    @Test
+    void testScheduleEPassiveLossValidation_FR009() {
+        // Test FR-009: Passive loss limitation when AGI > $150K
+        Address addr = new Address("123 Rental St", "Columbus", "OH", "43215", "USA", null);
+        ScheduleE.RentalProperty rental = new ScheduleE.RentalProperty(
+                "1", "123 Rental St", "Columbus", "OH", "43215", "Residential",
+                15000.0, -20000.0, -5000.0);
+
+        ScheduleE schedE = new ScheduleE(
+                "1", "schedE.pdf", 2023, TaxFormType.SCHEDULE_E, 0.99, Map.of(), 1, "AI", "PRIMARY",
+                List.of(rental), List.of(), -5000.0, List.of());
+
+        FederalTaxForm federal = new FederalTaxForm(
+                "2", "1040.pdf", 2023, TaxFormType.FEDERAL_1040, 0.99, Map.of(), 1, "AI", "PRIMARY",
+                100000.0, 0.0, 0.0, 0.0, 0.0, 0.0, 100000.0, 180000.0, 0.0);
+
+        TaxRulesConfig rules = new TaxRulesConfig(
+                0.020, 0.020, Map.of(),
+                TaxRulesConfig.W2QualifyingWagesRule.HIGHEST_OF_ALL,
+                new TaxRulesConfig.IncomeInclusion(true, true, true, true, true),
+                true);
+
+        TaxCalculationResult result = calculator.calculateTaxes(
+                List.of(schedE, federal),
+                null,
+                null,
+                rules);
+
+        // Assert passive loss warning is present
+        assertTrue(result.discrepancyReport().hasDiscrepancies());
+        assertTrue(result.discrepancyReport().issues().stream()
+                .anyMatch(i -> i.ruleId().equals("FR-009") && i.severity().equals("LOW")));
+    }
 }
