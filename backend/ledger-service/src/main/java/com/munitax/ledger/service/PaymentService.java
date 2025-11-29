@@ -192,4 +192,45 @@ public class PaymentService {
         return paymentTransactionRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
     }
+    
+    public PaymentReceipt generatePaymentReceipt(UUID paymentId) {
+        PaymentTransaction payment = getPaymentByPaymentId(paymentId);
+        
+        // Get journal entry if exists
+        String journalEntryNumber = null;
+        if (payment.getJournalEntryId() != null) {
+            JournalEntry entry = journalEntryService.getEntryById(payment.getJournalEntryId());
+            journalEntryNumber = entry.getEntryNumber();
+        }
+        
+        return PaymentReceipt.builder()
+                .paymentId(payment.getPaymentId())
+                .transactionId(payment.getTransactionId())
+                .receiptNumber(generateReceiptNumber(payment))
+                .providerTransactionId(payment.getProviderTransactionId())
+                .authorizationCode(payment.getAuthorizationCode())
+                .amount(payment.getAmount())
+                .currency(payment.getCurrency())
+                .paymentMethod(payment.getPaymentMethod())
+                .status(payment.getStatus())
+                .paymentDate(payment.getTimestamp())
+                .filerId(payment.getFilerId())
+                .tenantId(payment.getTenantId())
+                .description(String.format("Payment via %s", payment.getPaymentMethod()))
+                .journalEntryId(payment.getJournalEntryId())
+                .journalEntryNumber(journalEntryNumber)
+                .testMode(Boolean.TRUE.equals(payment.getIsTestMode()))
+                .build();
+    }
+    
+    private String generateReceiptNumber(PaymentTransaction payment) {
+        // Generate receipt number if not already set
+        // Format: RCPT-YYYYMMDD-XXXXX
+        if (payment.getTimestamp() != null) {
+            String dateStr = payment.getTimestamp().toLocalDate().toString().replace("-", "");
+            String uniqueId = payment.getTransactionId().toString().substring(0, 8).toUpperCase();
+            return String.format("RCPT-%s-%s", dateStr, uniqueId);
+        }
+        return "RCPT-" + payment.getTransactionId().toString().substring(0, 8).toUpperCase();
+    }
 }
