@@ -55,50 +55,56 @@ const AuditorRoute = ({ children }: { children: React.ReactNode }) => {
     return <>{children}</>;
 };
 
-export default function App() {
+function AppContent() {
     const [reviewingReturnId, setReviewingReturnId] = React.useState<string | null>(null);
     const { user } = useAuth();
     
     return (
+        <Routes>
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegistrationForm />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            
+            {/* Service Testing Routes - No authentication required */}
+            <Route path="/test" element={<ServiceTestDashboard />} />
+            <Route path="/test/rules" element={<RuleServiceTestUI />} />
+            <Route path="/test/ledger" element={<LedgerServiceTestUI />} />
+            <Route path="/test/extraction" element={<ExtractionServiceTestUI />} />
+            
+            {/* Auditor Routes */}
+            <Route path="/auditor" element={
+                <AuditorRoute>
+                    {reviewingReturnId ? (
+                        <ReturnReviewPanel 
+                            returnId={reviewingReturnId}
+                            userId={user?.id || ''}
+                            onBack={() => setReviewingReturnId(null)}
+                        />
+                    ) : (
+                        <AuditorDashboard
+                            userId={user?.id || ''}
+                            onReviewReturn={(returnId) => setReviewingReturnId(returnId)}
+                        />
+                    )}
+                </AuditorRoute>
+            } />
+            
+            <Route path="/*" element={
+                <ProtectedRoute>
+                    <TaxFilingApp />
+                </ProtectedRoute>
+            } />
+        </Routes>
+    );
+}
+
+export default function App() {
+    return (
         <AuthProvider>
             <ToastProvider>
                 <Router>
-                    <Routes>
-                        <Route path="/login" element={<LoginForm />} />
-                        <Route path="/register" element={<RegistrationForm />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
-                        
-                        {/* Service Testing Routes - No authentication required */}
-                        <Route path="/test" element={<ServiceTestDashboard />} />
-                        <Route path="/test/rules" element={<RuleServiceTestUI />} />
-                        <Route path="/test/ledger" element={<LedgerServiceTestUI />} />
-                        <Route path="/test/extraction" element={<ExtractionServiceTestUI />} />
-                        
-                        {/* Auditor Routes */}
-                        <Route path="/auditor" element={
-                            <AuditorRoute>
-                                {reviewingReturnId ? (
-                                    <ReturnReviewPanel 
-                                        returnId={reviewingReturnId}
-                                        userId={user?.id || ''}
-                                        onBack={() => setReviewingReturnId(null)}
-                                    />
-                                ) : (
-                                    <AuditorDashboard
-                                        userId={user?.id || ''}
-                                        onReviewReturn={(returnId) => setReviewingReturnId(returnId)}
-                                    />
-                                )}
-                            </AuditorRoute>
-                        } />
-                        
-                        <Route path="/*" element={
-                            <ProtectedRoute>
-                                <TaxFilingApp />
-                            </ProtectedRoute>
-                        } />
-                    </Routes>
+                    <AppContent />
                 </Router>
             </ToastProvider>
         </AuthProvider>
