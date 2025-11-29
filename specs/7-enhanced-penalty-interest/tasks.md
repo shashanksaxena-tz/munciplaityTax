@@ -26,11 +26,11 @@ This is a web application with:
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Review project structure in plan.md and verify existing tax-engine-service setup
-- [ ] T002 Verify Spring Boot dependencies in backend/tax-engine-service/pom.xml (Spring Data JPA, PostgreSQL driver, Lombok, Jackson, java.time API)
-- [ ] T003 [P] Verify React dependencies in package.json (React Router, Axios, Tailwind CSS, date-fns, recharts)
-- [ ] T004 [P] Verify test frameworks in pom.xml (JUnit 5, Mockito, TestContainers) and package.json (Vitest, React Testing Library, Playwright)
-- [ ] T005 Verify Redis configuration for caching penalty/interest rates (updated quarterly)
+- [X] T001 Review project structure in plan.md and verify existing tax-engine-service setup
+- [X] T002 Verify Spring Boot dependencies in backend/tax-engine-service/pom.xml (Spring Data JPA, PostgreSQL driver, Lombok, Jackson, java.time API)
+- [X] T003 [P] Verify React dependencies in package.json (React Router, Axios, Tailwind CSS, date-fns, recharts)
+- [X] T004 [P] Verify test frameworks in pom.xml (JUnit 5, Mockito, TestContainers) and package.json (Vitest, React Testing Library, Playwright)
+- [X] T005 Verify Redis configuration for caching penalty/interest rates (updated quarterly)
 
 ---
 
@@ -42,34 +42,34 @@ This is a web application with:
 
 ### Database Migrations
 
-- [ ] T006 Create Flyway migration V1.30__create_penalties_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T007 Create Flyway migration V1.31__create_estimated_tax_penalties_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T008 Create Flyway migration V1.32__create_quarterly_underpayments_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T009 Create Flyway migration V1.33__create_interests_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T010 Create Flyway migration V1.34__create_quarterly_interests_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T011 Create Flyway migration V1.35__create_penalty_abatements_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T012 Create Flyway migration V1.36__create_payment_allocations_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T013 Create Flyway migration V1.37__create_penalty_audit_log_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T014 Create Flyway migration V1.38__add_penalty_indexes.sql in backend/tax-engine-service/src/main/resources/db/migration/
-- [ ] T015 Create Flyway migration V1.39__add_penalty_constraints.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T006 Create Flyway migration V1.40__create_penalties_table.sql in backend/tax-engine-service/src/main/resources/db/migration/ (NOTE: Changed to V1.40 due to V1.30-V1.38 already used by NOL feature)
+- [X] T007 Create Flyway migration V1.41__create_estimated_tax_penalties_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T008 Create Flyway migration V1.42__create_quarterly_underpayments_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T009 Create Flyway migration V1.43__create_interests_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T010 Create Flyway migration V1.44__create_quarterly_interests_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T011 Create Flyway migration V1.45__create_penalty_abatements_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T012 Create Flyway migration V1.46__create_payment_allocations_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T013 Create Flyway migration V1.47__create_penalty_audit_log_table.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T014 Create Flyway migration V1.48__add_penalty_indexes.sql in backend/tax-engine-service/src/main/resources/db/migration/
+- [X] T015 Create Flyway migration V1.49__add_penalty_constraints.sql in backend/tax-engine-service/src/main/resources/db/migration/
 
 ### Domain Models - Enums
 
-- [ ] T016 [P] Create PenaltyType enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/PenaltyType.java
-- [ ] T017 [P] Create CalculationMethod enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/CalculationMethod.java
-- [ ] T018 [P] Create Quarter enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/Quarter.java
-- [ ] T019 [P] Create CompoundingFrequency enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/CompoundingFrequency.java
-- [ ] T020 [P] Create AbatementType enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AbatementType.java
-- [ ] T021 [P] Create AbatementReason enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AbatementReason.java
-- [ ] T022 [P] Create AbatementStatus enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AbatementStatus.java
-- [ ] T023 [P] Create AllocationOrder enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AllocationOrder.java
-- [ ] T024 [P] Create PenaltyAuditEntityType enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/PenaltyAuditEntityType.java
-- [ ] T025 [P] Create PenaltyAuditAction enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/PenaltyAuditAction.java
-- [ ] T026 [P] Create ActorRole enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/ActorRole.java
+- [X] T016 [P] Create PenaltyType enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/PenaltyType.java
+- [X] T017 [P] Create CalculationMethod enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/CalculationMethod.java
+- [X] T018 [P] Create Quarter enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/Quarter.java
+- [X] T019 [P] Create CompoundingFrequency enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/CompoundingFrequency.java
+- [X] T020 [P] Create AbatementType enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AbatementType.java
+- [X] T021 [P] Create AbatementReason enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AbatementReason.java
+- [X] T022 [P] Create AbatementStatus enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AbatementStatus.java
+- [X] T023 [P] Create AllocationOrder enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/AllocationOrder.java
+- [X] T024 [P] Create PenaltyAuditEntityType enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/PenaltyAuditEntityType.java
+- [X] T025 [P] Create PenaltyAuditAction enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/PenaltyAuditAction.java
+- [X] T026 [P] Create ActorRole enum in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/ActorRole.java
 
 ### Domain Models - Entities
 
-- [ ] T027 [P] Create Penalty entity in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/Penalty.java
+- [X] T027 [P] Create Penalty entity in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/Penalty.java
 - [ ] T028 [P] Create EstimatedTaxPenalty entity in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/EstimatedTaxPenalty.java
 - [ ] T029 [P] Create QuarterlyUnderpayment entity in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/QuarterlyUnderpayment.java
 - [ ] T030 [P] Create Interest entity in backend/tax-engine-service/src/main/java/com/munitax/taxengine/domain/penalty/Interest.java
