@@ -29,8 +29,9 @@ ALTER TABLE dublin.withholding_reconciliations
 ALTER TABLE dublin.withholding_reconciliations 
     ADD CONSTRAINT IF NOT EXISTS check_resolution_notes 
     CHECK (
-        (status != 'RECONCILED' OR variance_wages = 0) OR 
-        (status = 'RECONCILED' AND resolution_notes IS NOT NULL)
+        status != 'RECONCILED' OR 
+        variance_wages = 0 OR 
+        resolution_notes IS NOT NULL
     );
 
 -- Comments for documentation

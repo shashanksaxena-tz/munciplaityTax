@@ -52,17 +52,19 @@ public interface WithholdingPaymentRepository extends JpaRepository<WithholdingP
      * Find all payments for a specific business (across all W-1 filings).
      * Used for payment history dashboard.
      * 
+     * Note: This requires custom query as payment only stores w1FilingId, not businessId.
+     * 
      * @param tenantId Tenant ID (for multi-tenant isolation)
      * @param businessId Business profile ID
      * @return List of all payments for this business
      */
-    @Query("""
-        SELECT p FROM WithholdingPayment p
-        JOIN W1Filing f ON p.w1FilingId = f.id
-        WHERE p.tenantId = :tenantId 
-        AND f.businessId = :businessId
-        ORDER BY p.paymentDate DESC
-        """)
+    @Query(value = """
+        SELECT p.* FROM dublin.withholding_payments p
+        INNER JOIN dublin.w1_filings f ON p.w1_filing_id = f.id
+        WHERE p.tenant_id = :tenantId 
+        AND f.business_id = :businessId
+        ORDER BY p.payment_date DESC
+        """, nativeQuery = true)
     List<WithholdingPayment> findByBusinessId(
         @Param("tenantId") UUID tenantId,
         @Param("businessId") UUID businessId
@@ -89,12 +91,13 @@ public interface WithholdingPaymentRepository extends JpaRepository<WithholdingP
     @Query("""
         SELECT p FROM WithholdingPayment p
         WHERE p.tenantId = :tenantId
-        AND p.status = 'PENDING'
+        AND p.status = :pendingStatus
         AND p.paymentDate < :cutoffDate
         """)
     List<WithholdingPayment> findStalePendingPayments(
         @Param("tenantId") UUID tenantId,
-        @Param("cutoffDate") LocalDateTime cutoffDate
+        @Param("cutoffDate") LocalDateTime cutoffDate,
+        @Param("pendingStatus") PaymentStatus pendingStatus
     );
     
     /**
