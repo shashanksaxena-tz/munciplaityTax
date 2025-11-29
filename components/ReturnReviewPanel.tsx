@@ -5,7 +5,8 @@ import {
   AuditAction,
   DocumentRequest,
   AuditReport,
-  AuditStatus
+  AuditStatus,
+  DocumentType
 } from '../types';
 import {
   FileText,
@@ -41,6 +42,11 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejectionDetails, setRejectionDetails] = useState('');
   const [resubmitDeadline, setResubmitDeadline] = useState('');
+  
+  // Document request states
+  const [docRequestType, setDocRequestType] = useState<DocumentType | ''>('');
+  const [docRequestDescription, setDocRequestDescription] = useState('');
+  const [docRequestDeadline, setDocRequestDeadline] = useState('');
 
   useEffect(() => {
     loadReturnData();
@@ -142,6 +148,47 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
     } catch (error) {
       console.error('Error rejecting return:', error);
       showToast('error', 'Error rejecting return');
+    }
+  };
+
+  const handleRequestDocuments = async () => {
+    if (!docRequestType || !docRequestDescription || !docRequestDeadline) {
+      showToast('warning', 'Please fill in all required fields');
+      return;
+    }
+    
+    if (docRequestDescription.length < 20) {
+      showToast('warning', 'Description must be at least 20 characters');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/v1/audit/request-docs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          returnId,
+          auditorId: userId,
+          documentType: docRequestType,
+          description: docRequestDescription,
+          deadline: docRequestDeadline,
+          tenantId: queueEntry?.tenantId
+        })
+      });
+      
+      if (response.ok) {
+        showToast('success', 'Document request sent successfully');
+        setShowDocRequestDialog(false);
+        setDocRequestType('');
+        setDocRequestDescription('');
+        setDocRequestDeadline('');
+        loadReturnData(); // Reload to show updated status
+      } else {
+        showToast('error', 'Failed to send document request');
+      }
+    } catch (error) {
+      console.error('Error requesting documents:', error);
+      showToast('error', 'Error requesting documents');
     }
   };
 
@@ -443,6 +490,97 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
                   setRejectionReason('');
                   setRejectionDetails('');
                   setResubmitDeadline('');
+                }}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Document Request Dialog */}
+      {showDocRequestDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <FileQuestion className="w-6 h-6 text-blue-600" />
+              Request Additional Documentation
+            </h3>
+            <p className="text-gray-600 mb-4 text-sm">
+              Request specific documents from the taxpayer to support their tax return.
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Document Type *
+                </label>
+                <select
+                  value={docRequestType}
+                  onChange={(e) => setDocRequestType(e.target.value as DocumentType)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                >
+                  <option value="">Select document type...</option>
+                  <option value="GENERAL_LEDGER">General Ledger</option>
+                  <option value="BANK_STATEMENTS">Bank Statements</option>
+                  <option value="DEPRECIATION_SCHEDULE">Depreciation Schedule</option>
+                  <option value="CONTRACTS">Contracts</option>
+                  <option value="INVOICES">Invoices</option>
+                  <option value="RECEIPTS">Receipts</option>
+                  <option value="PAYROLL_RECORDS">Payroll Records</option>
+                  <option value="TAX_RETURNS_PRIOR_YEAR">Prior Year Tax Returns</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description * (min 20 characters)
+                </label>
+                <textarea
+                  value={docRequestDescription}
+                  onChange={(e) => setDocRequestDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  rows={4}
+                  placeholder="Please describe what specific documents are needed and why..."
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {docRequestDescription.length} / 20 characters minimum
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Submission Deadline *
+                </label>
+                <input
+                  type="date"
+                  value={docRequestDeadline}
+                  onChange={(e) => setDocRequestDeadline(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Taxpayer will be notified via email with upload instructions
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3 mt-6">
+              <button
+                onClick={handleRequestDocuments}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Send Request
+              </button>
+              <button
+                onClick={() => {
+                  setShowDocRequestDialog(false);
+                  setDocRequestType('');
+                  setDocRequestDescription('');
+                  setDocRequestDeadline('');
                 }}
                 className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
               >

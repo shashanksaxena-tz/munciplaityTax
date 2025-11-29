@@ -3,6 +3,7 @@ package com.munitax.submission.controller;
 import com.munitax.submission.model.*;
 import com.munitax.submission.repository.AuditReportRepository;
 import com.munitax.submission.service.AuditService;
+import com.munitax.submission.service.AuditReportService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,10 +22,15 @@ import java.util.Map;
 public class AuditController {
     
     private final AuditService auditService;
+    private final AuditReportService auditReportService;
     private final AuditReportRepository auditReportRepository;
     
-    public AuditController(AuditService auditService, AuditReportRepository auditReportRepository) {
+    public AuditController(
+            AuditService auditService,
+            AuditReportService auditReportService,
+            AuditReportRepository auditReportRepository) {
         this.auditService = auditService;
+        this.auditReportService = auditReportService;
         this.auditReportRepository = auditReportRepository;
     }
     
@@ -199,6 +205,16 @@ public class AuditController {
     }
     
     // ===== Audit Reports =====
+    
+    @PostMapping("/report/generate/{returnId}")
+    public ResponseEntity<AuditReport> generateAuditReport(@PathVariable String returnId) {
+        try {
+            AuditReport report = auditReportService.generateAuditReport(returnId);
+            return ResponseEntity.ok(report);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
     
     @GetMapping("/report/{returnId}")
     public ResponseEntity<AuditReport> getAuditReport(@PathVariable String returnId) {

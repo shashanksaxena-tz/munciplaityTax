@@ -21,37 +21,60 @@ public class AuditService {
     private final AuditTrailRepository auditTrailRepository;
     private final SubmissionRepository submissionRepository;
     private final DocumentRequestRepository documentRequestRepository;
+    private final AuditReportService auditReportService;
     
     public AuditService(
             AuditQueueRepository auditQueueRepository,
             AuditActionRepository auditActionRepository,
             AuditTrailRepository auditTrailRepository,
             SubmissionRepository submissionRepository,
-            DocumentRequestRepository documentRequestRepository) {
+            DocumentRequestRepository documentRequestRepository,
+            AuditReportService auditReportService) {
         this.auditQueueRepository = auditQueueRepository;
         this.auditActionRepository = auditActionRepository;
         this.auditTrailRepository = auditTrailRepository;
         this.submissionRepository = submissionRepository;
         this.documentRequestRepository = documentRequestRepository;
+        this.auditReportService = auditReportService;
     }
     
     // ===== Queue Management =====
     
     public AuditQueue createQueueEntry(String returnId, String tenantId) {
+        Submission submission = submissionRepository.findById(returnId)
+                .orElseThrow(() -> new RuntimeException("Submission not found"));
+        
         AuditQueue queue = new AuditQueue();
         queue.setReturnId(returnId);
         queue.setSubmissionDate(Instant.now());
         queue.setStatus(AuditQueue.AuditStatus.PENDING);
-        queue.setPriority(AuditQueue.Priority.MEDIUM);
         queue.setTenantId(tenantId);
         queue.setRiskScore(0);
         queue.setFlaggedIssuesCount(0);
+        
+        // Auto-assign priority based on tax amount
+        Double taxDue = submission.getTaxDue() != null ? submission.getTaxDue() : 0.0;
+        if (taxDue > 50000 || Boolean.TRUE.equals(submission.getHasDiscrepancies())) {
+            queue.setPriority(AuditQueue.Priority.HIGH);
+        } else if (taxDue > 10000) {
+            queue.setPriority(AuditQueue.Priority.MEDIUM);
+        } else {
+            queue.setPriority(AuditQueue.Priority.LOW);
+        }
         
         AuditQueue saved = auditQueueRepository.save(queue);
         
         // Create audit trail entry
         createTrailEntry(returnId, "SYSTEM", AuditTrail.EventType.SUBMISSION, 
                         "Return submitted and added to audit queue");
+        
+        // Generate automated audit report
+        try {
+            auditReportService.generateAuditReport(returnId);
+        } catch (Exception e) {
+            // Log error but don't fail queue creation
+            System.err.println("Failed to generate audit report for " + returnId + ": " + e.getMessage());
+        }
         
         return saved;
     }
