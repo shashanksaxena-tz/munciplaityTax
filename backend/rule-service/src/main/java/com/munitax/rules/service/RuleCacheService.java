@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -75,7 +76,7 @@ public class RuleCacheService {
             String pattern = tenantCachePrefix + tenantId + ":*";
             
             // Use SCAN instead of KEYS for production safety (non-blocking operation)
-            Set<String> keysToDelete = new java.util.HashSet<>();
+            Set<String> keysToDelete = new HashSet<>();
             redisTemplate.execute((RedisCallback<Void>) connection -> {
                 ScanOptions options = ScanOptions.scanOptions()
                         .match(pattern)
@@ -124,7 +125,7 @@ public class RuleCacheService {
             String pattern = tenantCachePrefix + "*";
             
             // Use SCAN instead of KEYS for production safety (non-blocking operation)
-            Set<String> keysToDelete = new java.util.HashSet<>();
+            Set<String> keysToDelete = new HashSet<>();
             redisTemplate.execute((RedisCallback<Void>) connection -> {
                 ScanOptions options = ScanOptions.scanOptions()
                         .match(pattern)
