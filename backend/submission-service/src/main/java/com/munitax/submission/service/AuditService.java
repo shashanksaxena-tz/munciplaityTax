@@ -2,6 +2,8 @@ package com.munitax.submission.service;
 
 import com.munitax.submission.model.*;
 import com.munitax.submission.repository.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,8 @@ import java.util.Optional;
 @Service
 @Transactional
 public class AuditService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AuditService.class);
     
     private final AuditQueueRepository auditQueueRepository;
     private final AuditActionRepository auditActionRepository;
@@ -76,7 +80,7 @@ public class AuditService {
             auditReportService.generateAuditReport(returnId);
         } catch (Exception e) {
             // Log error but don't fail queue creation
-            System.err.println("Failed to generate audit report for " + returnId + ": " + e.getMessage());
+            logger.error("Failed to generate audit report for {}", returnId, e);
         }
         
         return saved;
@@ -200,7 +204,7 @@ public class AuditService {
             emailNotificationService.sendApprovalNotification(submission, auditorId, paymentDueDate);
         } catch (Exception e) {
             // Log error but don't fail approval
-            System.err.println("Failed to send approval email: " + e.getMessage());
+            logger.error("Failed to send approval email", e);
         }
     }
     
@@ -242,7 +246,7 @@ public class AuditService {
                 submission, reason, detailedExplanation, resubmitDeadline);
         } catch (Exception e) {
             // Log error but don't fail rejection
-            System.err.println("Failed to send rejection email: " + e.getMessage());
+            logger.error("Failed to send rejection email", e);
         }
     }
     
@@ -287,7 +291,7 @@ public class AuditService {
             emailNotificationService.sendDocumentRequestNotification(submission, saved);
         } catch (Exception e) {
             // Log error but don't fail request creation
-            System.err.println("Failed to send document request email: " + e.getMessage());
+            logger.error("Failed to send document request email", e);
         }
         
         return saved;

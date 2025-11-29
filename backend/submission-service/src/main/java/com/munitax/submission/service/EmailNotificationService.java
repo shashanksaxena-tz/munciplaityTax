@@ -284,8 +284,9 @@ public class EmailNotificationService {
     
     private String getSubmissionEmail(Submission submission) {
         // TODO: Retrieve actual email from user/taxpayer record
-        // For now, use placeholder
-        return "taxpayer@example.com";
+        // Throwing exception to prevent accidental sends to placeholder email
+        throw new UnsupportedOperationException(
+            "Email service not configured. Please integrate with actual email provider (SMTP/SendGrid/AWS SES).");
     }
     
     private String formatRejectionReason(String reason) {

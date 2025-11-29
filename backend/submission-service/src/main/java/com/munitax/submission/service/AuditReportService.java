@@ -6,6 +6,8 @@ import com.munitax.submission.model.Submission;
 import com.munitax.submission.repository.AuditQueueRepository;
 import com.munitax.submission.repository.AuditReportRepository;
 import com.munitax.submission.repository.SubmissionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,8 @@ import java.util.Optional;
 @Service
 @Transactional
 public class AuditReportService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AuditReportService.class);
     
     private final AuditReportRepository auditReportRepository;
     private final SubmissionRepository submissionRepository;
