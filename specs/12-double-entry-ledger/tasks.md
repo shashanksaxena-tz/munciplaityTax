@@ -170,21 +170,21 @@ The following components are already implemented and working:
 
 ### Tests for User Story 4
 
-- [ ] T029 [P] [US4] Create AccountStatementServiceTest with multi-transaction scenario in backend/ledger-service/src/test/java/com/munitax/ledger/service/AccountStatementServiceTest.java
-- [ ] T030 [P] [US4] Add test for date range filtering in account statement in backend/ledger-service/src/test/java/com/munitax/ledger/service/AccountStatementServiceTest.java
-- [ ] T031 [P] [US4] Add integration test for account statement API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/AccountStatementControllerTest.java
+- [X] T029 [P] [US4] Create AccountStatementServiceTest with multi-transaction scenario in backend/ledger-service/src/test/java/com/munitax/ledger/service/AccountStatementServiceTest.java
+- [X] T030 [P] [US4] Add test for date range filtering in account statement in backend/ledger-service/src/test/java/com/munitax/ledger/service/AccountStatementServiceTest.java
+- [X] T031 [P] [US4] Add integration test for account statement API endpoint in backend/ledger-service/src/test/java/com/munitax/ledger/controller/AccountStatementControllerTest.java
 
 ### Implementation for User Story 4
 
-- [ ] T032 [US4] Verify AccountStatementService handles all FR-023 requirements (all transaction types) in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
-- [ ] T033 [US4] Add transaction type filtering to AccountStatementService per FR-024 in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
-- [ ] T034 [US4] Add tax year filtering to AccountStatementService per FR-024 in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
-- [ ] T035 [US4] Add PDF export endpoint GET /api/v1/account-statements/{filerId}/pdf per FR-025 in backend/ledger-service/src/main/java/com/munitax/ledger/controller/AccountStatementController.java
-- [ ] T036 [US4] Add CSV export endpoint GET /api/v1/account-statements/{filerId}/csv per FR-025 in backend/ledger-service/src/main/java/com/munitax/ledger/controller/AccountStatementController.java
-- [ ] T037 [US4] Add aging calculation method to AccountStatementService per FR-026 in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
-- [ ] T038 [P] [US4] Create frontend FilerAccountStatement.tsx component to display account statement in components/FilerAccountStatement.tsx
-- [ ] T039 [US4] Add date range filter UI to FilerAccountStatement.tsx in components/FilerAccountStatement.tsx
-- [ ] T040 [US4] Add export buttons (PDF, CSV) to FilerAccountStatement.tsx in components/FilerAccountStatement.tsx
+- [X] T032 [US4] Verify AccountStatementService handles all FR-023 requirements (all transaction types) in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
+- [X] T033 [US4] Add transaction type filtering to AccountStatementService per FR-024 in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
+- [X] T034 [US4] Add tax year filtering to AccountStatementService per FR-024 in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
+- [X] T035 [US4] Add PDF export endpoint GET /api/v1/account-statements/{filerId}/pdf per FR-025 in backend/ledger-service/src/main/java/com/munitax/ledger/controller/AccountStatementController.java
+- [X] T036 [US4] Add CSV export endpoint GET /api/v1/account-statements/{filerId}/csv per FR-025 in backend/ledger-service/src/main/java/com/munitax/ledger/controller/AccountStatementController.java
+- [X] T037 [US4] Add aging calculation method to AccountStatementService per FR-026 in backend/ledger-service/src/main/java/com/munitax/ledger/service/AccountStatementService.java
+- [X] T038 [P] [US4] Create frontend FilerAccountStatement.tsx component to display account statement in components/FilerAccountStatement.tsx
+- [X] T039 [US4] Add date range filter UI to FilerAccountStatement.tsx in components/FilerAccountStatement.tsx
+- [X] T040 [US4] Add export buttons (PDF, CSV) to FilerAccountStatement.tsx in components/FilerAccountStatement.tsx
 
 **Checkpoint**: User Story 4 complete - filers can view complete payment history with running balance
 
