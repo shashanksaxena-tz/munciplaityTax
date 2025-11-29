@@ -4,7 +4,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,7 +26,10 @@ import java.util.List;
  */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    
+    private final Environment environment;
     
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
@@ -40,8 +47,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Current behavior: Accepts ANY Bearer token without validation
                 
                 // Check if running in production and log critical warning
-                String profile = System.getProperty("spring.profiles.active", "dev");
-                if ("prod".equalsIgnoreCase(profile) || "production".equalsIgnoreCase(profile)) {
+                String[] activeProfiles = environment.getActiveProfiles();
+                boolean isProduction = Arrays.stream(activeProfiles)
+                    .anyMatch(profile -> profile.equalsIgnoreCase("prod") || 
+                                       profile.equalsIgnoreCase("production"));
+                
+                if (isProduction) {
                     log.error("⚠️ CRITICAL SECURITY ISSUE: Hardcoded JWT credentials in production! " +
                              "This accepts ANY token. Implement proper JWT validation immediately.");
                 }

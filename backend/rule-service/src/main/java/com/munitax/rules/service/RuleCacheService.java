@@ -79,13 +79,13 @@ public class RuleCacheService {
                         .count(100)
                         .build();
                 
-                org.springframework.data.redis.core.Cursor<byte[]> cursor = 
-                    connection.scan(options);
-                
-                while (cursor.hasNext()) {
-                    keysToDelete.add(new String(cursor.next()));
+                try (org.springframework.data.redis.core.Cursor<byte[]> cursor = connection.scan(options)) {
+                    while (cursor.hasNext()) {
+                        keysToDelete.add(new String(cursor.next(), java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                } catch (Exception e) {
+                    log.error("Error scanning Redis keys", e);
                 }
-                cursor.close();
                 return null;
             });
             
@@ -129,13 +129,13 @@ public class RuleCacheService {
                         .count(100)
                         .build();
                 
-                org.springframework.data.redis.core.Cursor<byte[]> cursor = 
-                    connection.scan(options);
-                
-                while (cursor.hasNext()) {
-                    keysToDelete.add(new String(cursor.next()));
+                try (org.springframework.data.redis.core.Cursor<byte[]> cursor = connection.scan(options)) {
+                    while (cursor.hasNext()) {
+                        keysToDelete.add(new String(cursor.next(), java.nio.charset.StandardCharsets.UTF_8));
+                    }
+                } catch (Exception e) {
+                    log.error("Error scanning Redis keys", e);
                 }
-                cursor.close();
                 return null;
             });
             
