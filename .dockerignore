@@ -1,0 +1,70 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Documentation
+*.md
+docs/
+README.md
+LICENSE
+CHANGELOG.md
+
+# Development files
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.yarn/
+
+# Build artifacts
+dist/
+build/
+target/
+*.log
+*.tmp
+.cache/
+
+# Environment files
+.env*
+!.env.example
+
+# Test files
+coverage/
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.swp
+*.swo
+*~
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.jks
+secrets/
+credentials/
