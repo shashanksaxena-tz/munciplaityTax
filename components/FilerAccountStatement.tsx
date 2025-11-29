@@ -213,7 +213,7 @@ export default function FilerAccountStatement({ tenantId, filerId }: FilerAccoun
     return null;
   }
 
-  const balanceIsPositive = data.endingBalance.compareTo(0) > 0;
+  const balanceIsPositive = data.endingBalance > 0;
 
   return (
     <div className="space-y-6">
@@ -335,7 +335,7 @@ export default function FilerAccountStatement({ tenantId, filerId }: FilerAccoun
             {balanceIsPositive && (
               <p className="text-sm text-red-600 mt-1">Amount Owed</p>
             )}
-            {!balanceIsPositive && data.endingBalance === 0 && (
+            {data.endingBalance === 0 && (
               <p className="text-sm text-green-600 mt-1">Paid in Full</p>
             )}
           </CardContent>

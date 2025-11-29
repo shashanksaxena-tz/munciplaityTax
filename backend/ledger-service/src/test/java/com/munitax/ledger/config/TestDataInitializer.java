@@ -4,6 +4,7 @@ import com.munitax.ledger.enums.AccountType;
 import com.munitax.ledger.enums.NormalBalance;
 import com.munitax.ledger.model.ChartOfAccounts;
 import com.munitax.ledger.repository.ChartOfAccountsRepository;
+import com.munitax.ledger.util.TestConstants;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -20,6 +21,10 @@ import java.util.UUID;
 public class TestDataInitializer {
     
     private final ChartOfAccountsRepository chartOfAccountsRepository;
+    
+    public UUID getTestTenantId() {
+        return TestConstants.TEST_TENANT_ID;
+    }
     
     @PostConstruct
     public void initTestData() {
@@ -48,7 +53,7 @@ public class TestDataInitializer {
                     .accountName(accountName)
                     .accountType(accountType)
                     .normalBalance(normalBalance)
-                    .tenantId(UUID.randomUUID())
+                    .tenantId(TestConstants.TEST_TENANT_ID)
                     .active(true)
                     .build();
             chartOfAccountsRepository.save(account);

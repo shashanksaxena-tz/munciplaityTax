@@ -132,7 +132,7 @@ public class TrialBalanceService {
         }
         
         // Get all journal entries for municipality up to asOfDate
-        List<JournalEntry> entries = journalEntryRepository.findByEntityId(entityId);
+        List<JournalEntry> entries = journalEntryRepository.findByTenantIdAndEntityIdOrderByEntryDateDesc(tenantId, entityId);
         
         // Sum debits and credits for each account
         for (JournalEntry entry : entries) {
@@ -142,7 +142,7 @@ public class TrialBalanceService {
             }
             
             for (JournalEntryLine line : entry.getLines()) {
-                String accountNumber = line.getAccountNumber();
+                String accountNumber = line.getAccount().getAccountNumber();
                 AccountBalanceSummary balance = balances.get(accountNumber);
                 
                 if (balance != null) {

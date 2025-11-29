@@ -59,7 +59,7 @@ public class ResilienceConfig {
         RetryConfig databaseRetryConfig = RetryConfig.custom()
                 .maxAttempts(3) // Try up to 3 times
                 .waitDuration(Duration.ofSeconds(1)) // Initial wait 1 second
-                .exponentialBackoffMultiplier(2.0) // Double wait time each retry
+                .intervalFunction(io.github.resilience4j.core.IntervalFunction.ofExponentialBackoff(1000, 2.0)) // Exponential backoff
                 .retryExceptions(
                         // Retry on these transient database exceptions
                         org.springframework.dao.DataAccessException.class,

@@ -44,7 +44,7 @@ public class RefundService {
         log.info("Detecting overpayment for filer {}", filerId);
         
         // Get all journal entries for the filer
-        List<JournalEntry> filerEntries = journalEntryRepository.findByEntityId(filerId);
+        List<JournalEntry> filerEntries = journalEntryRepository.findByTenantIdAndEntityIdOrderByEntryDateDesc(tenantId, filerId);
         
         // Calculate net tax liability (account 2100, 2110, 2120, 2130)
         // Liabilities have credit normal balance, so credits increase, debits decrease
@@ -52,7 +52,7 @@ public class RefundService {
         
         for (JournalEntry entry : filerEntries) {
             for (JournalEntryLine line : entry.getLines()) {
-                String accountNumber = line.getAccountNumber();
+                String accountNumber = line.getAccount().getAccountNumber();
                 
                 // Tax liability accounts: 2100, 2110, 2120, 2130
                 if (accountNumber.equals("2100") || accountNumber.equals("2110") || 

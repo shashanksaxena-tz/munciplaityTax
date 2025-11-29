@@ -2,6 +2,7 @@ package com.munitax.ledger.performance;
 
 import com.munitax.ledger.dto.*;
 import com.munitax.ledger.enums.PaymentMethod;
+import com.munitax.ledger.util.TestConstants;
 import com.munitax.ledger.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -251,7 +252,7 @@ class TrialBalancePerformanceTest {
                             .tenantId(tenantId)
                             .amount(amount)
                             .paymentMethod(PaymentMethod.CREDIT_CARD)
-                            .cardNumber("4111-1111-1111-1111")
+                            .cardNumber(TestConstants.APPROVED_VISA_CARD)
                             .description("Payment " + txnIndex)
                             .taxReturnId(taxReturnId)
                             .build();

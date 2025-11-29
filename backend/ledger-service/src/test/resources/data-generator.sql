@@ -151,10 +151,9 @@ BEGIN
                 );
             END IF;
             
-            -- Commit every 100 transactions to avoid long locks
+            -- Log progress every 100 transactions
             IF (i * num_transactions_per_filer + j) % 100 = 0 THEN
                 RAISE NOTICE 'Processed % transactions', (i * num_transactions_per_filer + j);
-                PERFORM pg_sleep(0.1); -- Brief pause
             END IF;
         END LOOP;
     END LOOP;
