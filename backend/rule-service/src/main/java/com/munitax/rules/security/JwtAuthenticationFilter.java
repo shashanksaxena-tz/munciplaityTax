@@ -1,0 +1,71 @@
+package com.munitax.rules.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * JWT authentication filter for rule-service.
+ * Extracts user and role information from JWT token.
+ * 
+ * NOTE: This is a simplified implementation. In production, use Spring Security OAuth2 Resource Server.
+ */
+@Component
+@Slf4j
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
+                                    FilterChain filterChain) throws ServletException, IOException {
+        
+        // Extract JWT from Authorization header
+        String authHeader = request.getHeader("Authorization");
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            
+            try {
+                // TODO: Implement actual JWT parsing and validation
+                // For now, accept any valid-looking token
+                
+                // Extract user ID and role from token (simplified)
+                String userId = "admin";  // TODO: Parse from JWT
+                String role = "TAX_ADMINISTRATOR";  // TODO: Parse from JWT
+                String tenantId = "dublin";  // TODO: Parse from JWT
+                
+                // Create authentication
+                List<SimpleGrantedAuthority> authorities = List.of(
+                    new SimpleGrantedAuthority("ROLE_" + role)
+                );
+                
+                UsernamePasswordAuthenticationToken authentication = 
+                    new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                
+                // Set authentication in security context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+                // Store tenant context for RLS
+                request.setAttribute("tenantId", tenantId);
+                request.setAttribute("userRole", role);
+                
+                log.debug("Authenticated user: {} with role: {} for tenant: {}", 
+                         userId, role, tenantId);
+                
+            } catch (Exception e) {
+                log.error("JWT authentication failed", e);
+            }
+        }
+        
+        filterChain.doFilter(request, response);
+    }
+}
