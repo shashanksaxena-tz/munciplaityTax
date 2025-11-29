@@ -336,8 +336,36 @@ export interface TaxCalculationResult {
 export interface ScheduleXEntry { source: string; type: string; gross: number; expenses: number; netProfit: number; }
 export interface ScheduleYEntry { source: string; locality: string; cityTaxRate: number; incomeTaxedByOtherCity: number; taxPaidToOtherCity: number; creditAllowed: number; }
 
-export interface DiscrepancyReport { hasDiscrepancies: boolean; issues: DiscrepancyIssue[]; }
-export interface DiscrepancyIssue { field: string; sourceValue: number; formValue: number; difference: number; severity: 'HIGH'|'MEDIUM'|'LOW'; message: string; }
+export interface DiscrepancyReport { 
+  hasDiscrepancies: boolean; 
+  issues: DiscrepancyIssue[];
+  summary?: DiscrepancySummary;
+}
+
+export interface DiscrepancyIssue { 
+  issueId: string;
+  ruleId: string;
+  category: string;
+  field: string; 
+  sourceValue: number; 
+  formValue: number; 
+  difference: number;
+  differencePercent?: number;
+  severity: 'HIGH'|'MEDIUM'|'LOW'; 
+  message: string;
+  recommendedAction?: string;
+  isAccepted?: boolean;
+  acceptanceNote?: string;
+  acceptedDate?: string;
+}
+
+export interface DiscrepancySummary {
+  totalIssues: number;
+  highSeverityCount: number;
+  mediumSeverityCount: number;
+  lowSeverityCount: number;
+  blocksFiling: boolean;
+}
 
 export interface PaymentRecord { id: string; date: string; amount: number; confirmationNumber: string; method: 'CREDIT_CARD' | 'ACH'; status: 'SUCCESS' | 'FAILED'; }
 

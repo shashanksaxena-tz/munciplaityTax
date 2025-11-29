@@ -60,15 +60,32 @@ public record TaxCalculationResult(
     
     public record DiscrepancyReport(
         boolean hasDiscrepancies,
-        List<DiscrepancyIssue> issues
+        List<DiscrepancyIssue> issues,
+        DiscrepancySummary summary
     ) {
         public record DiscrepancyIssue(
+            String issueId,
+            String ruleId,
+            String category,
             String field,
             Double sourceValue,
             Double formValue,
             Double difference,
+            Double differencePercent,
             String severity, // HIGH, MEDIUM, LOW
-            String message
+            String message,
+            String recommendedAction,
+            Boolean isAccepted,
+            String acceptanceNote,
+            String acceptedDate
+        ) {}
+        
+        public record DiscrepancySummary(
+            int totalIssues,
+            int highSeverityCount,
+            int mediumSeverityCount,
+            int lowSeverityCount,
+            boolean blocksFiling
         ) {}
     }
 }
