@@ -121,3 +121,4 @@ coverage/
 *.rar
 *.tar
 *.zip
+backend/rule-service/target/

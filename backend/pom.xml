@@ -25,6 +25,7 @@
         <module>submission-service</module>
         <module>pdf-service</module>
         <module>ledger-service</module>
+        <module>rule-service</module>
     </modules>
 
     <properties>

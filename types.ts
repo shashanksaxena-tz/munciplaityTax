@@ -573,3 +573,159 @@ export interface DocumentRequestPayload {
   deadline: string;
   tenantId: string;
 }
+
+// ============================================================================
+// Tax Rule Configuration Types (Feature 4: Dynamic Rule Configuration System)
+// ============================================================================
+
+export type RuleCategory = 
+  | 'TaxRates' 
+  | 'IncomeInclusion' 
+  | 'Deductions' 
+  | 'Penalties' 
+  | 'Filing' 
+  | 'Allocation' 
+  | 'Withholding' 
+  | 'Validation';
+
+export type RuleValueType = 
+  | 'NUMBER' 
+  | 'PERCENTAGE' 
+  | 'ENUM' 
+  | 'BOOLEAN' 
+  | 'FORMULA' 
+  | 'CONDITIONAL';
+
+export type ApprovalStatus = 
+  | 'PENDING' 
+  | 'APPROVED' 
+  | 'REJECTED' 
+  | 'VOIDED';
+
+export type ChangeType = 
+  | 'CREATE' 
+  | 'UPDATE' 
+  | 'DELETE' 
+  | 'APPROVE' 
+  | 'REJECT' 
+  | 'VOID' 
+  | 'ROLLBACK';
+
+export type RuleValue = 
+  | NumberValue 
+  | PercentageValue 
+  | EnumValue 
+  | BooleanValue 
+  | FormulaValue 
+  | ConditionalValue;
+
+export interface NumberValue {
+  scalar: number;
+}
+
+export interface PercentageValue {
+  scalar: number;
+  unit: 'percent';
+}
+
+export interface EnumValue {
+  option: string;
+  allowedValues: string[];
+}
+
+export interface BooleanValue {
+  flag: boolean;
+}
+
+export interface FormulaValue {
+  expression: string;
+  variables: string[];
+  returnType: 'number' | 'string' | 'boolean';
+}
+
+export interface ConditionalValue {
+  condition: string;
+  thenValue: any;
+  elseValue: any;
+  returnType: 'number' | 'string' | 'boolean';
+}
+
+export interface TaxRule {
+  ruleId: string;
+  ruleCode: string;
+  ruleName: string;
+  category: RuleCategory;
+  valueType: RuleValueType;
+  value: RuleValue;
+  effectiveDate: string;  // ISO 8601 date
+  endDate?: string;       // ISO 8601 date
+  tenantId: string;
+  entityTypes: string[];
+  appliesTo?: string;
+  version: number;
+  previousVersionId?: string;
+  dependsOn?: string[];
+  approvalStatus: ApprovalStatus;
+  approvedBy?: string;
+  approvalDate?: string;  // ISO 8601 timestamp
+  createdBy: string;
+  createdDate: string;    // ISO 8601 timestamp
+  modifiedBy?: string;
+  modifiedDate?: string;  // ISO 8601 timestamp
+  changeReason: string;
+  ordinanceReference?: string;
+}
+
+export interface CreateRuleRequest {
+  ruleCode: string;
+  ruleName: string;
+  category: RuleCategory;
+  valueType: RuleValueType;
+  value: RuleValue;
+  effectiveDate: string;
+  endDate?: string;
+  tenantId: string;
+  entityTypes?: string[];
+  appliesTo?: string;
+  previousVersionId?: string;
+  dependsOn?: string[];
+  changeReason: string;
+  ordinanceReference?: string;
+}
+
+export interface UpdateRuleRequest {
+  ruleName?: string;
+  category?: RuleCategory;
+  valueType?: RuleValueType;
+  value?: RuleValue;
+  effectiveDate?: string;
+  endDate?: string;
+  entityTypes?: string[];
+  appliesTo?: string;
+  dependsOn?: string[];
+  changeReason?: string;
+  ordinanceReference?: string;
+}
+
+export interface RuleChangeLog {
+  logId: string;
+  ruleId: string;
+  changeType: ChangeType;
+  oldValue?: any;
+  newValue: any;
+  changedFields: string[];
+  changedBy: string;
+  changeDate: string;  // ISO 8601 timestamp
+  changeReason: string;
+  affectedReturnsCount: number;
+  impactEstimate?: ImpactEstimate;
+}
+
+export interface ImpactEstimate {
+  totalAffectedTaxpayers: number;
+  avgTaxIncrease: number;
+  avgTaxDecrease: number;
+  maxImpact: number;
+  minImpact: number;
+  medianImpact: number;
+}
