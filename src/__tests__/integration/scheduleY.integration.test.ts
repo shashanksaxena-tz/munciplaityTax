@@ -118,12 +118,12 @@ describe('Schedule Y Integration Tests', () => {
     it('should fall back to cost-of-performance when customer location unknown', () => {
       // Given: Service with unknown customer location
       const serviceRevenue = 1000000;
-      const customerState = null;
+      const customerState = undefined;
       const employeeLocations = { OH: 0.70, CA: 0.30 };
       
       // When: Customer location unknown, fallback to cost-of-performance
       const shouldFallback = !customerState;
-      const useCostOfPerformance = shouldFallback && employeeLocations;
+      const useCostOfPerformance = shouldFallback && Object.keys(employeeLocations).length > 0;
       
       // Then: Should use cost-of-performance
       expect(shouldFallback).toBe(true);
