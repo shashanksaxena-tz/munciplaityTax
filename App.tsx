@@ -13,6 +13,7 @@ import { ServiceTestDashboard } from './components/test/ServiceTestDashboard';
 import { AuthServiceTestUI } from './components/test/AuthServiceTestUI';
 import { RuleServiceTestUI } from './components/test/RuleServiceTestUI';
 import { LedgerServiceTestUI } from './components/test/LedgerServiceTestUI';
+import { TaxEngineServiceTestUI } from './components/test/TaxEngineServiceTestUI';
 import { ExtractionServiceTestUI } from './components/test/ExtractionServiceTestUI';
 import { AppStep } from './types';
 
@@ -72,6 +73,7 @@ function AppContent() {
             <Route path="/test/auth" element={<AuthServiceTestUI />} />
             <Route path="/test/rules" element={<RuleServiceTestUI />} />
             <Route path="/test/ledger" element={<LedgerServiceTestUI />} />
+            <Route path="/test/tax-engine" element={<TaxEngineServiceTestUI />} />
             <Route path="/test/extraction" element={<ExtractionServiceTestUI />} />
             
             {/* Auditor Routes */}

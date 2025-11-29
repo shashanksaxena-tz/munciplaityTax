@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { Settings, BookOpen, FileSearch, FileText, Home, Shield } from 'lucide-react';
+import { Settings, BookOpen, FileSearch, FileText, Home, Shield, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const ServiceTestDashboard: React.FC = () => {
@@ -35,6 +35,15 @@ export const ServiceTestDashboard: React.FC = () => {
       path: '/test/ledger',
       port: 8087,
       features: ['Journal Entries', 'Trial Balance', 'Payments', 'Reconciliation']
+    },
+    {
+      name: 'Tax Engine Service',
+      description: 'Test tax calculation and computation engine',
+      icon: Calculator,
+      color: 'emerald',
+      path: '/test/tax-engine',
+      port: 8085,
+      features: ['Individual Tax Calc', 'Business Tax Calc', 'Penalty Calc', 'Interest Calc']
     },
     {
       name: 'Extraction Service',
@@ -88,6 +97,7 @@ export const ServiceTestDashboard: React.FC = () => {
               <div>cd backend/auth-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
               <div>cd backend/rule-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
               <div>cd backend/ledger-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
+              <div>cd backend/tax-engine-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
               <div>cd backend/extraction-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
               <div>cd backend/pdf-service && mvn spring-boot:run -Dspring-boot.run.profiles=standalone</div>
             </div>
@@ -107,6 +117,8 @@ export const ServiceTestDashboard: React.FC = () => {
               ? { bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-900', icon: 'text-indigo-600', dot: 'bg-indigo-500' }
               : service.color === 'green'
               ? { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900', icon: 'text-green-600', dot: 'bg-green-500' }
+              : service.color === 'emerald'
+              ? { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-900', icon: 'text-emerald-600', dot: 'bg-emerald-500' }
               : service.color === 'purple'
               ? { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-900', icon: 'text-purple-600', dot: 'bg-purple-500' }
               : { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', icon: 'text-orange-600', dot: 'bg-orange-500' };

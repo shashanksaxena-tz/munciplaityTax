@@ -1,0 +1,62 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: tax-engine-service-standalone
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/munitax
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+    show-sql: false
+  
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    schemas: dublin
+    default-schema: dublin
+
+# Disable Eureka for standalone mode
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+# Management and CORS
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      cors:
+        allowed-origins: "http://localhost:3000"
+        allowed-methods: "*"
+        allowed-headers: "*"
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.munitax.taxengine: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [STANDALONE] - %msg%n"
