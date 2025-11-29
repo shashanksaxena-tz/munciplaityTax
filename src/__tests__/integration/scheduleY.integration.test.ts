@@ -1,14 +1,13 @@
 /**
  * Integration tests for Schedule Y Multi-State Apportionment
- * Tests the end-to-end flow of apportionment calculations
+ * Tests the calculation logic and business rules for apportionment
+ * Note: These tests verify calculation formulas and business logic.
+ * Full end-to-end integration tests with backend services should be added separately.
  */
 
 import { describe, it, expect } from 'vitest';
 import { 
   ApportionmentFormula,
-  type PropertyFactorInput,
-  type PayrollFactorInput,
-  type SalesFactorInput,
 } from '../../types/apportionment';
 import {
   SourcingMethodElection,
@@ -51,11 +50,8 @@ describe('Schedule Y Integration Tests', () => {
   describe('US-2: Throwback Rule Application', () => {
     it('should throw back sale to origin state when destination lacks nexus', () => {
       // Given: Sale from OH to CA, no CA nexus
-      const saleAmount = 100000;
-      const originState = 'OH';
-      const destinationState = 'CA';
       const hasDestinationNexus = false;
-      const throwbackElection = ThrowbackElection.THROWBACK;
+      const saleAmount = 100000;
       
       // When: Apply throwback rule
       const throwbackAmount = hasDestinationNexus ? 0 : saleAmount;
@@ -68,9 +64,7 @@ describe('Schedule Y Integration Tests', () => {
 
     it('should throw out sale when throwout election is used', () => {
       // Given: Sale from OH to CA, no CA nexus, throwout elected
-      const saleAmount = 100000;
       const hasDestinationNexus = false;
-      const throwbackElection = ThrowbackElection.THROWOUT;
       
       // When: Apply throwout rule
       const includedInDenominator = hasDestinationNexus;
@@ -86,8 +80,6 @@ describe('Schedule Y Integration Tests', () => {
     it('should source 100% of service revenue to customer location (market-based)', () => {
       // Given: IT consulting from OH office to NY customer
       const serviceRevenue = 1000000;
-      const customerState = 'NY';
-      const sourcingMethod = ServiceSourcingMethod.MARKET_BASED;
       
       // When: Apply market-based sourcing
       const nyRevenue = serviceRevenue; // 100% to customer location
@@ -103,7 +95,6 @@ describe('Schedule Y Integration Tests', () => {
       const serviceRevenue = 1000000;
       const ohPayrollPercent = 0.70;
       const caPayrollPercent = 0.30;
-      const sourcingMethod = ServiceSourcingMethod.COST_OF_PERFORMANCE;
       
       // When: Apply cost-of-performance sourcing
       const ohRevenue = serviceRevenue * ohPayrollPercent;
@@ -117,7 +108,6 @@ describe('Schedule Y Integration Tests', () => {
 
     it('should fall back to cost-of-performance when customer location unknown', () => {
       // Given: Service with unknown customer location
-      const serviceRevenue = 1000000;
       const customerState = undefined;
       const employeeLocations = { OH: 0.70, CA: 0.30 };
       

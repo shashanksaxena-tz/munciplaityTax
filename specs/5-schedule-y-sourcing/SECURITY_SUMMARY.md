@@ -93,12 +93,12 @@ public NexusTracking updateNexusStatus(...) {
 
 ### 5. Authorization Checks
 **Location:** Controller endpoints  
-**Implementation:**
-- Authentication required for all API endpoints
-- Bearer token validation
-- User context injection
+**Implementation (Planned):**
+- Authentication will be required for all API endpoints (currently not enforced)
+- Bearer token validation to be implemented
+- User context injection (currently using mock user and tenant IDs)
 
-**Note:** Full authorization service integration pending (currently using mock user ID)
+**Note:** Full authorization and authentication service integration is pending. At present, mock tenant and user IDs are used for all requests; no real authentication or bearer token validation is performed.
 
 ---
 
