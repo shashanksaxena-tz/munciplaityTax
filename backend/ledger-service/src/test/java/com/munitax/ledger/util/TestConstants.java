@@ -15,6 +15,9 @@ public final class TestConstants {
     // Test Tenant ID - consistent across all tests
     public static final UUID TEST_TENANT_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     
+    // Test Municipality ID - consistent across all tests
+    public static final UUID TEST_MUNICIPALITY_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    
     // Test Credit Card Numbers
     public static final String APPROVED_VISA_CARD = "4111-1111-1111-1111";
     public static final String APPROVED_VISA_CARD_RAW = "4111111111111111";

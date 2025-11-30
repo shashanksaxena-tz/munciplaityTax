@@ -2,7 +2,9 @@ package com.munitax.ledger.service;
 
 import com.munitax.ledger.config.TestDataInitializer;
 import com.munitax.ledger.dto.AccountStatementResponse;
+import com.munitax.ledger.dto.PaymentRequest;
 import com.munitax.ledger.dto.StatementTransaction;
+import com.munitax.ledger.enums.PaymentMethod;
 import com.munitax.ledger.enums.SourceType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -63,10 +65,13 @@ class AccountStatementServiceTest {
         );
 
         // Payment
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("10000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Q1 Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("10000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Q1 Payment")
+                .build()
         );
 
         // Penalty Assessment
@@ -79,10 +84,13 @@ class AccountStatementServiceTest {
         );
 
         // Penalty Payment
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("50.00"), "ACH",
-                "mock_ach_1", "Penalty Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("50.00"))
+                .paymentMethod(PaymentMethod.ACH)
+                .description("Penalty Payment")
+                .build()
         );
 
         // Act: Generate statement
@@ -108,10 +116,13 @@ class AccountStatementServiceTest {
         );
 
         // Payment: -$5,000 (balance = $5,000)
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("5000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Partial Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("5000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Partial Payment")
+                .build()
         );
 
         // Additional Tax: +$8,000 (balance = $13,000)
@@ -122,10 +133,13 @@ class AccountStatementServiceTest {
         );
 
         // Final Payment: -$13,000 (balance = $0)
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("13000.00"), "ACH",
-                "mock_ach_1", "Full Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("13000.00"))
+                .paymentMethod(PaymentMethod.ACH)
+                .description("Full Payment")
+                .build()
         );
 
         // Act: Generate statement
@@ -153,10 +167,13 @@ class AccountStatementServiceTest {
                 "Q1 2024", UUID.randomUUID().toString()
         );
 
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("5000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Partial Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("5000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Partial Payment")
+                .build()
         );
 
         // Act: Generate statement
@@ -245,10 +262,13 @@ class AccountStatementServiceTest {
                 "Q1 2024", UUID.randomUUID().toString()
         );
 
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("10000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("10000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Payment")
+                .build()
         );
 
         // Act: Generate statement from specific date onward
@@ -332,10 +352,13 @@ class AccountStatementServiceTest {
                 "Q1 2024", UUID.randomUUID().toString()
         );
 
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("5000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("5000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Payment")
+                .build()
         );
 
         // Act: Generate statement

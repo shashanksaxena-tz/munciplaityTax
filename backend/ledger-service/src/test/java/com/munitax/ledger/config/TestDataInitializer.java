@@ -26,6 +26,14 @@ public class TestDataInitializer {
         return TestConstants.TEST_TENANT_ID;
     }
     
+    public UUID getTenantId() {
+        return TestConstants.TEST_TENANT_ID;
+    }
+    
+    public UUID getMunicipalityId() {
+        return TestConstants.TEST_MUNICIPALITY_ID;
+    }
+    
     @PostConstruct
     public void initTestData() {
         // Filer accounts

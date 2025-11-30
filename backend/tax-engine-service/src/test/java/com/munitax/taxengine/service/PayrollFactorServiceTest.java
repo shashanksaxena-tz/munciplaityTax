@@ -1,6 +1,7 @@
 package com.munitax.taxengine.service;
 
 import com.munitax.taxengine.domain.apportionment.PayrollFactor;
+import com.munitax.taxengine.domain.apportionment.ScheduleY;
 import com.munitax.taxengine.repository.PayrollFactorRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +42,7 @@ class PayrollFactorServiceTest {
     private UUID tenantId;
     private UUID businessId;
     private Integer taxYear;
+    private ScheduleY scheduleY;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +50,12 @@ class PayrollFactorServiceTest {
         tenantId = UUID.randomUUID();
         businessId = UUID.randomUUID();
         taxYear = 2024;
+        
+        // Create a ScheduleY object for tests
+        scheduleY = new ScheduleY();
+        scheduleY.setScheduleYId(scheduleYId);
+        scheduleY.setTenantId(tenantId);
+        scheduleY.setTaxYear(taxYear);
     }
 
     @Test
@@ -210,7 +218,7 @@ class PayrollFactorServiceTest {
 
         // When: Auto-populate payroll from W-1 filings
         PayrollFactor payrollFactor = payrollFactorService.autoPopulateFromW1Filings(
-                businessId, taxYear, scheduleYId, tenantId);
+                businessId, taxYear, scheduleY, tenantId);
 
         // Then: Payroll factor should be calculated from W-1 data
         assertNotNull(payrollFactor);
