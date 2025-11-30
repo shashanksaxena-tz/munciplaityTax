@@ -126,21 +126,20 @@ public class EstimatedTaxPenaltyService {
                 .returnId(returnId)
                 .taxYear(taxYear)
                 .annualTaxLiability(annualTaxLiability)
-                .totalEstimatedTaxPaid(totalPaid)
                 .calculationMethod(calculationMethod != null ? calculationMethod : CalculationMethod.STANDARD)
                 .safeHarbor1Met(safeHarborEval.getSafeHarbor1Met())
                 .safeHarbor2Met(safeHarborEval.getSafeHarbor2Met())
-                .penaltyRate(penaltyRate)
-                .totalPenaltyAmount(totalPenalty)
+                .totalPenalty(totalPenalty)
                 .quarterlyUnderpayments(underpayments)
                 .createdBy(createdBy)
                 .createdAt(LocalDate.now())
                 .build();
         
-        // Set bidirectional relationship
-        underpayments.forEach(u -> u.setEstimatedTaxPenalty(penalty));
-        
+        // Save penalty first to get ID
         EstimatedTaxPenalty savedPenalty = estimatedTaxPenaltyRepository.save(penalty);
+        
+        // Set bidirectional relationship
+        underpayments.forEach(u -> u.setEstimatedPenaltyId(savedPenalty.getId()));
         
         log.info("Estimated tax penalty calculated and saved: {} for ${}", 
                 savedPenalty.getId(), totalPenalty);
@@ -192,9 +191,8 @@ public class EstimatedTaxPenaltyService {
                     .dueDate(dueDate)
                     .requiredPayment(requiredPayment)
                     .actualPayment(actualPayment)
-                    .underpaymentAmount(underpaymentAmount)
+                    .underpayment(underpaymentAmount)
                     .penaltyAmount(BigDecimal.ZERO) // Will be calculated later
-                    .daysLate(0) // Will be calculated when payment date is known
                     .build();
             
             underpayments.add(underpayment);
@@ -221,13 +219,13 @@ public class EstimatedTaxPenaltyService {
         for (QuarterlyUnderpayment underpayment : underpayments) {
             // Apply any carryforward from previous quarter overpayment
             if (carryForward.compareTo(BigDecimal.ZERO) > 0) {
-                BigDecimal reduction = carryForward.min(underpayment.getUnderpaymentAmount());
-                underpayment.setUnderpaymentAmount(
-                        underpayment.getUnderpaymentAmount().subtract(reduction));
+                BigDecimal reduction = carryForward.min(underpayment.getUnderpayment());
+                underpayment.setUnderpayment(
+                        underpayment.getUnderpayment().subtract(reduction));
                 carryForward = carryForward.subtract(reduction);
                 
                 log.debug("Applied ${} overpayment to {} underpayment, new underpayment: ${}",
-                        reduction, underpayment.getQuarter(), underpayment.getUnderpaymentAmount());
+                        reduction, underpayment.getQuarter(), underpayment.getUnderpayment());
             }
             
             // Check if this quarter has an overpayment
@@ -263,24 +261,23 @@ public class EstimatedTaxPenaltyService {
         LocalDate yearEnd = LocalDate.of(taxYear, 12, 31);
         
         for (QuarterlyUnderpayment underpayment : underpayments) {
-            if (underpayment.getUnderpaymentAmount().compareTo(BigDecimal.ZERO) > 0) {
+            if (underpayment.getUnderpayment().compareTo(BigDecimal.ZERO) > 0) {
                 // Calculate days from due date to year end
                 long daysLate = java.time.temporal.ChronoUnit.DAYS.between(
                         underpayment.getDueDate(), yearEnd);
                 
                 // Calculate penalty: (Underpayment × Annual Rate × Days) / 365
-                BigDecimal quarterlyPenalty = underpayment.getUnderpaymentAmount()
+                BigDecimal quarterlyPenalty = underpayment.getUnderpayment()
                         .multiply(penaltyRate)
                         .multiply(BigDecimal.valueOf(daysLate))
                         .divide(BigDecimal.valueOf(365), SCALE, RoundingMode.HALF_UP);
                 
                 underpayment.setPenaltyAmount(quarterlyPenalty);
-                underpayment.setDaysLate((int) daysLate);
                 totalPenalty = totalPenalty.add(quarterlyPenalty);
                 
                 log.debug("{}: Underpayment=${}, Days={}, Penalty=${}",
                         underpayment.getQuarter(),
-                        underpayment.getUnderpaymentAmount(),
+                        underpayment.getUnderpayment(),
                         daysLate,
                         quarterlyPenalty);
             }
@@ -346,9 +343,8 @@ public class EstimatedTaxPenaltyService {
                     .dueDate(dueDate)
                     .requiredPayment(requiredPerQuarter)
                     .actualPayment(actualPayment)
-                    .underpaymentAmount(BigDecimal.ZERO)
+                    .underpayment(BigDecimal.ZERO)
                     .penaltyAmount(BigDecimal.ZERO)
-                    .daysLate(0)
                     .build());
         }
         
@@ -357,20 +353,23 @@ public class EstimatedTaxPenaltyService {
                 .returnId(returnId)
                 .taxYear(taxYear)
                 .annualTaxLiability(annualTaxLiability)
-                .totalEstimatedTaxPaid(totalPaid)
                 .calculationMethod(calculationMethod != null ? calculationMethod : CalculationMethod.STANDARD)
                 .safeHarbor1Met(safeHarborEval.getSafeHarbor1Met())
                 .safeHarbor2Met(safeHarborEval.getSafeHarbor2Met())
-                .penaltyRate(BigDecimal.ZERO)
-                .totalPenaltyAmount(BigDecimal.ZERO)
+                .totalPenalty(BigDecimal.ZERO)
+                .totalPenalty(BigDecimal.ZERO)
                 .quarterlyUnderpayments(underpayments)
                 .createdBy(createdBy)
                 .createdAt(LocalDate.now())
                 .build();
         
-        underpayments.forEach(u -> u.setEstimatedTaxPenalty(penalty));
+        // Save penalty first to get ID
+        EstimatedTaxPenalty savedPenalty = estimatedTaxPenaltyRepository.save(penalty);
         
-        return estimatedTaxPenaltyRepository.save(penalty);
+        // Set the ID on underpayments
+        underpayments.forEach(u -> u.setEstimatedPenaltyId(savedPenalty.getId()));
+        
+        return savedPenalty;
     }
     
     /**
