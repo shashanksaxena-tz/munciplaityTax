@@ -145,8 +145,6 @@ class ApportionmentServiceTest {
     void testValidateApportionmentRange() {
         // Given: Factors that could result in invalid percentage
         BigDecimal propertyFactor = new BigDecimal("120.0"); // Invalid: > 100%
-        BigDecimal payrollFactor = new BigDecimal("50.0");
-        BigDecimal salesFactor = new BigDecimal("50.0");
 
         // When/Then: Should throw validation exception
         assertThrows(IllegalArgumentException.class, () -> {
@@ -244,6 +242,9 @@ class ApportionmentServiceTest {
                 "sales", new BigDecimal("0.50")
         );
 
+        when(formulaConfigService.getFormulaWeights(ApportionmentFormula.FOUR_FACTOR_DOUBLE_SALES))
+                .thenReturn(weights);
+
         // When: Calculate apportionment
         BigDecimal apportionment = apportionmentService.calculateApportionmentPercentage(
                 propertyFactor, payrollFactor, salesFactor,
@@ -257,8 +258,8 @@ class ApportionmentServiceTest {
     // ===== T129: Single-Sales-Factor Tests =====
 
     @Test
-    @DisplayName("Calculate apportionment with single-sales-factor formula")
-    void testCalculateApportionmentSingleSalesFactor() {
+    @DisplayName("Calculate apportionment with single-sales-factor formula - different values")
+    void testCalculateApportionmentSingleSalesFactorDifferentValues() {
         // Given: Business elects single-sales-factor apportionment
         BigDecimal propertyFactor = new BigDecimal("5.0");   // 5% OH
         BigDecimal payrollFactor = new BigDecimal("10.0");   // 10% OH

@@ -102,4 +102,155 @@ class MockPaymentProviderServiceTest {
         assertEquals(PaymentStatus.DECLINED, response.getStatus());
         assertEquals("insufficient_funds", response.getFailureReason());
     }
+    
+    @Test
+    void testMasterCardApproved() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("5000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("5555-5555-5555-4444")
+                .cardholderName("John Doe")
+                .expirationMonth(12)
+                .expirationYear(2025)
+                .cvv("123")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertNotNull(response);
+        assertEquals(PaymentStatus.APPROVED, response.getStatus());
+        assertNotNull(response.getProviderTransactionId());
+        assertTrue(response.getProviderTransactionId().startsWith("mock_ch_"));
+        assertNotNull(response.getAuthorizationCode());
+        assertNotNull(response.getReceiptNumber());
+        assertTrue(response.getReceiptNumber().startsWith("RCPT-"));
+        assertTrue(response.isTestMode());
+        assertEquals(new BigDecimal("5000.00"), response.getAmount());
+    }
+    
+    @Test
+    void testAmexApproved() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("2500.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("378282246310005")
+                .cardholderName("Jane Smith")
+                .expirationMonth(6)
+                .expirationYear(2026)
+                .cvv("1234")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertNotNull(response);
+        assertEquals(PaymentStatus.APPROVED, response.getStatus());
+        assertTrue(response.isTestMode());
+    }
+    
+    @Test
+    void testInvalidTestCard() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("1000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("1234-5678-9012-3456")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertNotNull(response);
+        assertEquals(PaymentStatus.DECLINED, response.getStatus());
+        assertEquals("invalid_card", response.getFailureReason());
+    }
+    
+    @Test
+    void testACHInvalidAccount() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("1000.00"))
+                .paymentMethod(PaymentMethod.ACH)
+                .achRouting("999999999")
+                .achAccount("000999999999")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertNotNull(response);
+        assertEquals(PaymentStatus.DECLINED, response.getStatus());
+        assertEquals("invalid_account", response.getFailureReason());
+    }
+    
+    @Test
+    void testCheckPaymentApproved() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("7500.00"))
+                .paymentMethod(PaymentMethod.CHECK)
+                .checkNumber("12345")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertNotNull(response);
+        assertEquals(PaymentStatus.APPROVED, response.getStatus());
+        assertNotNull(response.getProviderTransactionId());
+        assertTrue(response.getProviderTransactionId().startsWith("mock_manual_"));
+        assertTrue(response.isTestMode());
+    }
+    
+    @Test
+    void testWireTransferApproved() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("15000.00"))
+                .paymentMethod(PaymentMethod.WIRE)
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertNotNull(response);
+        assertEquals(PaymentStatus.APPROVED, response.getStatus());
+        assertNotNull(response.getProviderTransactionId());
+        assertTrue(response.getProviderTransactionId().startsWith("mock_manual_"));
+        assertTrue(response.isTestMode());
+    }
+    
+    @Test
+    void testAllApprovedPaymentsShouldHaveReceiptNumber() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("1000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("4111-1111-1111-1111")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertEquals(PaymentStatus.APPROVED, response.getStatus());
+        assertNotNull(response.getReceiptNumber());
+        assertTrue(response.getReceiptNumber().startsWith("RCPT-"));
+    }
+    
+    @Test
+    void testAllApprovedPaymentsShouldHaveTimestamp() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("1000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("4111-1111-1111-1111")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertEquals(PaymentStatus.APPROVED, response.getStatus());
+        assertNotNull(response.getTimestamp());
+    }
+    
+    @Test
+    void testDeclinedPaymentsShouldNotHaveAuthorizationCode() {
+        PaymentRequest request = PaymentRequest.builder()
+                .amount(new BigDecimal("1000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("4000-0000-0000-0002")
+                .build();
+        
+        PaymentResponse response = paymentProvider.processPayment(request);
+        
+        assertEquals(PaymentStatus.DECLINED, response.getStatus());
+        assertNull(response.getAuthorizationCode());
+    }
 }

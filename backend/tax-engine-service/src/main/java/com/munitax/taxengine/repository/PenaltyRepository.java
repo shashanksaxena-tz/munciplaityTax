@@ -162,4 +162,18 @@ public interface PenaltyRepository extends JpaRepository<Penalty, UUID> {
      * @return Count of penalties
      */
     long countByReturnIdAndTenantId(UUID returnId, UUID tenantId);
+
+    /**
+     * Find penalties assessed after a certain date.
+     *
+     * @param tenantId  the tenant ID for multi-tenant isolation
+     * @param afterDate the date to find penalties after
+     * @return List of penalties assessed after the date
+     */
+    @Query("SELECT p FROM Penalty p WHERE p.tenantId = :tenantId " +
+           "AND p.assessmentDate > :afterDate " +
+           "ORDER BY p.assessmentDate DESC")
+    List<Penalty> findByTenantIdAndAssessmentDateAfter(
+            @Param("tenantId") UUID tenantId,
+            @Param("afterDate") LocalDate afterDate);
 }

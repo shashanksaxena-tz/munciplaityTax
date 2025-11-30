@@ -12,10 +12,12 @@ import java.util.UUID;
 
 @Repository
 public interface JournalEntryRepository extends JpaRepository<JournalEntry, UUID> {
+    List<JournalEntry> findByTenantId(UUID tenantId);
     List<JournalEntry> findByTenantIdAndEntityIdOrderByEntryDateDesc(UUID tenantId, UUID entityId);
     List<JournalEntry> findByTenantIdAndEntityIdAndEntryDateBetweenOrderByEntryDateDesc(
             UUID tenantId, UUID entityId, LocalDate startDate, LocalDate endDate);
     List<JournalEntry> findByTenantIdAndStatus(UUID tenantId, EntryStatus status);
+    List<JournalEntry> findBySourceIdOrderByEntryDateDesc(UUID sourceId);
     
     @Query("SELECT MAX(e.entryNumber) FROM JournalEntry e WHERE e.tenantId = :tenantId AND e.entryNumber LIKE CONCAT(:prefix, '%')")
     String findMaxEntryNumberByPrefix(UUID tenantId, String prefix);

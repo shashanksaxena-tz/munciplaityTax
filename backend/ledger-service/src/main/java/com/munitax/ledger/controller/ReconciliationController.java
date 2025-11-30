@@ -27,4 +27,24 @@ public class ReconciliationController {
                 tenantId, municipalityId);
         return ResponseEntity.ok(report);
     }
+    
+    /**
+     * T025: Get drill-down reconciliation for a specific filer.
+     * 
+     * @param tenantId The tenant identifier
+     * @param filerId The filer identifier
+     * @param municipalityId The municipality identifier
+     * @return ReconciliationResponse for the specific filer
+     */
+    @GetMapping("/{tenantId}/{municipalityId}/filer/{filerId}")
+    public ResponseEntity<ReconciliationResponse> getFilerReconciliation(
+            @PathVariable UUID tenantId,
+            @PathVariable UUID municipalityId,
+            @PathVariable UUID filerId) {
+        
+        log.info("Generating filer reconciliation for filer {} in tenant {}", filerId, tenantId);
+        ReconciliationResponse report = reconciliationService.generateFilerReconciliation(
+                tenantId, filerId, municipalityId);
+        return ResponseEntity.ok(report);
+    }
 }

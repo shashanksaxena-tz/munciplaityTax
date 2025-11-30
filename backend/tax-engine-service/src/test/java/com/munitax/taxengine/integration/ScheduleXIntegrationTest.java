@@ -1,8 +1,8 @@
 package com.munitax.taxengine.integration;
 
-import com.munitax.taxengine.model.BusinessScheduleXDetails;
-import com.munitax.taxengine.model.BusinessScheduleXDetails.AddBacks;
-import com.munitax.taxengine.model.BusinessScheduleXDetails.Deductions;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails.AddBacks;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails.Deductions;
 import com.munitax.taxengine.service.ScheduleXCalculationService;
 import com.munitax.taxengine.service.ScheduleXValidationService;
 import org.junit.jupiter.api.DisplayName;
@@ -49,26 +49,58 @@ class ScheduleXIntegrationTest {
     @DisplayName("User Story 1: C-Corp with depreciation, meals, state taxes → Adjusted income $575K")
     void testUserStory1_CCorp_DepreciationMealsStateTaxes() {
         // Arrange
-        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails();
-        scheduleX.setFedTaxableIncome(500000.0);
-
         // Add-backs: depreciation $50K + meals $15K + state taxes $10K
-        AddBacks addBacks = new AddBacks();
-        addBacks.setDepreciationAdjustment(50000.0);  // Book depreciation less than MACRS
-        addBacks.setMealsAndEntertainment(15000.0);   // Federal deducted 50%, municipal allows 0%
-        addBacks.setIncomeAndStateTaxes(10000.0);     // State income taxes
+        AddBacks addBacks = new AddBacks(
+            10000.0,  // interestAndStateTaxes (state taxes)
+            0.0,      // guaranteedPayments
+            0.0,      // expensesOnIntangibleIncome
+            50000.0,  // depreciationAdjustment (book depreciation less than MACRS)
+            0.0,      // amortizationAdjustment
+            15000.0,  // mealsAndEntertainment (federal deducted 50%, municipal allows 0%)
+            0.0,      // relatedPartyExcess
+            0.0,      // penaltiesAndFines
+            0.0,      // politicalContributions
+            0.0,      // officerLifeInsurance
+            0.0,      // capitalLossExcess
+            0.0,      // federalTaxRefunds
+            0.0,      // section179Excess
+            0.0,      // bonusDepreciation
+            0.0,      // badDebtReserveIncrease
+            0.0,      // charitableContributionExcess
+            0.0,      // domesticProductionActivities
+            0.0,      // stockCompensationAdjustment
+            0.0,      // inventoryMethodChange
+            0.0,      // otherAddBacks
+            null,     // otherAddBacksDescription
+            0.0       // wagesCredit (deprecated)
+        );
 
-        Deductions deductions = new Deductions();
-        // No deductions for C-Corp in this scenario
+        Deductions deductions = Deductions.createEmpty(); // No deductions for C-Corp in this scenario
 
-        scheduleX.setAddBacks(addBacks);
-        scheduleX.setDeductions(deductions);
+        BusinessScheduleXDetails.CalculatedFields calculatedFields = 
+            new BusinessScheduleXDetails.CalculatedFields(75000.0, 0.0, 575000.0);
+        
+        BusinessScheduleXDetails.Metadata metadata = 
+            new BusinessScheduleXDetails.Metadata(
+                java.time.Instant.now().toString(),
+                java.util.List.of(),
+                java.util.List.of(),
+                java.util.List.of()
+            );
+
+        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails(
+            500000.0,
+            addBacks,
+            deductions,
+            calculatedFields,
+            metadata
+        );
 
         // Act
-        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.getAddBacks());
-        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.getDeductions());
+        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.addBacks());
+        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.deductions());
         double adjustedIncome = calculationService.calculateAdjustedMunicipalIncome(
-            scheduleX.getFedTaxableIncome(),
+            scheduleX.fedTaxableIncome(),
             totalAddBacks,
             totalDeductions
         );
@@ -82,11 +114,11 @@ class ScheduleXIntegrationTest {
             "Adjusted municipal income should be $575,000 ($500K federal + $75K add-backs - $0 deductions)");
 
         // Validation: Variance check (FR-034)
-        double variancePercentage = Math.abs(adjustedIncome - scheduleX.getFedTaxableIncome()) 
-            / scheduleX.getFedTaxableIncome();
+        double variancePercentage = Math.abs(adjustedIncome - scheduleX.fedTaxableIncome()) 
+            / scheduleX.fedTaxableIncome();
         assertEquals(0.15, variancePercentage, 0.01, 
             "Variance should be 15% ($75K / $500K), which is < 20% threshold");
-        assertFalse(validationService.exceedsVarianceThreshold(scheduleX.getFedTaxableIncome(), adjustedIncome),
+        assertFalse(validationService.exceedsVarianceThreshold(scheduleX.fedTaxableIncome(), adjustedIncome),
             "Should NOT trigger >20% variance warning (15% variance)");
     }
 
@@ -110,27 +142,69 @@ class ScheduleXIntegrationTest {
     @DisplayName("User Story 2: Partnership with guaranteed payments, intangible income, 5% Rule → Adjusted income $316,750")
     void testUserStory2_Partnership_GuaranteedPaymentsIntangibleIncome() {
         // Arrange
-        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails();
-        scheduleX.setFedTaxableIncome(300000.0);
-
         // Add-backs: guaranteed payments $50K + 5% Rule $1,750
-        AddBacks addBacks = new AddBacks();
-        addBacks.setGuaranteedPayments(50000.0);        // Form 1065 Line 10
-        addBacks.setExpensesOnIntangibleIncome(1750.0); // 5% Rule: $35K × 0.05
+        AddBacks addBacks = new AddBacks(
+            0.0,      // interestAndStateTaxes
+            50000.0,  // guaranteedPayments (Form 1065 Line 10)
+            1750.0,   // expensesOnIntangibleIncome (5% Rule: $35K × 0.05)
+            0.0,      // depreciationAdjustment
+            0.0,      // amortizationAdjustment
+            0.0,      // mealsAndEntertainment
+            0.0,      // relatedPartyExcess
+            0.0,      // penaltiesAndFines
+            0.0,      // politicalContributions
+            0.0,      // officerLifeInsurance
+            0.0,      // capitalLossExcess
+            0.0,      // federalTaxRefunds
+            0.0,      // section179Excess
+            0.0,      // bonusDepreciation
+            0.0,      // badDebtReserveIncrease
+            0.0,      // charitableContributionExcess
+            0.0,      // domesticProductionActivities
+            0.0,      // stockCompensationAdjustment
+            0.0,      // inventoryMethodChange
+            0.0,      // otherAddBacks
+            null,     // otherAddBacksDescription
+            0.0       // wagesCredit
+        );
 
         // Deductions: interest $20K + dividends $15K
-        Deductions deductions = new Deductions();
-        deductions.setInterestIncome(20000.0);
-        deductions.setDividends(15000.0);
+        Deductions deductions = new Deductions(
+            20000.0,  // interestIncome
+            15000.0,  // dividends
+            0.0,      // capitalGains
+            0.0,      // section179Excess (deprecated)
+            0.0,      // otherDeductions
+            0.0,      // section179Recapture
+            0.0,      // municipalBondInterest
+            0.0,      // depletionDifference
+            null      // otherDeductionsDescription
+        );
 
-        scheduleX.setAddBacks(addBacks);
-        scheduleX.setDeductions(deductions);
+        BusinessScheduleXDetails.CalculatedFields calculatedFields = 
+            new BusinessScheduleXDetails.CalculatedFields(51750.0, 35000.0, 316750.0);
+        
+        BusinessScheduleXDetails.Metadata metadata = 
+            new BusinessScheduleXDetails.Metadata(
+                java.time.Instant.now().toString(),
+                java.util.List.of(),
+                java.util.List.of(),
+                java.util.List.of()
+            );
+
+        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails(
+            300000.0,
+            addBacks,
+            deductions,
+            calculatedFields,
+            metadata
+        );
 
         // Act
-        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.getAddBacks());
-        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.getDeductions());
+        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.addBacks());
+        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.deductions());
         double adjustedIncome = calculationService.calculateAdjustedMunicipalIncome(
-            scheduleX.getFedTaxableIncome(),
+            scheduleX.fedTaxableIncome(),
             totalAddBacks,
             totalDeductions
         );
@@ -144,7 +218,7 @@ class ScheduleXIntegrationTest {
             "Adjusted municipal income should be $316,750 ($300K federal + $51,750 add-backs - $35K deductions)");
 
         // Validation: 5% Rule calculation (FR-012)
-        double intangibleIncome = deductions.getInterestIncome() + deductions.getDividends();
+        double intangibleIncome = deductions.interestIncome() + deductions.dividends();
         double calculatedExpenses = intangibleIncome * 0.05;
         assertEquals(1750.0, calculatedExpenses, 0.01, 
             "5% Rule should calculate $1,750 (5% of $35K intangible income)");
@@ -167,24 +241,58 @@ class ScheduleXIntegrationTest {
     @DisplayName("User Story 3: S-Corp with related-party excess rent → Adjusted income $402,500")
     void testUserStory3_SCorp_RelatedPartyExcess() {
         // Arrange
-        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails();
-        scheduleX.setFedTaxableIncome(400000.0);
-
         // Add-backs: related-party excess $2,500
-        AddBacks addBacks = new AddBacks();
-        addBacks.setRelatedPartyExcess(2500.0);  // Paid $10K, FMV $7.5K
+        AddBacks addBacks = new AddBacks(
+            0.0,      // interestAndStateTaxes
+            0.0,      // guaranteedPayments
+            0.0,      // expensesOnIntangibleIncome
+            0.0,      // depreciationAdjustment
+            0.0,      // amortizationAdjustment
+            0.0,      // mealsAndEntertainment
+            2500.0,   // relatedPartyExcess (Paid $10K, FMV $7.5K)
+            0.0,      // penaltiesAndFines
+            0.0,      // politicalContributions
+            0.0,      // officerLifeInsurance
+            0.0,      // capitalLossExcess
+            0.0,      // federalTaxRefunds
+            0.0,      // section179Excess
+            0.0,      // bonusDepreciation
+            0.0,      // badDebtReserveIncrease
+            0.0,      // charitableContributionExcess
+            0.0,      // domesticProductionActivities
+            0.0,      // stockCompensationAdjustment
+            0.0,      // inventoryMethodChange
+            0.0,      // otherAddBacks
+            null,     // otherAddBacksDescription
+            0.0       // wagesCredit
+        );
 
-        Deductions deductions = new Deductions();
-        // No deductions in this scenario
+        Deductions deductions = Deductions.createEmpty(); // No deductions in this scenario
 
-        scheduleX.setAddBacks(addBacks);
-        scheduleX.setDeductions(deductions);
+        BusinessScheduleXDetails.CalculatedFields calculatedFields = 
+            new BusinessScheduleXDetails.CalculatedFields(2500.0, 0.0, 402500.0);
+        
+        BusinessScheduleXDetails.Metadata metadata = 
+            new BusinessScheduleXDetails.Metadata(
+                java.time.Instant.now().toString(),
+                java.util.List.of(),
+                java.util.List.of(),
+                java.util.List.of()
+            );
+
+        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails(
+            400000.0,
+            addBacks,
+            deductions,
+            calculatedFields,
+            metadata
+        );
 
         // Act
-        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.getAddBacks());
-        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.getDeductions());
+        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.addBacks());
+        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.deductions());
         double adjustedIncome = calculationService.calculateAdjustedMunicipalIncome(
-            scheduleX.getFedTaxableIncome(),
+            scheduleX.fedTaxableIncome(),
             totalAddBacks,
             totalDeductions
         );
@@ -221,16 +329,33 @@ class ScheduleXIntegrationTest {
     @DisplayName("Edge case: Zero adjustments → Adjusted income equals federal income")
     void testEdgeCase_ZeroAdjustments() {
         // Arrange
-        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails();
-        scheduleX.setFedTaxableIncome(500000.0);
-        scheduleX.setAddBacks(new AddBacks());      // All zeros
-        scheduleX.setDeductions(new Deductions());  // All zeros
+        AddBacks addBacks = AddBacks.createEmpty();      // All zeros
+        Deductions deductions = Deductions.createEmpty(); // All zeros
+
+        BusinessScheduleXDetails.CalculatedFields calculatedFields = 
+            new BusinessScheduleXDetails.CalculatedFields(0.0, 0.0, 500000.0);
+        
+        BusinessScheduleXDetails.Metadata metadata = 
+            new BusinessScheduleXDetails.Metadata(
+                java.time.Instant.now().toString(),
+                java.util.List.of(),
+                java.util.List.of(),
+                java.util.List.of()
+            );
+
+        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails(
+            500000.0,
+            addBacks,
+            deductions,
+            calculatedFields,
+            metadata
+        );
 
         // Act
-        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.getAddBacks());
-        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.getDeductions());
+        double totalAddBacks = calculationService.calculateTotalAddBacks(scheduleX.addBacks());
+        double totalDeductions = calculationService.calculateTotalDeductions(scheduleX.deductions());
         double adjustedIncome = calculationService.calculateAdjustedMunicipalIncome(
-            scheduleX.getFedTaxableIncome(),
+            scheduleX.fedTaxableIncome(),
             totalAddBacks,
             totalDeductions
         );
@@ -242,7 +367,7 @@ class ScheduleXIntegrationTest {
             "Adjusted municipal income should equal federal income when no adjustments");
         
         // Validation: No variance warning (0% variance)
-        assertFalse(validationService.exceedsVarianceThreshold(scheduleX.getFedTaxableIncome(), adjustedIncome),
+        assertFalse(validationService.exceedsVarianceThreshold(scheduleX.fedTaxableIncome(), adjustedIncome),
             "Should NOT trigger variance warning when adjusted income equals federal income");
     }
 }

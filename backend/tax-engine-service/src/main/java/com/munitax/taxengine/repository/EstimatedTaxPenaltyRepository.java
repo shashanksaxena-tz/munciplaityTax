@@ -150,4 +150,13 @@ public interface EstimatedTaxPenaltyRepository extends JpaRepository<EstimatedTa
     @Query("SELECT e FROM EstimatedTaxPenalty e WHERE e.tenantId = :tenantId " +
            "AND e.calculationMethod = 'ANNUALIZED_INCOME'")
     List<EstimatedTaxPenalty> findUsingAnnualizedIncomeMethod(@Param("tenantId") UUID tenantId);
+    
+    /**
+     * Find penalties by tenant and tax year.
+     *
+     * @param tenantId the tenant ID for multi-tenant isolation
+     * @param taxYear the tax year
+     * @return List of estimated tax penalties for the tax year
+     */
+    List<EstimatedTaxPenalty> findByTenantIdAndTaxYear(UUID tenantId, int taxYear);
 }

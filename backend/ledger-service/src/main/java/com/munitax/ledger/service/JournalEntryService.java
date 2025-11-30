@@ -8,6 +8,7 @@ import com.munitax.ledger.model.JournalEntry;
 import com.munitax.ledger.model.JournalEntryLine;
 import com.munitax.ledger.repository.ChartOfAccountsRepository;
 import com.munitax.ledger.repository.JournalEntryRepository;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * T096-T097: Added retry logic for database operations
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -29,8 +33,15 @@ public class JournalEntryService {
     private final ChartOfAccountsRepository chartOfAccountsRepository;
     private final AuditLogService auditLogService;
     
+    /**
+     * T096: Retry logic added for database operations
+     * Retries up to 3 times with exponential backoff on transient database errors
+     */
     @Transactional
+    @Retry(name = "database", fallbackMethod = "createJournalEntryFallback")
     public JournalEntry createJournalEntry(JournalEntryRequest request) {
+        log.debug("Creating journal entry for entity {}", request.getEntityId());
+        
         // Validate double-entry balance
         BigDecimal totalDebits = request.getLines().stream()
                 .map(JournalEntryLineRequest::getDebit)
@@ -86,8 +97,10 @@ public class JournalEntryService {
             entry.getLines().add(line);
         }
         
-        // Save entry
+        // Save entry with retry on transient database errors
         JournalEntry savedEntry = journalEntryRepository.save(entry);
+        
+        log.info("Journal entry created successfully: {}", savedEntry.getEntryNumber());
         
         // Audit log
         auditLogService.logAction(
@@ -112,6 +125,11 @@ public class JournalEntryService {
         
         if (originalEntry.getStatus() == EntryStatus.REVERSED) {
             throw new IllegalStateException("Entry already reversed");
+        }
+        
+        // T070 - Prevent deletion of posted entries, use reversal instead
+        if (originalEntry.getStatus() == EntryStatus.POSTED) {
+            log.info("Reversing posted entry {} instead of deleting", originalEntry.getEntryNumber());
         }
         
         // Create reversing entry request
@@ -148,20 +166,50 @@ public class JournalEntryService {
         originalEntry.setReversalEntryId(reversingEntry.getEntryId());
         journalEntryRepository.save(originalEntry);
         
-        // Audit log
-        auditLogService.logAction(
+        // T070 - Audit log with old and new values
+        auditLogService.logModification(
                 entryId,
                 "JOURNAL_ENTRY",
                 "REVERSE",
                 userId,
                 originalEntry.getTenantId(),
-                String.format("Reversed entry %s. Reason: %s", 
-                        originalEntry.getEntryNumber(), reason)
+                "POSTED",
+                "REVERSED",
+                reason
         );
         
         log.info("Reversed journal entry {}", originalEntry.getEntryNumber());
         
         return reversingEntry;
+    }
+    
+    /**
+     * T069 - Prevent deletion of posted entries per FR-049
+     * Posted journal entries cannot be deleted, only reversed
+     */
+    @Transactional
+    public void deleteJournalEntry(UUID entryId, UUID userId) {
+        JournalEntry entry = journalEntryRepository.findById(entryId)
+                .orElseThrow(() -> new IllegalArgumentException("Journal entry not found"));
+        
+        if (entry.getStatus() == EntryStatus.POSTED) {
+            throw new IllegalStateException(
+                    "Cannot delete posted journal entry. Use reverseEntry() instead. Entry: " 
+                    + entry.getEntryNumber());
+        }
+        
+        // Only draft entries can be deleted
+        auditLogService.logAction(
+                entryId,
+                "JOURNAL_ENTRY",
+                "DELETE",
+                userId,
+                entry.getTenantId(),
+                String.format("Deleted draft entry %s", entry.getEntryNumber())
+        );
+        
+        journalEntryRepository.delete(entry);
+        log.info("Deleted draft journal entry {}", entry.getEntryNumber());
     }
     
     public List<JournalEntry> getEntriesForEntity(UUID tenantId, UUID entityId) {

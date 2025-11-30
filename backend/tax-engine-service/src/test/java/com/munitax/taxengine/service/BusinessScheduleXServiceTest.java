@@ -1,8 +1,10 @@
 package com.munitax.taxengine.service;
 
-import com.munitax.taxengine.model.BusinessScheduleXDetails;
-import com.munitax.taxengine.model.BusinessScheduleXDetails.AddBacks;
-import com.munitax.taxengine.model.BusinessScheduleXDetails.Deductions;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails.AddBacks;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails.Deductions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +39,7 @@ class BusinessScheduleXServiceTest {
      */
     @Test
     @DisplayName("Detect old 6-field Schedule X format")
-    void testDetectOldFormat() {
+    void testDetectOldFormat() throws Exception {
         // Arrange
         // Simulate old JSON structure with top-level fields (pre-expansion format)
         String oldFormatJson = """
@@ -51,8 +53,11 @@ class BusinessScheduleXServiceTest {
             }
             """;
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(oldFormatJson);
+
         // Act
-        boolean isOldFormat = businessScheduleXService.isOldFormat(oldFormatJson);
+        boolean isOldFormat = businessScheduleXService.isOldFormat(jsonNode);
 
         // Assert
         assertTrue(isOldFormat, 
@@ -157,24 +162,70 @@ class BusinessScheduleXServiceTest {
      */
     @Test
     @DisplayName("Detect new 27-field format (no migration needed)")
-    void testDetectNewFormat() {
+    void testDetectNewFormat() throws Exception {
         // Arrange
-        BusinessScheduleXDetails newScheduleX = new BusinessScheduleXDetails();
-        newScheduleX.setFedTaxableIncome(500000.0);
+        AddBacks addBacks = new AddBacks(
+            10000.0,  // interestAndStateTaxes (incomeAndStateTaxes)
+            0.0,      // guaranteedPayments
+            0.0,      // expensesOnIntangibleIncome
+            50000.0,  // depreciationAdjustment
+            0.0,      // amortizationAdjustment
+            0.0,      // mealsAndEntertainment
+            0.0,      // relatedPartyExcess
+            0.0,      // penaltiesAndFines
+            0.0,      // politicalContributions
+            0.0,      // officerLifeInsurance
+            0.0,      // capitalLossExcess
+            0.0,      // federalTaxRefunds
+            0.0,      // section179Excess
+            0.0,      // bonusDepreciation
+            0.0,      // badDebtReserveIncrease
+            0.0,      // charitableContributionExcess
+            0.0,      // domesticProductionActivities
+            0.0,      // stockCompensationAdjustment
+            0.0,      // inventoryMethodChange
+            0.0,      // otherAddBacks
+            null,     // otherAddBacksDescription
+            0.0       // wagesCredit
+        );
         
-        AddBacks addBacks = new AddBacks();
-        addBacks.setDepreciationAdjustment(50000.0);
-        addBacks.setIncomeAndStateTaxes(10000.0);
-        newScheduleX.setAddBacks(addBacks);
-        
-        Deductions deductions = new Deductions();
-        deductions.setInterestIncome(5000.0);
-        newScheduleX.setDeductions(deductions);
+        Deductions deductions = new Deductions(
+            5000.0,   // interestIncome
+            0.0,      // dividends
+            0.0,      // capitalGains
+            0.0,      // section179Excess
+            0.0,      // otherDeductions
+            0.0,      // section179Recapture
+            0.0,      // municipalBondInterest
+            0.0,      // depletionDifference
+            null      // otherDeductionsDescription
+        );
 
-        String newFormatJson = businessScheduleXService.toJson(newScheduleX);
+        BusinessScheduleXDetails.CalculatedFields calculatedFields = 
+            new BusinessScheduleXDetails.CalculatedFields(60000.0, 5000.0, 555000.0);
+        
+        BusinessScheduleXDetails.Metadata metadata = 
+            new BusinessScheduleXDetails.Metadata(
+                java.time.Instant.now().toString(),
+                java.util.List.of(),
+                java.util.List.of(),
+                java.util.List.of()
+            );
+
+        BusinessScheduleXDetails newScheduleX = new BusinessScheduleXDetails(
+            500000.0,
+            addBacks,
+            deductions,
+            calculatedFields,
+            metadata
+        );
+
+        String newFormatJson = businessScheduleXService.toJsonString(newScheduleX);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(newFormatJson);
 
         // Act
-        boolean isOldFormat = businessScheduleXService.isOldFormat(newFormatJson);
+        boolean isOldFormat = businessScheduleXService.isOldFormat(jsonNode);
 
         // Assert
         assertFalse(isOldFormat, 

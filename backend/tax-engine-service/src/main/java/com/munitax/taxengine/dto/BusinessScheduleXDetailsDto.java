@@ -174,28 +174,3 @@ public record BusinessScheduleXDetailsDto(
         );
     }
 }
-
-/**
- * Request DTO for auto-calculation endpoint
- */
-public record ScheduleXAutoCalcRequest(
-    String fieldName,
-    Map<String, Double> inputs
-) {}
-
-/**
- * Response DTO for auto-calculation endpoint
- */
-public record ScheduleXAutoCalcResponse(
-    Double calculatedValue,
-    String explanation,
-    Map<String, Object> details
-) {}
-
-/**
- * Response DTO for multi-year comparison endpoint
- */
-public record MultiYearComparisonDto(
-    List<Integer> years,
-    List<BusinessScheduleXDetailsDto> scheduleXData
-) {}

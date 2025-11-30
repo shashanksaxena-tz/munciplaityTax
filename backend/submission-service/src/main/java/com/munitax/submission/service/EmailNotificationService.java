@@ -2,11 +2,11 @@ package com.munitax.submission.service;
 
 import com.munitax.submission.model.Submission;
 import com.munitax.submission.model.DocumentRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.logging.Logger;
 
 /**
  * Service for sending email notifications for audit workflow events.
@@ -17,9 +17,8 @@ import java.util.logging.Logger;
  * Implements FR-042 to FR-046: Communication & Messaging
  */
 @Service
+@Slf4j
 public class EmailNotificationService {
-    
-    private static final Logger logger = Logger.getLogger(EmailNotificationService.class.getName());
     
     private static final String FROM_EMAIL = "noreply@dublin-tax.gov";
     private static final String FROM_NAME = "Dublin Municipality Tax Department";
@@ -265,13 +264,13 @@ public class EmailNotificationService {
     private void sendEmail(String to, String subject, String body, String emailType) {
         // Skip if no email address configured
         if (to == null || to.isEmpty()) {
-            logger.info("Skipping email send (no recipient configured) - Type: {}, Subject: {}", emailType, subject);
+            log.info("Skipping email send (no recipient configured) - Type: {}, Subject: {}", emailType, subject);
             return;
         }
         
         // TODO: Integrate with actual email service
         // For now, log the email for demonstration
-        logger.info(String.format("""
+        log.info(String.format("""
             ========================================
             EMAIL NOTIFICATION [%s]
             ========================================
@@ -295,12 +294,12 @@ public class EmailNotificationService {
         
         String testEmail = System.getenv("AUDIT_TEST_EMAIL");
         if (testEmail != null && !testEmail.isEmpty()) {
-            logger.info("Using test email address: {}", testEmail);
+            log.info("Using test email address: {}", testEmail);
             return testEmail;
         }
         
         // Fallback to logging-only mode (email service not fully configured)
-        logger.warn("Email service not configured. Set AUDIT_TEST_EMAIL environment variable or implement production email lookup.");
+        log.warn("Email service not configured. Set AUDIT_TEST_EMAIL environment variable or implement production email lookup.");
         return null; // Will skip actual email sending but continue workflow
     }
     

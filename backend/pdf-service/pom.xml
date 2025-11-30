@@ -33,6 +33,8 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
+            <!-- Must be 10.4.1+ as flyway-database-postgresql wasn't available in 9.22.3 -->
+            <version>10.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>

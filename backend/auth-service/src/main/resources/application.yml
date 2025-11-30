@@ -6,9 +6,9 @@ spring:
     name: auth-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/munitax
-    username: ${POSTGRES_USER:munitax}
-    password: ${POSTGRES_PASSWORD:munitax}
+    url: jdbc:postgresql://pg-1ac838cf-taazaa-6110.g.aivencloud.com:23581/defaultdb?ssl=require
+    username: avnadmin
+    password: AVNS_CIZODtyC1VgMeY5KcC3
     driver-class-name: org.postgresql.Driver
 
   jpa:
