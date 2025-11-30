@@ -68,7 +68,7 @@ class BusinessScheduleXServiceTest {
      * Test Case: Convert old 6-field format to new 27-field format
      * Scenario: Old format with federal income $500K, state taxes $10K, intangible income $10K
      * Expected: New format with proper nested structure:
-     *   - addBacks.incomeAndStateTaxes = $10K (migrated from top-level)
+     *   - addBacks.interestAndStateTaxes = $10K (migrated from top-level)
      *   - deductions.interestIncome = $5K (migrated from top-level)
      *   - deductions.dividends = $3K (migrated from top-level)
      *   - deductions.capitalGains = $2K (migrated from top-level)
@@ -76,62 +76,61 @@ class BusinessScheduleXServiceTest {
      */
     @Test
     @DisplayName("Convert old 6-field format to new 27-field format")
-    void testConvertOldFormatToNew() {
-        // Arrange
-        BusinessScheduleXDetails oldScheduleX = new BusinessScheduleXDetails();
-        oldScheduleX.setFedTaxableIncome(500000.0);
+    void testConvertOldFormatToNew() throws Exception {
+        // Arrange - Create old format JSON
+        String oldFormatJson = """
+            {
+              "fedTaxableIncome": 500000,
+              "incomeAndStateTaxes": 10000,
+              "interestIncome": 5000,
+              "dividends": 3000,
+              "capitalGains": 2000,
+              "other": 0
+            }
+            """;
         
-        // Old format had these as top-level fields (not nested)
-        // Simulate migration by setting fields in old locations
-        AddBacks oldAddBacks = new AddBacks();
-        oldAddBacks.setIncomeAndStateTaxes(10000.0);
-        oldScheduleX.setAddBacks(oldAddBacks);
-        
-        Deductions oldDeductions = new Deductions();
-        oldDeductions.setInterestIncome(5000.0);
-        oldDeductions.setDividends(3000.0);
-        oldDeductions.setCapitalGains(2000.0);
-        oldScheduleX.setDeductions(oldDeductions);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(oldFormatJson);
 
         // Act
-        BusinessScheduleXDetails newScheduleX = businessScheduleXService.convertToNewFormat(oldScheduleX);
+        BusinessScheduleXDetails newScheduleX = businessScheduleXService.convertFromOldFormat(jsonNode);
 
         // Assert
         // Verify federal income preserved
-        assertEquals(500000.0, newScheduleX.getFedTaxableIncome(), 0.01, 
+        assertEquals(500000.0, newScheduleX.fedTaxableIncome(), 0.01, 
             "Federal taxable income should be preserved during migration");
 
         // Verify add-backs nested structure
-        assertNotNull(newScheduleX.getAddBacks(), "Add-backs object should be created");
-        assertEquals(10000.0, newScheduleX.getAddBacks().getIncomeAndStateTaxes(), 0.01, 
-            "State taxes should be migrated to addBacks.incomeAndStateTaxes");
+        assertNotNull(newScheduleX.addBacks(), "Add-backs object should be created");
+        assertEquals(10000.0, newScheduleX.addBacks().interestAndStateTaxes(), 0.01, 
+            "State taxes should be migrated to addBacks.interestAndStateTaxes");
 
         // Verify deductions nested structure
-        assertNotNull(newScheduleX.getDeductions(), "Deductions object should be created");
-        assertEquals(5000.0, newScheduleX.getDeductions().getInterestIncome(), 0.01, 
+        assertNotNull(newScheduleX.deductions(), "Deductions object should be created");
+        assertEquals(5000.0, newScheduleX.deductions().interestIncome(), 0.01, 
             "Interest income should be migrated to deductions.interestIncome");
-        assertEquals(3000.0, newScheduleX.getDeductions().getDividends(), 0.01, 
+        assertEquals(3000.0, newScheduleX.deductions().dividends(), 0.01, 
             "Dividends should be migrated to deductions.dividends");
-        assertEquals(2000.0, newScheduleX.getDeductions().getCapitalGains(), 0.01, 
+        assertEquals(2000.0, newScheduleX.deductions().capitalGains(), 0.01, 
             "Capital gains should be migrated to deductions.capitalGains");
 
         // Verify new fields initialized to 0
-        assertEquals(0.0, newScheduleX.getAddBacks().getDepreciationAdjustment(), 0.01, 
+        assertEquals(0.0, newScheduleX.addBacks().depreciationAdjustment(), 0.01, 
             "New field (depreciation) should be initialized to 0");
-        assertEquals(0.0, newScheduleX.getAddBacks().getMealsAndEntertainment(), 0.01, 
+        assertEquals(0.0, newScheduleX.addBacks().mealsAndEntertainment(), 0.01, 
             "New field (meals) should be initialized to 0");
 
         // Verify calculated fields
-        assertNotNull(newScheduleX.getCalculatedFields(), "Calculated fields should be initialized");
+        assertNotNull(newScheduleX.calculatedFields(), "Calculated fields should be initialized");
         double expectedTotalAddBacks = 10000.0; // Only state taxes in old format
         double expectedTotalDeductions = 10000.0; // Interest $5K + dividends $3K + capital gains $2K
         double expectedAdjustedIncome = 500000.0 + expectedTotalAddBacks - expectedTotalDeductions;
         
-        assertEquals(expectedTotalAddBacks, newScheduleX.getCalculatedFields().getTotalAddBacks(), 0.01, 
+        assertEquals(expectedTotalAddBacks, newScheduleX.calculatedFields().totalAddBacks(), 0.01, 
             "Total add-backs should be calculated correctly after migration");
-        assertEquals(expectedTotalDeductions, newScheduleX.getCalculatedFields().getTotalDeductions(), 0.01, 
+        assertEquals(expectedTotalDeductions, newScheduleX.calculatedFields().totalDeductions(), 0.01, 
             "Total deductions should be calculated correctly after migration");
-        assertEquals(expectedAdjustedIncome, newScheduleX.getCalculatedFields().getAdjustedMunicipalIncome(), 0.01, 
+        assertEquals(expectedAdjustedIncome, newScheduleX.calculatedFields().adjustedMunicipalIncome(), 0.01, 
             "Adjusted municipal income should match old calculation ($500K + $10K - $10K = $500K)");
     }
 
@@ -142,16 +141,27 @@ class BusinessScheduleXServiceTest {
      */
     @Test
     @DisplayName("Old format returns calculate correctly after migration")
-    void testOldFormatCalculationAfterMigration() {
-        // Arrange
-        BusinessScheduleXDetails oldScheduleX = createOldFormatScheduleX();
+    void testOldFormatCalculationAfterMigration() throws Exception {
+        // Arrange - Create old format JSON
+        String oldFormatJson = """
+            {
+              "fedTaxableIncome": 500000,
+              "incomeAndStateTaxes": 10000,
+              "interestIncome": 5000,
+              "dividends": 3000,
+              "capitalGains": 2000,
+              "other": 0
+            }
+            """;
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree(oldFormatJson);
 
         // Act
-        BusinessScheduleXDetails newScheduleX = businessScheduleXService.convertToNewFormat(oldScheduleX);
-        businessScheduleXService.recalculateTotals(newScheduleX);
+        BusinessScheduleXDetails newScheduleX = businessScheduleXService.convertFromOldFormat(jsonNode);
 
         // Assert
-        assertEquals(500000.0, newScheduleX.getCalculatedFields().getAdjustedMunicipalIncome(), 0.01, 
+        assertEquals(500000.0, newScheduleX.calculatedFields().adjustedMunicipalIncome(), 0.01, 
             "Old format return should calculate same adjusted income after migration ($500K federal + $10K add-backs - $10K deductions = $500K)");
     }
 
@@ -237,22 +247,4 @@ class BusinessScheduleXServiceTest {
     /**
      * Create old 6-field format Schedule X for testing backward compatibility
      * Federal income $500K, state taxes $10K (add-back), intangible income $10K (deduction)
-     */
-    private BusinessScheduleXDetails createOldFormatScheduleX() {
-        BusinessScheduleXDetails scheduleX = new BusinessScheduleXDetails();
-        scheduleX.setFedTaxableIncome(500000.0);
-
-        // Old format: top-level fields (will be migrated to nested structure)
-        AddBacks addBacks = new AddBacks();
-        addBacks.setIncomeAndStateTaxes(10000.0);
-        scheduleX.setAddBacks(addBacks);
-
-        Deductions deductions = new Deductions();
-        deductions.setInterestIncome(5000.0);
-        deductions.setDividends(3000.0);
-        deductions.setCapitalGains(2000.0);
-        scheduleX.setDeductions(deductions);
-
-        return scheduleX;
-    }
-}
+     */}
