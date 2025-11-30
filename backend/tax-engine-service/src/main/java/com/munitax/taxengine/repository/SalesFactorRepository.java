@@ -24,7 +24,8 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
      * @param scheduleYId the Schedule Y ID
      * @return Optional containing the sales factor if found
      */
-    Optional<SalesFactor> findByScheduleYId(UUID scheduleYId);
+       @Query("SELECT sf FROM SalesFactor sf WHERE sf.scheduleY.scheduleYId = :scheduleYId")
+       Optional<SalesFactor> findByScheduleYId(@Param("scheduleYId") UUID scheduleYId);
 
     /**
      * Find all sales factors for a tenant.
@@ -41,7 +42,7 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total Ohio sales
      */
-    @Query("SELECT COALESCE(SUM(sf.ohioSales), 0) FROM SalesFactor sf " +
+    @Query("SELECT COALESCE(SUM(sf.totalOhioSales), 0) FROM SalesFactor sf " +
            "JOIN sf.scheduleY s WHERE s.businessId = :businessId AND sf.tenantId = :tenantId")
     BigDecimal sumOhioSalesByBusiness(
             @Param("businessId") UUID businessId,
@@ -54,7 +55,7 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total everywhere sales
      */
-    @Query("SELECT COALESCE(SUM(sf.totalSales), 0) FROM SalesFactor sf " +
+    @Query("SELECT COALESCE(SUM(sf.totalSalesEverywhere), 0) FROM SalesFactor sf " +
            "JOIN sf.scheduleY s WHERE s.businessId = :businessId AND sf.tenantId = :tenantId")
     BigDecimal sumTotalSalesByBusiness(
             @Param("businessId") UUID businessId,
@@ -77,7 +78,7 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total service revenue
      */
-    @Query("SELECT COALESCE(SUM(sf.serviceRevenue), 0) FROM SalesFactor sf " +
+    @Query("SELECT COALESCE(SUM(sf.ohioSalesServices), 0) FROM SalesFactor sf " +
            "JOIN sf.scheduleY s WHERE s.businessId = :businessId AND sf.tenantId = :tenantId")
     BigDecimal sumServiceRevenueByBusiness(
             @Param("businessId") UUID businessId,

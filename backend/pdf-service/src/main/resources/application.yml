@@ -6,9 +6,9 @@ spring:
     name: pdf-service
   
   datasource:
-    url: ${DB_URL:jdbc:postgresql://pg-1ac838cf-taazaa-6110.g.aivencloud.com:23581/defaultdb?ssl=require}
-    username: ${DB_USERNAME:avnadmin}
-    password: ${DB_PASSWORD:AVNS_CIZODtyC1VgMeY5KcC3}
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/munitax_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
   
   jpa:

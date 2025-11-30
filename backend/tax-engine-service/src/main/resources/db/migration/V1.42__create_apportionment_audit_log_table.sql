@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS apportionment_audit_log (
     change_reason TEXT,
     affected_calculation VARCHAR(100),
     ip_address INET,
-    user_agent TEXT,
-    CONSTRAINT fk_apportionment_audit_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+    user_agent TEXT
+    -- Note: FK to tenants removed due to type mismatch (UUID vs BIGINT)
 );
 
 -- Indexes for audit queries

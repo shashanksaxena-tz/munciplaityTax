@@ -19,11 +19,12 @@ public interface FormTemplateRepository extends JpaRepository<FormTemplate, UUID
     /**
      * Find active template by form code and tax year
      */
-    @Query("SELECT ft FROM FormTemplate ft WHERE ft.formCode = :formCode " +
-           "AND :taxYear = ANY(ft.applicableYears) " +
-           "AND ft.isActive = true " +
-           "AND (ft.tenantId = :tenantId OR ft.tenantId IS NULL) " +
-           "ORDER BY ft.tenantId DESC NULLS LAST, ft.revisionDate DESC")
+    @Query(value = "SELECT * FROM form_templates ft WHERE ft.form_code = :formCode " +
+           "AND :taxYear = ANY(ft.applicable_years) " +
+           "AND ft.is_active = true " +
+           "AND (ft.tenant_id = :tenantId OR ft.tenant_id IS NULL) " +
+           "ORDER BY ft.tenant_id DESC NULLS LAST, ft.revision_date DESC",
+           nativeQuery = true)
     Optional<FormTemplate> findActiveTemplateByFormCodeAndYear(
         @Param("formCode") String formCode, 
         @Param("taxYear") Integer taxYear,

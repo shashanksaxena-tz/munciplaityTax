@@ -7,19 +7,20 @@ spring:
   
   # Database Configuration
   datasource:
-    url: jdbc:postgresql://pg-1ac838cf-taazaa-6110.g.aivencloud.com:23581/defaultdb?ssl=require
-    username: ${DB_USERNAME:avnadmin}
-    password: ${DB_PASSWORD:AVNS_CIZODtyC1VgMeY5KcC3}
+    url: jdbc:postgresql://postgres:5432/munitax_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
   
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        default_schema: dublin
         jdbc:
           lob:
             non_contextual_creation: true
