@@ -1,7 +1,6 @@
 package com.munitax.taxengine.service;
 
 import com.munitax.taxengine.domain.apportionment.ThrowbackElection;
-import com.munitax.taxengine.domain.apportionment.SaleTransaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -15,7 +14,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
