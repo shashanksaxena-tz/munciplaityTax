@@ -11,6 +11,8 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -29,9 +31,14 @@ class ExtractionControllerTest {
 
     @Test
     void testExtractData_Success() throws Exception {
-        ExtractionDto.ExtractionUpdate update = new ExtractionDto.ExtractionUpdate();
-        update.setProgress(100);
-        update.setMessage("Extraction complete");
+        ExtractionDto.ExtractionUpdate update = new ExtractionDto.ExtractionUpdate(
+                "COMPLETE",
+                100,
+                List.of("Extraction complete"),
+                List.of(),
+                0.95,
+                null
+        );
         
         when(geminiService.extractData(anyString(), anyString(), anyString()))
                 .thenReturn(Flux.just(update));
@@ -51,8 +58,14 @@ class ExtractionControllerTest {
 
     @Test
     void testStreamExtraction() throws Exception {
-        ExtractionDto.ExtractionUpdate update = new ExtractionDto.ExtractionUpdate();
-        update.setProgress(50);
+        ExtractionDto.ExtractionUpdate update = new ExtractionDto.ExtractionUpdate(
+                "EXTRACTING",
+                50,
+                List.of(),
+                List.of(),
+                0.0,
+                null
+        );
         
         when(geminiService.extractData(anyString(), any(), any()))
                 .thenReturn(Flux.just(update));

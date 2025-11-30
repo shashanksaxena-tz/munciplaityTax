@@ -185,4 +185,48 @@ public class WithholdingIntegrationService {
 
         return false;
     }
+
+    /**
+     * Get Ohio payroll for a specific tax year.
+     *
+     * @param businessId the business ID
+     * @param taxYear    the tax year
+     * @param tenantId   the tenant ID for multi-tenant isolation
+     * @return Ohio payroll amount
+     */
+    public BigDecimal getOhioPayrollForYear(UUID businessId, Integer taxYear, UUID tenantId) {
+        log.debug("Fetching Ohio payroll for year: business={}, taxYear={}, tenant={}",
+                businessId, taxYear, tenantId);
+
+        Map<String, Object> payrollData = getOhioPayrollData(businessId, taxYear, tenantId);
+        Object ohioPayroll = payrollData.get("ohioPayroll");
+        
+        if (ohioPayroll instanceof BigDecimal) {
+            return (BigDecimal) ohioPayroll;
+        }
+        
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * Get total payroll (everywhere) for a specific tax year.
+     *
+     * @param businessId the business ID
+     * @param taxYear    the tax year
+     * @param tenantId   the tenant ID for multi-tenant isolation
+     * @return Total payroll amount
+     */
+    public BigDecimal getTotalPayrollForYear(UUID businessId, Integer taxYear, UUID tenantId) {
+        log.debug("Fetching total payroll for year: business={}, taxYear={}, tenant={}",
+                businessId, taxYear, tenantId);
+
+        Map<String, Object> payrollData = getTotalPayrollData(businessId, taxYear, tenantId);
+        Object totalPayroll = payrollData.get("totalPayroll");
+        
+        if (totalPayroll instanceof BigDecimal) {
+            return (BigDecimal) totalPayroll;
+        }
+        
+        return BigDecimal.ZERO;
+    }
 }
