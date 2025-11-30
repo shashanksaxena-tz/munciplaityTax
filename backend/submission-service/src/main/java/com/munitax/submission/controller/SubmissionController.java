@@ -2,6 +2,7 @@ package com.munitax.submission.controller;
 
 import com.munitax.submission.model.Submission;
 import com.munitax.submission.repository.SubmissionRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -35,22 +36,28 @@ public class SubmissionController {
     }
 
     @PostMapping("/{id}/approve")
-    public Submission approveSubmission(@PathVariable String id, @RequestParam String auditorId) {
-        Submission submission = repository.findById(id).orElseThrow();
-        submission.setStatus("APPROVED");
-        submission.setReviewedAt(Instant.now());
-        submission.setReviewedBy(auditorId);
-        return repository.save(submission);
+    public ResponseEntity<Submission> approveSubmission(@PathVariable String id, @RequestParam String auditorId) {
+        return repository.findById(id)
+                .map(submission -> {
+                    submission.setStatus("APPROVED");
+                    submission.setReviewedAt(Instant.now());
+                    submission.setReviewedBy(auditorId);
+                    return ResponseEntity.ok(repository.save(submission));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{id}/reject")
-    public Submission rejectSubmission(@PathVariable String id, @RequestParam String auditorId,
+    public ResponseEntity<Submission> rejectSubmission(@PathVariable String id, @RequestParam String auditorId,
             @RequestBody String comments) {
-        Submission submission = repository.findById(id).orElseThrow();
-        submission.setStatus("REJECTED");
-        submission.setAuditorComments(comments);
-        submission.setReviewedAt(Instant.now());
-        submission.setReviewedBy(auditorId);
-        return repository.save(submission);
+        return repository.findById(id)
+                .map(submission -> {
+                    submission.setStatus("REJECTED");
+                    submission.setAuditorComments(comments);
+                    submission.setReviewedAt(Instant.now());
+                    submission.setReviewedBy(auditorId);
+                    return ResponseEntity.ok(repository.save(submission));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }
