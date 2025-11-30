@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -83,7 +84,7 @@ public class FormGenerationController {
                     .build();
                 return ResponseEntity.ok(response);
             })
-            .orElse(ResponseEntity.notFound().build());
+            .orElse(ResponseEntity.<FormGenerationResponse>notFound().build());
     }
 
     /**
@@ -94,30 +95,32 @@ public class FormGenerationController {
     public ResponseEntity<Resource> downloadForm(@PathVariable UUID formId) {
         log.info("Downloading PDF for formId={}", formId);
 
-        return formGenerationService.getGeneratedForm(formId)
-            .map(form -> {
-                try {
-                    File pdfFile = formGenerationService.getPDFFile(form);
-                    if (!pdfFile.exists()) {
-                        log.error("PDF file not found: {}", pdfFile.getAbsolutePath());
-                        return ResponseEntity.<Resource>notFound().build();
-                    }
+        Optional<GeneratedForm> formOptional = formGenerationService.getGeneratedForm(formId);
+        if (formOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        GeneratedForm form = formOptional.get();
+        try {
+            File pdfFile = formGenerationService.getPDFFile(form);
+            if (!pdfFile.exists()) {
+                log.error("PDF file not found: {}", pdfFile.getAbsolutePath());
+                return ResponseEntity.notFound().build();
+            }
 
-                    Resource resource = new FileSystemResource(pdfFile);
-                    String filename = String.format("Form-%s-%d-v%d.pdf", 
-                        form.getFormCode(), form.getTaxYear(), form.getVersion());
+            Resource resource = new FileSystemResource(pdfFile);
+            String filename = String.format("Form-%s-%d-v%d.pdf", 
+                form.getFormCode(), form.getTaxYear(), form.getVersion());
 
-                    return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                        .contentType(MediaType.APPLICATION_PDF)
-                        .contentLength(pdfFile.length())
-                        .body(resource);
-                } catch (Exception e) {
-                    log.error("Error downloading form: {}", e.getMessage(), e);
-                    return ResponseEntity.<Resource>status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-                }
-            })
-            .orElse(ResponseEntity.notFound().build());
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(pdfFile.length())
+                .body(resource);
+        } catch (Exception e) {
+            log.error("Error downloading form: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**

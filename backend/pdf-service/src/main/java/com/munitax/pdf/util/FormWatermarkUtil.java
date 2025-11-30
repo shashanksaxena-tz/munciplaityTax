@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import org.apache.pdfbox.util.Matrix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -59,13 +60,14 @@ public class FormWatermarkUtil {
             
             // Rotate text diagonally
             contentStream.beginText();
-            contentStream.setTextMatrix(
+            Matrix matrix = new Matrix(
                 (float) Math.cos(Math.toRadians(45)), 
                 (float) Math.sin(Math.toRadians(45)),
                 -(float) Math.sin(Math.toRadians(45)), 
                 (float) Math.cos(Math.toRadians(45)),
                 x, y
             );
+            contentStream.setTextMatrix(matrix);
             contentStream.showText(DRAFT_WATERMARK_TEXT);
             contentStream.endText();
         }

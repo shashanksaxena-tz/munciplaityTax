@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -132,7 +133,7 @@ public class EstimatedTaxPenaltyService {
                 .totalPenalty(totalPenalty)
                 .quarterlyUnderpayments(underpayments)
                 .createdBy(createdBy)
-                .createdAt(LocalDate.now())
+                .createdAt(LocalDateTime.now())
                 .build();
         
         // Save penalty first to get ID
@@ -360,7 +361,7 @@ public class EstimatedTaxPenaltyService {
                 .totalPenalty(BigDecimal.ZERO)
                 .quarterlyUnderpayments(underpayments)
                 .createdBy(createdBy)
-                .createdAt(LocalDate.now())
+                .createdAt(LocalDateTime.now())
                 .build();
         
         // Save penalty first to get ID
