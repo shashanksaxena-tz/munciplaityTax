@@ -1,0 +1,28 @@
+# Common Actuator Endpoints Configuration
+# These settings apply to all services using the common-starter in standalone mode
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers
+      base-path: /actuator
+      cors:
+        allowed-origins: "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:5173"
+        allowed-methods: "*"
+        allowed-headers: "*"
+        allow-credentials: true
+        max-age: 3600
+  
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+  
+  health:
+    defaults:
+      enabled: true

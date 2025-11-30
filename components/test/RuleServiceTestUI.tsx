@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Settings, Plus, Edit, Trash2, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
-
-const API_BASE = 'http://localhost:8084/api/rules';
+import { ApiConfigPanel } from '../ApiConfigPanel';
+import { apiConfig } from '../../services/apiConfig';
 
 interface TaxRule {
   id: string;
@@ -31,6 +31,7 @@ export const RuleServiceTestUI: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [testResult, setTestResult] = useState<string>('');
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'testing'>('testing');
+  const [serviceUrl, setServiceUrl] = useState('');
 
   const [newRule, setNewRule] = useState({
     tenantId: 'test-tenant-001',
@@ -44,29 +45,28 @@ export const RuleServiceTestUI: React.FC = () => {
   });
 
   useEffect(() => {
-    testConnection();
+    const url = apiConfig.getServiceUrl('/rules');
+    setServiceUrl(url);
+    testConnection(url);
   }, []);
 
-  const testConnection = async () => {
+  const testConnection = async (url: string = serviceUrl) => {
     setConnectionStatus('testing');
     try {
-      const response = await fetch(`${API_BASE}?page=0&size=1`, {
+      const response = await fetch(`${url}/actuator/health`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
       
       if (response.ok) {
         setConnectionStatus('connected');
-        setTestResult('✅ Successfully connected to Rule Service');
+        setTestResult(`✅ Successfully connected to Rule Service at ${url}`);
       } else {
         setConnectionStatus('disconnected');
         setTestResult(`❌ Connection failed: ${response.statusText}`);
       }
     } catch (err) {
       setConnectionStatus('disconnected');
-      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}. Make sure service is running at ${url}`);
     }
   };
 
@@ -74,7 +74,8 @@ export const RuleServiceTestUI: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE}?page=0&size=20`, {
+      const url = apiConfig.buildUrl('/rules', '/api/rules?page=0&size=20');
+      const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -100,7 +101,8 @@ export const RuleServiceTestUI: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(API_BASE, {
+      const url = apiConfig.buildUrl('/rules', '/api/rules');
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +153,8 @@ export const RuleServiceTestUI: React.FC = () => {
                 <p className="text-sm text-slate-600">Standalone testing interface for rule-service</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <ApiConfigPanel />
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                 connectionStatus === 'connected' ? 'bg-green-100 text-green-800' :
                 connectionStatus === 'disconnected' ? 'bg-red-100 text-red-800' :
@@ -162,7 +165,7 @@ export const RuleServiceTestUI: React.FC = () => {
                  '● Testing...'}
               </div>
               <button
-                onClick={testConnection}
+                onClick={() => testConnection()}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 title="Test connection"
               >
@@ -192,10 +195,11 @@ export const RuleServiceTestUI: React.FC = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <h3 className="font-semibold text-blue-900 mb-2">Service Information</h3>
           <div className="text-sm text-blue-800 space-y-1">
-            <p><strong>Service URL:</strong> {API_BASE}</p>
-            <p><strong>Port:</strong> 8084</p>
+            <p><strong>Configured URL:</strong> <code className="bg-blue-100 px-2 py-1 rounded">{serviceUrl}</code></p>
+            <p><strong>Default Port:</strong> 8084</p>
             <p><strong>Profile:</strong> standalone</p>
             <p><strong>Features:</strong> Create, Read, Update rules with approval workflow</p>
+            <p className="mt-2 text-xs">💡 Click "API Configuration" to change the service URL</p>
           </div>
         </div>
 

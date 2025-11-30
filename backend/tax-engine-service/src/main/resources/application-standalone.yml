@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: tax-engine-service-standalone
+  config:
+    import: optional:classpath:application-common-standalone.yml
   
   # Database Configuration - Aiven PostgreSQL
   datasource:

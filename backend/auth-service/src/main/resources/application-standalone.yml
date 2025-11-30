@@ -4,13 +4,14 @@ server:
 spring:
   application:
     name: auth-service-standalone
+  config:
+    import: optional:classpath:application-common-standalone.yml
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/munitax
-    username: ${POSTGRES_USER:munitax}
-    password: ${POSTGRES_PASSWORD:munitax}
+    url: jdbc:postgresql://pg-1ac838cf-taazaa-6110.g.aivencloud.com:23581/defaultdb
+    username: avnadmin
+    password: AVNS_CIZODtyC1VgMeY5KcC3
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -38,7 +39,7 @@ management:
       exposure:
         include: health,info,metrics
       cors:
-        allowed-origins: "http://localhost:3000"
+        allowed-origins: "http://localhost:3000,http://localhost:3003"
         allowed-methods: "*"
         allowed-headers: "*"
   endpoint:

@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calculator, DollarSign, RefreshCw, FileText, TrendingUp } from 'lucide-react';
-
-const API_BASE = 'http://localhost:8085/api/v1/tax-engine';
+import { ApiConfigPanel } from '../ApiConfigPanel';
+import { apiConfig } from '../../services/apiConfig';
 
 interface TaxCalculationResult {
   totalTax: number;
@@ -24,6 +24,7 @@ export const TaxEngineServiceTestUI: React.FC = () => {
   const [testResult, setTestResult] = useState<string>('');
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'testing'>('testing');
   const [calculationResult, setCalculationResult] = useState<any>(null);
+  const [serviceUrl, setServiceUrl] = useState('');
 
   const [individualCalcRequest, setIndividualCalcRequest] = useState({
     taxableIncome: 50000,
@@ -41,26 +42,28 @@ export const TaxEngineServiceTestUI: React.FC = () => {
   });
 
   useEffect(() => {
-    testConnection();
+    const url = apiConfig.getServiceUrl('/tax-engine');
+    setServiceUrl(url);
+    testConnection(url);
   }, []);
 
-  const testConnection = async () => {
+  const testConnection = async (url: string = serviceUrl) => {
     setConnectionStatus('testing');
     try {
-      const response = await fetch(`http://localhost:8085/actuator/health`, {
+      const response = await fetch(`${url}/actuator/health`, {
         method: 'GET',
       });
       
       if (response.ok) {
         setConnectionStatus('connected');
-        setTestResult('✅ Successfully connected to Tax Engine Service');
+        setTestResult(`✅ Successfully connected to Tax Engine Service at ${url}`);
       } else {
         setConnectionStatus('disconnected');
         setTestResult(`❌ Connection failed: ${response.statusText}`);
       }
     } catch (err) {
       setConnectionStatus('disconnected');
-      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}. Make sure service is running at ${url}`);
     }
   };
 
@@ -91,7 +94,7 @@ export const TaxEngineServiceTestUI: React.FC = () => {
         }
       };
 
-      const response = await fetch(`${API_BASE}/calculate/individual`, {
+      const response = await fetch(apiConfig.buildUrl('/tax-engine', '/api/v1/tax-engine/calculate/individual'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +151,7 @@ export const TaxEngineServiceTestUI: React.FC = () => {
         }
       };
 
-      const response = await fetch(`${API_BASE}/calculate/business`, {
+      const response = await fetch(apiConfig.buildUrl('/tax-engine', '/api/v1/tax-engine/calculate/business'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -186,7 +189,8 @@ export const TaxEngineServiceTestUI: React.FC = () => {
                 <p className="text-sm text-slate-600">Standalone testing interface for tax-engine-service</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <ApiConfigPanel />
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                 connectionStatus === 'connected' ? 'bg-green-100 text-green-800' :
                 connectionStatus === 'disconnected' ? 'bg-red-100 text-red-800' :
@@ -197,7 +201,7 @@ export const TaxEngineServiceTestUI: React.FC = () => {
                  '● Testing...'}
               </div>
               <button
-                onClick={testConnection}
+                onClick={() => testConnection()}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 title="Test connection"
               >

@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { BookOpen, DollarSign, FileText, RefreshCw, TrendingUp, AlertCircle } from 'lucide-react';
-
-const API_BASE = 'http://localhost:8087/api/ledger';
+import { ApiConfigPanel } from '../ApiConfigPanel';
+import { apiConfig } from '../../services/apiConfig';
 
 interface JournalEntry {
   id: string;
@@ -34,28 +34,31 @@ export const LedgerServiceTestUI: React.FC = () => {
   const [testResult, setTestResult] = useState<string>('');
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'testing'>('testing');
   const [testTenantId] = useState('test-tenant-001');
+  const [serviceUrl, setServiceUrl] = useState('');
 
   useEffect(() => {
-    testConnection();
+    const url = apiConfig.getServiceUrl('/ledger');
+    setServiceUrl(url);
+    testConnection(url);
   }, []);
 
-  const testConnection = async () => {
+  const testConnection = async (url: string = serviceUrl) => {
     setConnectionStatus('testing');
     try {
-      const response = await fetch(`http://localhost:8087/actuator/health`, {
+      const response = await fetch(`${url}/actuator/health`, {
         method: 'GET',
       });
       
       if (response.ok) {
         setConnectionStatus('connected');
-        setTestResult('✅ Successfully connected to Ledger Service');
+        setTestResult(`✅ Successfully connected to Ledger Service at ${url}`);
       } else {
         setConnectionStatus('disconnected');
         setTestResult(`❌ Connection failed: ${response.statusText}`);
       }
     } catch (err) {
       setConnectionStatus('disconnected');
-      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}. Make sure service is running at ${url}`);
     }
   };
 
@@ -63,7 +66,8 @@ export const LedgerServiceTestUI: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE}/journal-entries?tenantId=${testTenantId}&page=0&size=20`, {
+      const url = apiConfig.buildUrl('/ledger', `/api/ledger/journal-entries?tenantId=${testTenantId}&page=0&size=20`);
+      const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -89,7 +93,8 @@ export const LedgerServiceTestUI: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`${API_BASE}/trial-balance/${testTenantId}`, {
+      const url = apiConfig.buildUrl('/ledger', `/api/ledger/trial-balance/${testTenantId}`);
+      const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -131,7 +136,8 @@ export const LedgerServiceTestUI: React.FC = () => {
                 <p className="text-sm text-slate-600">Standalone testing interface for ledger-service</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <ApiConfigPanel />
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                 connectionStatus === 'connected' ? 'bg-green-100 text-green-800' :
                 connectionStatus === 'disconnected' ? 'bg-red-100 text-red-800' :
@@ -142,7 +148,7 @@ export const LedgerServiceTestUI: React.FC = () => {
                  '● Testing...'}
               </div>
               <button
-                onClick={testConnection}
+                onClick={() => testConnection()}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 title="Test connection"
               >

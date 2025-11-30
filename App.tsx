@@ -10,6 +10,7 @@ import TaxFilingApp from './TaxFilingApp';
 import { AuditorDashboard } from './components/AuditorDashboard';
 import { ReturnReviewPanel } from './components/ReturnReviewPanel';
 import { ServiceTestDashboard } from './components/test/ServiceTestDashboard';
+import { StandaloneTestPage } from './components/StandaloneTestPage';
 import { AuthServiceTestUI } from './components/test/AuthServiceTestUI';
 import { RuleServiceTestUI } from './components/test/RuleServiceTestUI';
 import { LedgerServiceTestUI } from './components/test/LedgerServiceTestUI';
@@ -70,6 +71,7 @@ function AppContent() {
             
             {/* Service Testing Routes - No authentication required */}
             <Route path="/test" element={<ServiceTestDashboard />} />
+            <Route path="/standalone" element={<StandaloneTestPage />} />
             <Route path="/test/auth" element={<AuthServiceTestUI />} />
             <Route path="/test/rules" element={<RuleServiceTestUI />} />
             <Route path="/test/ledger" element={<LedgerServiceTestUI />} />

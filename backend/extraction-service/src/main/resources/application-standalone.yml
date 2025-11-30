@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: extraction-service-standalone
+  config:
+    import: optional:classpath:application-common-standalone.yml
 
 # Disable Eureka for standalone mode
 eureka:

@@ -15,6 +15,13 @@
     <description>Double-entry ledger system with mock payment provider</description>
 
     <dependencies>
+        <!-- MuniTax Common Starter -->
+        <dependency>
+            <groupId>com.munitax</groupId>
+            <artifactId>common-starter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        
         <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

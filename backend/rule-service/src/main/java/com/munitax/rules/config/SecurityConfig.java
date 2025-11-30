@@ -26,6 +26,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            // Enable CORS with default configuration (uses CorsFilter from common-starter)
+            .cors(cors -> cors.configure(http))
             // CSRF disabled - API uses stateless JWT authentication with Bearer tokens only, no cookie-based sessions
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> 

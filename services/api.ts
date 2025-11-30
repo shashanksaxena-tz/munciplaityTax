@@ -1,11 +1,11 @@
 import { TaxFormData, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCalculationResult, NetProfitReturnData, BusinessFederalForm, BusinessTaxRulesConfig } from '../types';
-
-const API_BASE_URL = '/api/v1';
+import { apiConfig } from './apiConfig';
 
 export const api = {
     auth: {
         login: async (credentials: any) => {
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            const url = apiConfig.buildUrl('/auth', '/api/v1/auth/login');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(credentials)
@@ -17,14 +17,16 @@ export const api = {
             return response.json();
         },
         getCurrentUser: async (token: string) => {
-            const response = await fetch(`${API_BASE_URL}/auth/me`, {
+            const url = apiConfig.buildUrl('/auth', '/api/v1/auth/me');
+            const response = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!response.ok) throw new Error('Failed to get user');
             return response.json();
         },
         validateToken: async (token: string) => {
-            const response = await fetch(`${API_BASE_URL}/auth/validate`, {
+            const url = apiConfig.buildUrl('/auth', '/api/v1/auth/validate');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token })
@@ -40,7 +42,8 @@ export const api = {
             settings: TaxReturnSettings,
             rules: TaxRulesConfig
         ): Promise<TaxCalculationResult> => {
-            const response = await fetch(`${API_BASE_URL}/tax-engine/calculate/individual`, {
+            const url = apiConfig.buildUrl('/tax-engine', '/api/v1/tax-engine/calculate/individual');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -61,7 +64,8 @@ export const api = {
             nolCarryforward: number,
             rules: BusinessTaxRulesConfig
         ): Promise<NetProfitReturnData> => {
-            const response = await fetch(`${API_BASE_URL}/tax-engine/calculate/business`, {
+            const url = apiConfig.buildUrl('/tax-engine', '/api/v1/tax-engine/calculate/business');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -81,7 +85,8 @@ export const api = {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await fetch(`${API_BASE_URL}/extraction/extract`, {
+            const url = apiConfig.buildUrl('/extraction', '/api/v1/extraction/extract');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
@@ -129,7 +134,8 @@ export const api = {
 
     pdf: {
         generateReturn: async (result: TaxCalculationResult): Promise<Blob> => {
-            const response = await fetch(`${API_BASE_URL}/pdf/generate/tax-return`, {
+            const url = apiConfig.buildUrl('/pdf', '/api/v1/pdf/generate/tax-return');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -144,7 +150,8 @@ export const api = {
 
     submission: {
         submitReturn: async (submission: any) => {
-            const response = await fetch(`${API_BASE_URL}/submissions`, {
+            const url = apiConfig.buildUrl('/submission', '/api/v1/submissions');
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -5,8 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { FileSearch, Upload, RefreshCw, CheckCircle, XCircle, Loader } from 'lucide-react';
-
-const API_BASE = 'http://localhost:8083/api/v1/extraction';
+import { ApiConfigPanel } from '../ApiConfigPanel';
+import { apiConfig } from '../../services/apiConfig';
 
 interface ExtractionResult {
   documentType: string;
@@ -23,29 +23,31 @@ export const ExtractionServiceTestUI: React.FC = () => {
   const [extractionResult, setExtractionResult] = useState<ExtractionResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [serviceUrl, setServiceUrl] = useState('');
 
   useEffect(() => {
-    testConnection();
+    const url = apiConfig.getServiceUrl('/extraction');
+    setServiceUrl(url);
+    testConnection(url);
   }, []);
 
-  const testConnection = async () => {
+  const testConnection = async (url: string = serviceUrl) => {
     setConnectionStatus('testing');
     try {
-      const response = await fetch(`${API_BASE}/health`, {
+      const response = await fetch(`${url}/actuator/health`, {
         method: 'GET',
       });
       
-      // Even if health endpoint doesn't exist, if we get a response, service is up
-      if (response.status < 500) {
+      if (response.ok) {
         setConnectionStatus('connected');
-        setTestResult('✅ Successfully connected to Extraction Service');
+        setTestResult(`✅ Successfully connected to Extraction Service at ${url}`);
       } else {
         setConnectionStatus('disconnected');
         setTestResult(`❌ Connection failed: ${response.statusText}`);
       }
     } catch (err) {
       setConnectionStatus('disconnected');
-      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setTestResult(`❌ Connection failed: ${err instanceof Error ? err.message : 'Unknown error'}. Make sure service is running at ${url}`);
     }
   };
 
@@ -82,7 +84,7 @@ export const ExtractionServiceTestUI: React.FC = () => {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await fetch(`${API_BASE}/extract`, {
+      const response = await fetch(apiConfig.buildUrl('/extraction', '/api/v1/extraction/extract'), {
         method: 'POST',
         body: formData,
       });
@@ -170,7 +172,8 @@ export const ExtractionServiceTestUI: React.FC = () => {
                 <p className="text-sm text-slate-600">Standalone testing interface for extraction-service</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              <ApiConfigPanel />
               <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                 connectionStatus === 'connected' ? 'bg-green-100 text-green-800' :
                 connectionStatus === 'disconnected' ? 'bg-red-100 text-red-800' :
@@ -181,7 +184,7 @@ export const ExtractionServiceTestUI: React.FC = () => {
                  '● Testing...'}
               </div>
               <button
-                onClick={testConnection}
+                onClick={() => testConnection()}
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 title="Test connection"
               >
