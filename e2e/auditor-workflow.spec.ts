@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { testUsers } from './fixtures/testUsers';
 
 test.describe('Auditor Workflow E2E', () => {
   test.beforeEach(async ({ page }) => {
     // Login as auditor
     await page.goto('/');
-    await page.fill('input[name="email"], input[type="email"]', 'auditor@example.com');
-    await page.fill('input[name="password"], input[type="password"]', 'password123');
+    await page.fill('input[name="email"], input[type="email"]', testUsers.auditor.email);
+    await page.fill('input[name="password"], input[type="password"]', testUsers.auditor.password);
     await page.click('button[type="submit"], button:has-text("Login")');
     await page.waitForURL(/dashboard|home|auditor/i, { timeout: 5000 });
   });

@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { testUsers, testCards } from './fixtures/testUsers';
 
 test.describe('Payment Processing E2E', () => {
   test.beforeEach(async ({ page }) => {
     // Login
     await page.goto('/');
-    await page.fill('input[name="email"], input[type="email"]', 'taxpayer@example.com');
-    await page.fill('input[name="password"], input[type="password"]', 'password123');
+    await page.fill('input[name="email"], input[type="email"]', testUsers.taxpayer.email);
+    await page.fill('input[name="password"], input[type="password"]', testUsers.taxpayer.password);
     await page.click('button[type="submit"], button:has-text("Login")');
     await page.waitForURL(/dashboard|home/i, { timeout: 5000 });
   });
@@ -17,10 +18,10 @@ test.describe('Payment Processing E2E', () => {
     // Select payment method
     await page.click('text=/credit.*card|card/i');
     
-    // Enter card details
-    await page.fill('input[name*="card"], input[placeholder*="card number"]', '4111111111111111');
-    await page.fill('input[name*="expiry"], input[placeholder*="expiry"]', '12/25');
-    await page.fill('input[name*="cvv"], input[placeholder*="CVV"]', '123');
+    // Enter card details using standard Visa test card number
+    await page.fill('input[name*="card"], input[placeholder*="card number"]', testCards.visa.number);
+    await page.fill('input[name*="expiry"], input[placeholder*="expiry"]', testCards.visa.expiry);
+    await page.fill('input[name*="cvv"], input[placeholder*="CVV"]', testCards.visa.cvv);
     await page.fill('input[name*="name"], input[placeholder*="cardholder"]', 'John Doe');
     
     // Enter billing address

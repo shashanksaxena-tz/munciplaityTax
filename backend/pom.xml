@@ -33,6 +33,7 @@
         <spring-cloud.version>2023.0.0</spring-cloud.version>
         <jacoco.version>0.8.11</jacoco.version>
         <jacoco.minimum.coverage>0.90</jacoco.minimum.coverage>
+        <flyway.version>10.4.1</flyway.version>
     </properties>
 
     <dependencyManagement>

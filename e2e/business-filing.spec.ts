@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { testUsers } from './fixtures/testUsers';
 
 test.describe('Business Tax Filing E2E', () => {
   test.beforeEach(async ({ page }) => {
     // Login as business user
     await page.goto('/');
-    await page.fill('input[name="email"], input[type="email"]', 'business@example.com');
-    await page.fill('input[name="password"], input[type="password"]', 'password123');
+    await page.fill('input[name="email"], input[type="email"]', testUsers.business.email);
+    await page.fill('input[name="password"], input[type="password"]', testUsers.business.password);
     await page.click('button[type="submit"], button:has-text("Login")');
     await page.waitForURL(/dashboard|home/i, { timeout: 5000 });
   });

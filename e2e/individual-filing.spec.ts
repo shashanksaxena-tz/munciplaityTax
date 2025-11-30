@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { testUsers } from './fixtures/testUsers';
 
 test.describe('Individual Tax Filing E2E', () => {
   test.beforeEach(async ({ page }) => {
     // Login as individual taxpayer
     await page.goto('/');
-    await page.fill('input[name="email"], input[type="email"]', 'individual@example.com');
-    await page.fill('input[name="password"], input[type="password"]', 'password123');
+    await page.fill('input[name="email"], input[type="email"]', testUsers.individual.email);
+    await page.fill('input[name="password"], input[type="password"]', testUsers.individual.password);
     await page.click('button[type="submit"], button:has-text("Login")');
     await page.waitForURL(/dashboard|home/i, { timeout: 5000 });
   });

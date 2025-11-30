@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 describe('Payment Processing Integration Tests', () => {
   const API_BASE_URL = 'http://localhost:8080/api/v1';

@@ -131,7 +131,7 @@ class SubmissionControllerTest {
 
         mockMvc.perform(post("/api/v1/submissions/nonexistent/approve")
                 .param("auditorId", "auditor-1"))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -142,6 +142,6 @@ class SubmissionControllerTest {
                 .param("auditorId", "auditor-1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("\"Comments\""))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isNotFound());
     }
 }

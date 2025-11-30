@@ -1,10 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Dashboard } from '../../../components/Dashboard';
-
-// Mock fetch
-global.fetch = vi.fn();
 
 const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
@@ -38,11 +35,11 @@ describe('Dashboard Component', () => {
     expect(buttons.length).toBeGreaterThan(0);
   });
 
-  it('should handle logout action', async () => {
+  it('should render create button', () => {
     localStorage.setItem('token', 'test-token');
     renderWithRouter(<Dashboard onSelectSession={() => {}} onRegisterBusiness={() => {}} />);
     
-    // Dashboard might not have logout, this test might not be applicable
+    // Dashboard should have create/new buttons
     const createButton = screen.queryByText(/Create|New/i);
     expect(createButton).toBeInTheDocument();
   });

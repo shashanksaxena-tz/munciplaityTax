@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { testUsers } from './fixtures/testUsers';
 
 test.describe('Amendment Filing E2E', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.fill('input[name="email"], input[type="email"]', 'taxpayer@example.com');
-    await page.fill('input[name="password"], input[type="password"]', 'password123');
+    await page.fill('input[name="email"], input[type="email"]', testUsers.taxpayer.email);
+    await page.fill('input[name="password"], input[type="password"]', testUsers.taxpayer.password);
     await page.click('button[type="submit"], button:has-text("Login")');
     await page.waitForURL(/dashboard|home/i, { timeout: 5000 });
   });
