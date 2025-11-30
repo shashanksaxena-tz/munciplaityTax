@@ -28,7 +28,7 @@ public class ScheduleXValidationService {
         List<String> errors,
         List<String> warnings
     ) {
-        public static ValidationResult valid() {
+        public static ValidationResult success() {
             return new ValidationResult(true, List.of(), List.of());
         }
         

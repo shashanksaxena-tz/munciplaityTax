@@ -178,6 +178,15 @@ public interface PenaltyAbatementRepository extends JpaRepository<PenaltyAbateme
     long countByStatusAndTenantId(AbatementStatus status, UUID tenantId);
 
     /**
+     * Find abatement requests by tenant and status (no pagination).
+     *
+     * @param tenantId the tenant ID for multi-tenant isolation
+     * @param status   the abatement status
+     * @return List of abatement requests with the specified status
+     */
+    List<PenaltyAbatement> findByTenantIdAndStatus(UUID tenantId, AbatementStatus status);
+
+    /**
      * Check if abatement exists for a penalty.
      *
      * @param penaltyId the penalty ID
