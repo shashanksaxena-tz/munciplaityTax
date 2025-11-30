@@ -1,9 +1,9 @@
 package com.munitax.taxengine.service;
 
-import com.munitax.taxengine.model.BusinessScheduleXDetails;
-import com.munitax.taxengine.model.BusinessScheduleXDetails.AddBacks;
-import com.munitax.taxengine.model.BusinessScheduleXDetails.Deductions;
-import com.munitax.taxengine.model.BusinessScheduleXDetails.CalculatedFields;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails.AddBacks;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails.Deductions;
+import com.munitax.taxengine.model.BusinessFederalForm.BusinessScheduleXDetails.CalculatedFields;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
