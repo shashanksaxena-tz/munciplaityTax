@@ -102,20 +102,25 @@ public class PayrollFactor {
 
     /**
      * Convenience setter for scheduleYId (for tests and API compatibility)
+     * @deprecated This is a test-only method that creates an incomplete ScheduleY entity.
+     * In production code, use setScheduleY() with a full ScheduleY entity.
      */
+    @Deprecated
     public void setScheduleYId(UUID scheduleYId) {
         if (this.scheduleY == null) {
             this.scheduleY = new ScheduleY();
         }
-        // Note: This is a simplified setter for test compatibility
-        // In production, use setScheduleY() with a full ScheduleY entity
+        // Note: This creates an incomplete ScheduleY entity for test compatibility only
     }
 
     /**
      * Convenience setter for tenantId (for tests and API compatibility)
+     * @deprecated This is a test-only method that doesn't actually store the tenantId.
+     * In production code, tenantId comes from the ScheduleY entity.
      */
+    @Deprecated
     public void setTenantId(UUID tenantId) {
-        // Note: This is a simplified setter for test compatibility
+        // Note: This is a no-op method for test compatibility
         // In production, tenantId would come from the ScheduleY entity
     }
 
