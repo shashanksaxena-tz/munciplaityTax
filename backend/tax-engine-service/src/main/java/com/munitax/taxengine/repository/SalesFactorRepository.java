@@ -77,7 +77,7 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total service revenue
      */
-    @Query("SELECT COALESCE(SUM(sf.serviceRevenue), 0) FROM SalesFactor sf " +
+    @Query("SELECT COALESCE(SUM(sf.ohioSalesServices), 0) FROM SalesFactor sf " +
            "JOIN sf.scheduleY s WHERE s.businessId = :businessId AND sf.tenantId = :tenantId")
     BigDecimal sumServiceRevenueByBusiness(
             @Param("businessId") UUID businessId,
