@@ -44,7 +44,7 @@ class SubmissionControllerTest {
         testSubmission.setId("test-id-123");
         testSubmission.setTenantId("tenant-1");
         testSubmission.setUserId("user-1");
-        testSubmission.setFormType("W1");
+        testSubmission.setReturnType("W1");
         testSubmission.setTaxYear(2024);
         testSubmission.setStatus("SUBMITTED");
         testSubmission.setSubmittedAt(Instant.now());
@@ -57,7 +57,7 @@ class SubmissionControllerTest {
         Submission newSubmission = new Submission();
         newSubmission.setTenantId("tenant-1");
         newSubmission.setUserId("user-1");
-        newSubmission.setFormType("W1");
+        newSubmission.setReturnType("W1");
         newSubmission.setTaxYear(2024);
 
         mockMvc.perform(post("/api/v1/submissions")
