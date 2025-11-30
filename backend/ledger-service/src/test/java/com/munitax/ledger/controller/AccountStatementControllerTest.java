@@ -2,6 +2,8 @@ package com.munitax.ledger.controller;
 
 import com.munitax.ledger.config.TestDataInitializer;
 import com.munitax.ledger.dto.AccountStatementResponse;
+import com.munitax.ledger.dto.PaymentRequest;
+import com.munitax.ledger.enums.PaymentMethod;
 import com.munitax.ledger.service.PaymentService;
 import com.munitax.ledger.service.TaxAssessmentService;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,8 +79,10 @@ class AccountStatementControllerTest {
         // Assert: Verify response
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getTransactions()).isNotEmpty();
-        assertThat(response.getBody().getEndingBalance()).isEqualByComparingTo(new BigDecimal("10000.00"));
+        
+        AccountStatementResponse body = response.getBody();
+        assertThat(body.getTransactions()).isNotEmpty();
+        assertThat(body.getEndingBalance()).isEqualByComparingTo(new BigDecimal("10000.00"));
     }
 
     @Test
@@ -91,10 +95,13 @@ class AccountStatementControllerTest {
                 "Q1 2024", UUID.randomUUID().toString()
         );
 
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("10000.00"), "CREDIT_CARD",
-                "mock_ch_test", "Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("10000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Payment")
+                .build()
         );
 
         // Act: Call API endpoint
@@ -105,7 +112,9 @@ class AccountStatementControllerTest {
         // Assert: Should show zero balance after payment
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getEndingBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+        
+        AccountStatementResponse body = response.getBody();
+        assertThat(body.getEndingBalance()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
@@ -189,8 +198,10 @@ class AccountStatementControllerTest {
         // Assert: Should return empty statement with zero balance
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getTransactions()).isEmpty();
-        assertThat(response.getBody().getEndingBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+        
+        AccountStatementResponse body = response.getBody();
+        assertThat(body.getTransactions()).isEmpty();
+        assertThat(body.getEndingBalance()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
@@ -211,10 +222,12 @@ class AccountStatementControllerTest {
         // Assert: Verify metadata
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getAccountName()).isNotNull();
-        assertThat(response.getBody().getStatementDate()).isNotNull();
-        assertThat(response.getBody().getTotalDebits()).isNotNull();
-        assertThat(response.getBody().getTotalCredits()).isNotNull();
+        
+        AccountStatementResponse body = response.getBody();
+        assertThat(body.getAccountName()).isNotNull();
+        assertThat(body.getStatementDate()).isNotNull();
+        assertThat(body.getTotalDebits()).isNotNull();
+        assertThat(body.getTotalCredits()).isNotNull();
     }
 
     @Test
@@ -229,10 +242,13 @@ class AccountStatementControllerTest {
         );
 
         // Partial payment
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("5000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Partial Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("5000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Partial Payment")
+                .build()
         );
 
         // Penalty
@@ -245,10 +261,13 @@ class AccountStatementControllerTest {
         );
 
         // Final payment
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("5250.00"), "ACH",
-                "mock_ach_1", "Final Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("5250.00"))
+                .paymentMethod(PaymentMethod.ACH)
+                .description("Final Payment")
+                .build()
         );
 
         // Act: Call API endpoint
@@ -259,8 +278,10 @@ class AccountStatementControllerTest {
         // Assert: Should show zero balance
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getEndingBalance()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(response.getBody().getTransactions()).hasSizeGreaterThanOrEqualTo(4);
+        
+        AccountStatementResponse body = response.getBody();
+        assertThat(body.getEndingBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(body.getTransactions()).hasSizeGreaterThanOrEqualTo(4);
     }
 
     @Test
@@ -273,10 +294,13 @@ class AccountStatementControllerTest {
                 "Q1 2024", UUID.randomUUID().toString()
         );
 
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("3000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Payment 1"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("3000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Payment 1")
+                .build()
         );
 
         // Act: Call API endpoint

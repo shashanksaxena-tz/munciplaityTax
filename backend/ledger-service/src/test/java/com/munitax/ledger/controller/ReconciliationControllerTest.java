@@ -1,7 +1,9 @@
 package com.munitax.ledger.controller;
 
 import com.munitax.ledger.config.TestDataInitializer;
+import com.munitax.ledger.dto.PaymentRequest;
 import com.munitax.ledger.dto.ReconciliationResponse;
+import com.munitax.ledger.enums.PaymentMethod;
 import com.munitax.ledger.enums.ReconciliationStatus;
 import com.munitax.ledger.service.PaymentService;
 import com.munitax.ledger.service.TaxAssessmentService;
@@ -76,9 +78,11 @@ class ReconciliationControllerTest {
         // Assert: Verify response
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
-        assertThat(response.getBody().getMunicipalityAR()).isEqualByComparingTo(new BigDecimal("10000.00"));
-        assertThat(response.getBody().getFilerLiabilities()).isEqualByComparingTo(new BigDecimal("10000.00"));
+        
+        ReconciliationResponse body = response.getBody();
+        assertThat(body.getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
+        assertThat(body.getMunicipalityAR()).isEqualByComparingTo(new BigDecimal("10000.00"));
+        assertThat(body.getFilerLiabilities()).isEqualByComparingTo(new BigDecimal("10000.00"));
     }
 
     @Test
@@ -119,10 +123,13 @@ class ReconciliationControllerTest {
                 "Q1 2024", UUID.randomUUID().toString()
         );
 
-        paymentService.processPayment(
-                tenantId, filerId, municipalityId,
-                new BigDecimal("10000.00"), "CREDIT_CARD",
-                "mock_ch_test", "Full Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filerId)
+                .amount(new BigDecimal("10000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Full Payment")
+                .build()
         );
 
         // Act: Call API endpoint
@@ -168,10 +175,13 @@ class ReconciliationControllerTest {
                 new BigDecimal("10000.00"), BigDecimal.ZERO, BigDecimal.ZERO,
                 "Q1 2024", UUID.randomUUID().toString()
         );
-        paymentService.processPayment(
-                tenantId, filer1, municipalityId,
-                new BigDecimal("10000.00"), "CREDIT_CARD",
-                "mock_ch_1", "Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filer1)
+                .amount(new BigDecimal("10000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .description("Payment")
+                .build()
         );
 
         // Filer 2: Tax with penalty + Partial payment
@@ -182,10 +192,13 @@ class ReconciliationControllerTest {
                 BigDecimal.ZERO,
                 "Q1 2024", UUID.randomUUID().toString()
         );
-        paymentService.processPayment(
-                tenantId, filer2, municipalityId,
-                new BigDecimal("10000.00"), "ACH",
-                "mock_ach_1", "Partial Payment"
+        paymentService.processPayment(PaymentRequest.builder()
+                .tenantId(tenantId)
+                .filerId(filer2)
+                .amount(new BigDecimal("10000.00"))
+                .paymentMethod(PaymentMethod.ACH)
+                .description("Partial Payment")
+                .build()
         );
 
         // Filer 3: Tax only, no payment
