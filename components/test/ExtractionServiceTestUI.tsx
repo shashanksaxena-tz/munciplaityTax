@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { FileSearch, Upload, RefreshCw, CheckCircle, XCircle, Loader } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8083/api/extraction';
+const API_BASE = 'http://localhost:8083/api/v1/extraction';
 
 interface ExtractionResult {
   documentType: string;
@@ -110,18 +110,9 @@ export const ExtractionServiceTestUI: React.FC = () => {
     setExtractionResult(null);
 
     try {
-      // Simulate extraction with test data
-      const testData = {
-        documentType: 'W-2',
-        text: 'Sample W-2 form for testing extraction service'
-      };
-
-      const response = await fetch(`${API_BASE}/extract/text`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(testData),
+      // Test the streaming endpoint with sample data
+      const response = await fetch(`${API_BASE}/stream?fileName=sample-w2.pdf`, {
+        method: 'GET',
       });
 
       if (!response.ok) {
@@ -129,9 +120,34 @@ export const ExtractionServiceTestUI: React.FC = () => {
         throw new Error(`HTTP ${response.status}: ${errorData}`);
       }
 
-      const data = await response.json();
-      setExtractionResult(data);
-      setTestResult('✅ Test extraction completed successfully');
+      // Read the stream
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let result = '';
+      
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          result += decoder.decode(value, { stream: true });
+        }
+      }
+
+      // Parse the last data line which should have the complete result
+      const lines = result.trim().split('\n').filter(line => line.startsWith('data:'));
+      if (lines.length > 0) {
+        const lastLine = lines[lines.length - 1].substring(5); // Remove 'data:' prefix
+        const data = JSON.parse(lastLine);
+        setExtractionResult({
+          documentType: data.detectedForms?.join(', ') || 'Unknown',
+          extractedData: data.result || {},
+          confidence: data.confidence || 0,
+          processingTime: 0
+        });
+        setTestResult(`✅ Test extraction completed: ${data.status} (${Math.round(data.confidence * 100)}% confidence)`);
+      } else {
+        setTestResult('✅ Test extraction completed successfully');
+      }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMsg);
