@@ -3,6 +3,7 @@ package com.munitax.ledger.service;
 import com.munitax.ledger.dto.JournalEntryLineRequest;
 import com.munitax.ledger.dto.JournalEntryRequest;
 import com.munitax.ledger.enums.SourceType;
+import com.munitax.ledger.model.ChartOfAccounts;
 import com.munitax.ledger.model.JournalEntry;
 import com.munitax.ledger.model.JournalEntryLine;
 import org.junit.jupiter.api.BeforeEach;
@@ -311,14 +312,18 @@ class TaxAssessmentServiceTest {
         List<JournalEntryLine> lines = new ArrayList<>();
         JournalEntryLine debitLine = new JournalEntryLine();
         debitLine.setLineId(UUID.randomUUID());
-        debitLine.setAccountNumber("1000");
+        ChartOfAccounts debitAccount = new ChartOfAccounts();
+        debitAccount.setAccountNumber("1000");
+        debitLine.setAccount(debitAccount);
         debitLine.setDebit(amount);
         debitLine.setCredit(BigDecimal.ZERO);
         lines.add(debitLine);
 
         JournalEntryLine creditLine = new JournalEntryLine();
         creditLine.setLineId(UUID.randomUUID());
-        creditLine.setAccountNumber("2000");
+        ChartOfAccounts creditAccount = new ChartOfAccounts();
+        creditAccount.setAccountNumber("2000");
+        creditLine.setAccount(creditAccount);
         creditLine.setDebit(BigDecimal.ZERO);
         creditLine.setCredit(amount);
         lines.add(creditLine);

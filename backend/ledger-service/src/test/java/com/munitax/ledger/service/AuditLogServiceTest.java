@@ -219,7 +219,7 @@ class AuditLogServiceTest {
 
     private AuditLog createAuditLog(UUID entityId, String action, LocalDateTime timestamp) {
         return AuditLog.builder()
-                .auditId(UUID.randomUUID())
+                .logId(UUID.randomUUID())
                 .entityId(entityId)
                 .entityType("JOURNAL_ENTRY")
                 .action(action)
