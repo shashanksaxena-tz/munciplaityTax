@@ -1,0 +1,37 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: extraction-service-standalone
+
+# Disable Eureka for standalone mode
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_API_MODEL:gemini-1.5-flash}
+
+# Management and CORS
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+      cors:
+        allowed-origins: "http://localhost:3000"
+        allowed-methods: "*"
+        allowed-headers: "*"
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [STANDALONE] - %msg%n"
