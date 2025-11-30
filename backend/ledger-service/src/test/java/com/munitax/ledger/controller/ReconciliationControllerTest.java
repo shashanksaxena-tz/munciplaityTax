@@ -106,10 +106,12 @@ class ReconciliationControllerTest {
         // Assert: Verify total is $25,000
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
-        assertThat(response.getBody().getMunicipalityAR()).isEqualByComparingTo(new BigDecimal("25000.00"));
-        assertThat(response.getBody().getFilerLiabilities()).isEqualByComparingTo(new BigDecimal("25000.00"));
-        assertThat(response.getBody().getArVariance()).isEqualByComparingTo(BigDecimal.ZERO);
+        
+        ReconciliationResponse body = response.getBody();
+        assertThat(body.getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
+        assertThat(body.getMunicipalityAR()).isEqualByComparingTo(new BigDecimal("25000.00"));
+        assertThat(body.getFilerLiabilities()).isEqualByComparingTo(new BigDecimal("25000.00"));
+        assertThat(body.getArVariance()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
@@ -140,9 +142,11 @@ class ReconciliationControllerTest {
         // Assert: AR should be zero after full payment
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
-        assertThat(response.getBody().getMunicipalityAR()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(response.getBody().getMunicipalityCash()).isEqualByComparingTo(new BigDecimal("10000.00"));
+        
+        ReconciliationResponse body = response.getBody();
+        assertThat(body.getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
+        assertThat(body.getMunicipalityAR()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(body.getMunicipalityCash()).isEqualByComparingTo(new BigDecimal("10000.00"));
     }
 
     @Test
@@ -156,9 +160,11 @@ class ReconciliationControllerTest {
         // Assert: Should return reconciled at zero
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
-        assertThat(response.getBody().getMunicipalityAR()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(response.getBody().getFilerLiabilities()).isEqualByComparingTo(BigDecimal.ZERO);
+        
+        ReconciliationResponse body = response.getBody();
+        assertThat(body.getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
+        assertThat(body.getMunicipalityAR()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(body.getFilerLiabilities()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
@@ -216,16 +222,18 @@ class ReconciliationControllerTest {
         // Assert: Verify complex reconciliation
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
+        
+        ReconciliationResponse body = response.getBody();
+        assertThat(body.getStatus()).isEqualTo(ReconciliationStatus.RECONCILED);
         
         // Total liabilities: $10,000 + $15,500 + $8,000 = $33,500
-        assertThat(response.getBody().getFilerLiabilities()).isEqualByComparingTo(new BigDecimal("33500.00"));
+        assertThat(body.getFilerLiabilities()).isEqualByComparingTo(new BigDecimal("33500.00"));
         
         // After payments: $33,500 - $20,000 = $13,500
-        assertThat(response.getBody().getMunicipalityAR()).isEqualByComparingTo(new BigDecimal("13500.00"));
+        assertThat(body.getMunicipalityAR()).isEqualByComparingTo(new BigDecimal("13500.00"));
         
         // Total payments: $20,000
-        assertThat(response.getBody().getMunicipalityCash()).isEqualByComparingTo(new BigDecimal("20000.00"));
+        assertThat(body.getMunicipalityCash()).isEqualByComparingTo(new BigDecimal("20000.00"));
     }
 
     @Test
