@@ -328,8 +328,8 @@ public class PenaltyAbatementService {
                 .orElseThrow(() -> new IllegalArgumentException("Penalty not found: " + penaltyId));
         
         penalty.setIsAbated(true);
-        penalty.setAbatedAmount(abatedAmount);
-        penalty.setAbatedDate(LocalDate.now());
+        penalty.setAbatementReason("Abated via penalty abatement approval - Amount: $" + abatedAmount);
+        penalty.setAbatementDate(LocalDate.now());
         
         penaltyRepository.save(penalty);
         

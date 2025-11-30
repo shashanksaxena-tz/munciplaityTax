@@ -131,6 +131,31 @@ public class PenaltyAbatement {
     private String denialReason;
     
     /**
+     * Notes from reviewer about the decision.
+     */
+    @Column(name = "review_notes", columnDefinition = "TEXT")
+    private String reviewNotes;
+    
+    /**
+     * User ID of the person who requested the abatement.
+     */
+    @Column(name = "requested_by")
+    private UUID requestedBy;
+    
+    /**
+     * User ID of the person who created the abatement record.
+     */
+    @Column(name = "created_by")
+    private UUID createdBy;
+    
+    /**
+     * Whether this is a first-time abatement request.
+     */
+    @Column(name = "is_first_time_abatement")
+    @Builder.Default
+    private Boolean isFirstTimeAbatement = false;
+    
+    /**
      * Path to generated Form 27-PA PDF.
      * FR-036: Generated via pdf-service integration.
      */

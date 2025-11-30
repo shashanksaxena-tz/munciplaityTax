@@ -54,6 +54,14 @@ public interface InterestRepository extends JpaRepository<Interest, UUID> {
     Page<Interest> findByTenantIdOrderByCreatedAtDesc(UUID tenantId, Pageable pageable);
 
     /**
+     * Find all interest calculations for a tenant (no pagination).
+     *
+     * @param tenantId the tenant ID for multi-tenant isolation
+     * @return List of interest calculations
+     */
+    List<Interest> findByTenantId(UUID tenantId);
+
+    /**
      * Find interest calculations by tax due date range.
      *
      * @param tenantId  the tenant ID for multi-tenant isolation

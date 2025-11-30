@@ -7,6 +7,7 @@ import com.munitax.taxengine.domain.penalty.QuarterlyInterest;
 import com.munitax.taxengine.dto.InterestCalculationRequest;
 import com.munitax.taxengine.dto.InterestCalculationResponse;
 import com.munitax.taxengine.repository.InterestRepository;
+import com.munitax.taxengine.repository.QuarterlyInterestRepository;
 import com.munitax.taxengine.service.RuleEngineIntegrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ import java.util.List;
 public class InterestCalculationService {
     
     private final InterestRepository interestRepository;
+    private final QuarterlyInterestRepository quarterlyInterestRepository;
     private final RuleEngineIntegrationService ruleEngineService;
     
     private static final int SCALE = 2; // 2 decimal places for currency
@@ -117,13 +119,12 @@ public class InterestCalculationService {
             // Create quarterly breakdown
             if (Boolean.TRUE.equals(request.getIncludeQuarterlyBreakdown())) {
                 QuarterlyInterest quarterlyRecord = QuarterlyInterest.builder()
-                        .quarter(determineQuarter(currentQuarterStart))
+                        .quarter(determineQuarter(currentQuarterStart).name())
                         .startDate(currentQuarterStart)
                         .endDate(currentQuarterEnd)
-                        .daysInPeriod((int) daysInPeriod)
+                        .days((int) daysInPeriod)
                         .beginningBalance(runningBalance)
-                        .interestRate(annualInterestRate)
-                        .interestAmount(quarterInterest)
+                        .interestAccrued(quarterInterest)
                         .endingBalance(runningBalance.add(quarterInterest))
                         .build();
                 
@@ -153,16 +154,19 @@ public class InterestCalculationService {
                 .unpaidTaxAmount(request.getUnpaidTaxAmount())
                 .annualInterestRate(annualInterestRate)
                 .totalDays((int) totalDays)
-                .totalInterestAmount(totalInterest)
+                .totalInterest(totalInterest)
                 .compoundingFrequency(CompoundingFrequency.QUARTERLY)
-                .quarterlyBreakdown(quarterlyBreakdown)
                 .createdBy(request.getCreatedBy())
                 .build();
         
-        // Set bidirectional relationship
-        quarterlyBreakdown.forEach(q -> q.setInterest(interest));
-        
+        // Save interest first to get ID
         Interest savedInterest = interestRepository.save(interest);
+        
+        // Set the interest ID on quarterly breakdowns
+        quarterlyBreakdown.forEach(q -> q.setInterestId(savedInterest.getId()));
+        
+        // Save quarterly breakdowns
+        quarterlyInterestRepository.saveAll(quarterlyBreakdown);
         
         log.info("Interest calculated and saved: {} for ${}", savedInterest.getId(), totalInterest);
         
@@ -271,7 +275,7 @@ public class InterestCalculationService {
                 .unpaidTaxAmount(request.getUnpaidTaxAmount())
                 .annualInterestRate(annualRate)
                 .totalDays(0)
-                .totalInterestAmount(BigDecimal.ZERO)
+                .totalInterest(BigDecimal.ZERO)
                 .explanation("No interest due - payment on or before due date")
                 .build();
     }
@@ -292,9 +296,22 @@ public class InterestCalculationService {
                 interest.getStartDate(),
                 interest.getEndDate(),
                 interest.getAnnualInterestRate().multiply(BigDecimal.valueOf(100)),
-                interest.getTotalInterestAmount(),
+                interest.getTotalInterest(),
                 interest.getUnpaidTaxAmount()
         );
+        
+        // Convert QuarterlyInterest entities to DTOs
+        List<InterestCalculationResponse.QuarterlyInterestDto> quarterlyDtos = quarterlyBreakdown.stream()
+                .map(q -> InterestCalculationResponse.QuarterlyInterestDto.builder()
+                        .quarter(q.getQuarter())
+                        .startDate(q.getStartDate())
+                        .endDate(q.getEndDate())
+                        .days(q.getDays())
+                        .beginningBalance(q.getBeginningBalance())
+                        .interestAccrued(q.getInterestAccrued())
+                        .endingBalance(q.getEndingBalance())
+                        .build())
+                .toList();
         
         return InterestCalculationResponse.builder()
                 .interestId(interest.getId().toString())
@@ -305,9 +322,9 @@ public class InterestCalculationService {
                 .unpaidTaxAmount(interest.getUnpaidTaxAmount())
                 .annualInterestRate(interest.getAnnualInterestRate())
                 .totalDays(interest.getTotalDays())
-                .totalInterestAmount(interest.getTotalInterestAmount())
-                .compoundingFrequency(interest.getCompoundingFrequency())
-                .quarterlyBreakdown(quarterlyBreakdown)
+                .totalInterest(interest.getTotalInterest())
+                .compoundingFrequency(interest.getCompoundingFrequency().name())
+                .quarterlyBreakdown(quarterlyDtos)
                 .explanation(explanation)
                 .build();
     }
