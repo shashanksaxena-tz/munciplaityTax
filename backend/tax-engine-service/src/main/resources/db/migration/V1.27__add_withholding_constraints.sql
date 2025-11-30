@@ -6,13 +6,20 @@
 
 -- If reconciled with variance, must have resolution notes
 -- This constraint enforces FR-008: Businesses must explain discrepancies when reconciling
-ALTER TABLE dublin.withholding_reconciliations 
-    ADD CONSTRAINT IF NOT EXISTS check_resolution_notes 
-    CHECK (
-        status != 'RECONCILED' OR 
-        variance_wages = 0 OR 
-        resolution_notes IS NOT NULL
-    );
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'check_resolution_notes'
+    ) THEN
+        ALTER TABLE dublin.withholding_reconciliations 
+            ADD CONSTRAINT check_resolution_notes 
+            CHECK (
+                status != 'RECONCILED' OR 
+                variance_wages = 0 OR 
+                resolution_notes IS NOT NULL
+            );
+    END IF;
+END $$;
 
 -- Comments for documentation
 COMMENT ON CONSTRAINT check_resolution_notes ON dublin.withholding_reconciliations 

@@ -46,10 +46,10 @@ public class Submission {
     @Column(length = 50, name = "return_type")
     private String returnType; // INDIVIDUAL or BUSINESS
     
-    @Column(precision = 10, scale = 2, name = "tax_due")
+    @Column(name = "tax_due")
     private Double taxDue;
     
-    @Column(length = 255, name = "taxpayer_name")
+    @Column(name = "taxpayer_name")
     private String taxpayerName;
     
     @Column(length = 50, name = "taxpayer_fein")
@@ -75,10 +75,10 @@ public class Submission {
     private String digitalSignature; // E-signature hash for approvals
     
     // Business-specific fields for audit analysis
-    @Column(precision = 12, scale = 2, name = "gross_receipts")
+    @Column(name = "gross_receipts")
     private Double grossReceipts;
     
-    @Column(precision = 12, scale = 2, name = "net_profit")
+    @Column(name = "net_profit")
     private Double netProfit;
     
     @Column(name = "filed_date")

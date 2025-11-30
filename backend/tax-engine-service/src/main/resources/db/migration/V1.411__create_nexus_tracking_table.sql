@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS nexus_tracking (
     nexus_terminated_date DATE,
     created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_nexus_tracking_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id),
+    -- Note: FK to tenants removed due to type mismatch (UUID vs BIGINT)
     CONSTRAINT uk_nexus_tracking_business_state_year UNIQUE (business_id, state, municipality, tax_year)
 );
 

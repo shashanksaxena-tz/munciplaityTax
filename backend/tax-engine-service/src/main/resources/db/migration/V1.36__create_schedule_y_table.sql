@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS schedule_y (
     created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by UUID NOT NULL,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_modified_by UUID,
-    CONSTRAINT fk_schedule_y_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(tenant_id)
+    last_modified_by UUID
+    -- Note: FK to tenants removed due to type mismatch (UUID vs BIGINT)
 );
 
 -- Indexes for performance
