@@ -1,4 +1,4 @@
--- V1.40: Create penalties table for late filing and late payment penalties
+-- V1.50: Create penalties table for late filing and late payment penalties
 -- 
 -- Functional Requirements:
 -- FR-001 to FR-006: Late filing penalty calculation (5% per month, max 25%)

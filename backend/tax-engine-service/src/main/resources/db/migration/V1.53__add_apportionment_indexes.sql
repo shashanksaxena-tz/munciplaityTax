@@ -1,4 +1,4 @@
--- Migration V1.37: Add indexes for apportionment queries
+-- Migration V1.53: Add indexes for apportionment queries
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Optimize query performance for apportionment calculations and reporting
 

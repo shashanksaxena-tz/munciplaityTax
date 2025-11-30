@@ -1,4 +1,4 @@
--- Migration V1.38: Add constraints and validation rules for apportionment
+-- Migration V1.54: Add constraints and validation rules for apportionment
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Enforce data integrity and business rules for apportionment calculations
 

@@ -1,4 +1,4 @@
--- Migration V1.36: Create apportionment_audit_log table
+-- Migration V1.52: Create apportionment_audit_log table
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Immutable audit trail for apportionment calculations and election changes
 

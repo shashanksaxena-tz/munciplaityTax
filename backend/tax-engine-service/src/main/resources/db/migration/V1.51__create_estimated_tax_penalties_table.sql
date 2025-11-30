@@ -1,4 +1,4 @@
--- V1.41: Create estimated_tax_penalties table for quarterly underpayment penalties
+-- V1.51: Create estimated_tax_penalties table for quarterly underpayment penalties
 --
 -- Functional Requirements:
 -- FR-015 to FR-019: Safe harbor evaluation (90% current year OR 100%/110% prior year)
