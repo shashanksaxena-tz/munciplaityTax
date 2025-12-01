@@ -1,8 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { TaxReturnSession, TaxReturnStatus, BusinessProfile, TaxPayerProfile } from '../types';
 import { getSessions, createNewSession, deleteSession } from '../services/sessionService';
-import { Plus, User, FileText, Calendar, Trash2, ArrowRight, Briefcase } from 'lucide-react';
+import { Plus, User, FileText, Calendar, Trash2, ArrowRight, Briefcase, Settings, DollarSign, Shield, BookOpen } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DashboardProps {
   onSelectSession: (session: TaxReturnSession) => void;
@@ -11,6 +13,17 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegisterBusiness }) => {
   const [sessions, setSessions] = useState<TaxReturnSession[]>([]);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Check if user has admin roles
+  const isAdmin = user?.roles?.some(role => 
+    ['ROLE_TAX_ADMINISTRATOR', 'ROLE_MANAGER', 'ROLE_ADMIN'].includes(role)
+  );
+  
+  const isAuditor = user?.roles?.some(role => 
+    ['ROLE_AUDITOR', 'ROLE_SENIOR_AUDITOR', 'ROLE_SUPERVISOR', 'ROLE_MANAGER', 'ROLE_ADMIN'].includes(role)
+  );
 
   useEffect(() => {
     setSessions(getSessions());
@@ -65,6 +78,60 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
           </button>
         </div>
       </div>
+
+      {/* Quick Access Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {/* Ledger Dashboard - Available to all users */}
+        <button
+          onClick={() => navigate('/ledger')}
+          className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-green-300 hover:shadow-md transition-all text-left group"
+        >
+          <div className="p-3 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+            <DollarSign className="w-6 h-6 text-green-600" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-900">Ledger & Payments</h3>
+            <p className="text-sm text-slate-500">View account, payments, and reports</p>
+          </div>
+          <ArrowRight className="w-5 h-5 text-slate-400 ml-auto group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
+        </button>
+
+        {/* Auditor Dashboard - For auditors */}
+        {isAuditor && (
+          <button
+            onClick={() => navigate('/auditor')}
+            className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all text-left group"
+          >
+            <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+              <Shield className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Auditor Dashboard</h3>
+              <p className="text-sm text-slate-500">Review and approve submissions</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 ml-auto group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+          </button>
+        )}
+
+        {/* Rule Management - For admins */}
+        {isAdmin && (
+          <button
+            onClick={() => navigate('/admin/rules')}
+            className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-xl hover:border-purple-300 hover:shadow-md transition-all text-left group"
+          >
+            <div className="p-3 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+              <Settings className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900">Rule Management</h3>
+              <p className="text-sm text-slate-500">Create and manage tax rules</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-slate-400 ml-auto group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+          </button>
+        )}
+      </div>
+
+      <h3 className="text-lg font-semibold text-slate-800 mb-4">Your Tax Returns</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sessions.length === 0 ? (
