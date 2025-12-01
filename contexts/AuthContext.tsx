@@ -33,6 +33,16 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
+// Demo user for testing UI without backend
+const DEMO_USER: User = {
+    id: 'demo-user-1',
+    email: 'admin@dublin.gov',
+    firstName: 'Demo',
+    lastName: 'Admin',
+    roles: ['ROLE_ADMIN', 'ROLE_TAX_ADMINISTRATOR', 'ROLE_MANAGER', 'ROLE_AUDITOR', 'ROLE_SUPERVISOR'],
+    tenantId: 'tenant-1'
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
@@ -41,6 +51,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Load token from localStorage on mount
     useEffect(() => {
         const storedToken = localStorage.getItem('auth_token');
+        
+        // Check for demo mode
+        if (localStorage.getItem('demo_mode') === 'true') {
+            setUser(DEMO_USER);
+            setToken('demo-token');
+            setIsLoading(false);
+            return;
+        }
+        
         if (storedToken) {
             // Validate token and load user info
             fetchUserInfo(storedToken);

@@ -1,10 +1,17 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { Dashboard } from '../../../components/Dashboard';
+import { AuthProvider } from '../../../contexts/AuthContext';
 
 const renderWithRouter = (component: React.ReactElement) => {
-  return render(<BrowserRouter>{component}</BrowserRouter>);
+  return render(
+    <BrowserRouter>
+      <AuthProvider>
+        {component}
+      </AuthProvider>
+    </BrowserRouter>
+  );
 };
 
 describe('Dashboard Component', () => {
