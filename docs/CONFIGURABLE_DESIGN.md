@@ -55,7 +55,7 @@ classDiagram
         +municipalRate: double
         +minimumTax: double
         +creditLimitRate: double
-        +withholdinRate: double
+        +withholdingRate: double
     }
     
     class TenantConfig {
