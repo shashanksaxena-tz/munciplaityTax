@@ -208,6 +208,13 @@ export interface BaseTaxForm {
   extractionReason?: string;
   formType: TaxFormType;
   owner?: 'PRIMARY' | 'SPOUSE';
+  // Enhanced extraction metadata
+  isAiExtracted?: boolean;           // True if form was extracted by AI, false/undefined if manually entered
+  sourceDocumentUrl?: string;        // URL to the original uploaded PDF for validation
+  sourceDocumentName?: string;       // Original filename of uploaded document
+  fieldExtractionReasons?: Record<string, string>;  // Per-field explanation of why value was extracted
+  fieldPageNumbers?: Record<string, number>;        // Per-field page number in source document
+  fieldBoundingBoxes?: Record<string, BoundingBox>; // Per-field location in PDF for highlighting
 }
 
 export interface W2Form extends BaseTaxForm { formType: TaxFormType.W2; employer: string; employerEin: string; employerAddress: Address; employerCounty?: string; totalMonthsInCity?: number; employee: string; employeeInfo?: TaxPayerProfile; federalWages: number; medicareWages: number; localWages: number; localWithheld: number; locality: string; taxDue?: number; lowConfidenceFields?: string[]; }
