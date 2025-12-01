@@ -2,7 +2,14 @@
 
 ## Overview
 
-This document describes the new UI features for Rule Management and Ledger Dashboard that allow administrators to create, approve, update, and reject tax rules, as well as view ledger reports and financial data.
+This document describes the UI features for Rule Management and Ledger Dashboard that connect to the backend services (`rule-service` and `ledger-service`) to provide administrators with the ability to create, approve, update, and reject tax rules, as well as view ledger reports and financial data.
+
+## Backend Integration
+
+The UI is fully integrated with the backend APIs:
+
+- **Rule Service** (`rule-service`): Manages tax rules with temporal and approval workflow support
+- **Ledger Service** (`ledger-service`): Handles payments, statements, reconciliation, and trial balance
 
 ## Features
 
@@ -119,45 +126,71 @@ The main Dashboard now includes three quick-access cards:
 
 ### Rule Service (`/api/rules`)
 
+The frontend connects to these endpoints from `rule-service`:
+
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/rules` | GET | List rules with optional filters |
+| `/api/rules` | GET | List rules with optional filters (tenantId, category, status) |
 | `/api/rules` | POST | Create a new rule |
-| `/api/rules/{id}` | GET | Get rule details |
-| `/api/rules/{id}` | PUT | Update a rule |
-| `/api/rules/{id}/approve` | POST | Approve a pending rule |
-| `/api/rules/{id}/reject` | POST | Reject a pending rule |
-| `/api/rules/{id}` | DELETE | Void a rule |
+| `/api/rules/{ruleId}` | GET | Get rule details |
+| `/api/rules/{ruleId}` | PUT | Update a rule |
+| `/api/rules/{ruleId}/approve?approverId={id}` | POST | Approve a pending rule |
+| `/api/rules/{ruleId}/reject?reason={reason}` | POST | Reject a pending rule |
+| `/api/rules/{ruleId}?reason={reason}` | DELETE | Void a rule |
+| `/api/rules/active` | GET | Get active rules for a tax year |
+| `/api/rules/history/{ruleCode}` | GET | Get rule version history |
 
-### Ledger Service (`/api/v1/ledger`)
+### Ledger Service (`/api/v1`)
+
+The frontend connects to these endpoints from `ledger-service`:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/v1/ledger/dashboard/filer/{id}` | GET | Get filer dashboard metrics |
-| `/api/v1/ledger/dashboard/municipality/{id}` | GET | Get municipality dashboard metrics |
-| `/api/v1/ledger/transactions/recent` | GET | Get recent transactions |
-| `/api/v1/payments/process` | POST | Process a payment |
+| `/api/v1/payments/filer/{filerId}` | GET | Get filer payment history |
+| `/api/v1/payments/process` | POST | Process a new payment |
+| `/api/v1/statements/filer/{tenantId}/{filerId}` | GET | Get filer account statement |
+| `/api/v1/trial-balance?tenantId={id}` | GET | Generate trial balance |
+| `/api/v1/reconciliation/report/{tenantId}/{municipalityId}` | GET | Generate reconciliation report |
+| `/api/v1/journal-entries/entity/{tenantId}/{entityId}` | GET | Get journal entries |
 | `/api/v1/refunds/request` | POST | Request a refund |
-| `/api/v1/trial-balance` | GET | Generate trial balance |
-| `/api/v1/reconciliation/report` | GET | Generate reconciliation report |
 
-## Demo Mode
+## Running the Application
 
-For testing without a running backend, set `demo_mode` to `true` in localStorage:
+### Prerequisites
+
+1. Start the backend services:
+   ```bash
+   # Start rule-service
+   cd backend/rule-service
+   ./mvnw spring-boot:run
+
+   # Start ledger-service
+   cd backend/ledger-service
+   ./mvnw spring-boot:run
+   ```
+
+2. Start the frontend:
+   ```bash
+   npm run dev
+   ```
+
+### Demo Mode (Without Backend)
+
+For testing the UI without running backend services, set `demo_mode` to `true` in localStorage:
 
 ```javascript
 localStorage.setItem('demo_mode', 'true');
 ```
 
-This enables a demo user with all admin roles and displays mock data in the dashboards.
+This enables a demo user with all admin roles. Note that API calls will fail but the UI will still be functional for navigation and form validation testing.
 
 ## Screenshots
 
 ### Dashboard with Navigation
 ![Dashboard](https://github.com/user-attachments/assets/8adae343-66ad-46c1-9f23-c91f7d152edc)
 
-### Rule Management Dashboard
-![Rule Management](https://github.com/user-attachments/assets/2d5fccda-49e5-45ba-a713-03974de01ba4)
+### Rule Management Dashboard (API Connected)
+![Rule Management](https://github.com/user-attachments/assets/9fcb97f1-a890-4f4d-bebb-7a686b5149d0)
 
 ### Create Rule Form
 ![Create Rule](https://github.com/user-attachments/assets/5cd9dc05-c7b2-4032-abb7-b677a0cb894d)
@@ -169,8 +202,8 @@ This enables a demo user with all admin roles and displays mock data in the dash
 
 - `App.tsx` - Added routes for `/admin/rules` and `/ledger`
 - `components/Dashboard.tsx` - Added navigation cards for Ledger, Auditor, and Rule Management
-- `components/RuleManagementDashboard.tsx` - New component for rule CRUD operations
-- `components/LedgerDashboard.tsx` - Enhanced with mock data fallback
+- `components/RuleManagementDashboard.tsx` - Rule CRUD operations connected to rule-service API
+- `components/LedgerDashboard.tsx` - Ledger operations connected to ledger-service API
 - `contexts/AuthContext.tsx` - Added demo mode support
 - `docs/RULE_MANAGEMENT_AND_LEDGER_UI.md` - This documentation
 
@@ -180,3 +213,4 @@ This enables a demo user with all admin roles and displays mock data in the dash
 - Ledger Dashboard is protected by authentication
 - Self-approval of rules is prevented (approver must be different from creator)
 - All rule changes are logged with audit trail
+- All API calls include Authorization header with Bearer token

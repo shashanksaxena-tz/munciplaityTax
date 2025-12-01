@@ -2,6 +2,7 @@
  * T081-T083: Ledger Dashboard Component
  * Provides overview of ledger metrics with role-based views
  * Integrates payment, statement, reconciliation, and trial balance features
+ * Connects to ledger-service backend APIs
  */
 
 import React, { useState, useEffect } from 'react';
@@ -42,90 +43,268 @@ interface LedgerDashboardProps {
   userRole: 'filer' | 'municipality' | 'admin';
   tenantId: string;
   filerId?: string; // Optional: Only for filer role
+  municipalityId?: string; // Optional: For reconciliation
 }
+
+// Backend response types (matching ledger-service DTOs)
+interface PaymentTransaction {
+  id: string;
+  paymentId: string;
+  filerId: string;
+  amount: number;
+  paymentMethod: string;
+  status: string;
+  transactionDate: string;
+  confirmationNumber?: string;
+}
+
+interface AccountStatementResponse {
+  accountName: string;
+  statementDate: string;
+  beginningBalance: number;
+  endingBalance: number;
+  totalDebits: number;
+  totalCredits: number;
+  transactions: StatementTransaction[];
+}
+
+interface StatementTransaction {
+  transactionId: string;
+  date: string;
+  description: string;
+  amount: number;
+  debitCredit: 'DEBIT' | 'CREDIT';
+  status: string;
+}
+
+interface TrialBalanceResponse {
+  asOfDate: string;
+  accounts: AccountBalance[];
+  totalDebits: number;
+  totalCredits: number;
+  difference: number;
+  isBalanced: boolean;
+  status: string;
+  accountCount: number;
+  tenantId: string;
+}
+
+interface AccountBalance {
+  accountCode: string;
+  accountName: string;
+  accountType: string;
+  balance: number;
+}
+
+interface ReconciliationResponse {
+  reportDate: string;
+  municipalityAR: number;
+  filerLiabilities: number;
+  arVariance: number;
+  municipalityCash: number;
+  filerPayments: number;
+  cashVariance: number;
+  status: string;
+  discrepancies: DiscrepancyDetail[];
+}
+
+interface DiscrepancyDetail {
+  filerId: string;
+  municipalityBalance: number;
+  filerBalance: number;
+  variance: number;
+}
+
+// API service for ledger operations - connects to ledger-service backend
+const ledgerApi = {
+  getAuthHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+    };
+  },
+
+  // Get payments for a specific filer
+  async getFilerPayments(filerId: string): Promise<PaymentTransaction[]> {
+    const response = await fetch(`/api/v1/payments/filer/${filerId}`, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch payments: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get account statement for a filer
+  async getAccountStatement(tenantId: string, filerId: string, startDate?: string, endDate?: string): Promise<AccountStatementResponse> {
+    let url = `/api/v1/statements/filer/${tenantId}/${filerId}`;
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (params.toString()) url += `?${params.toString()}`;
+    
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch statement: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get trial balance
+  async getTrialBalance(tenantId: string, asOfDate?: string): Promise<TrialBalanceResponse> {
+    let url = `/api/v1/trial-balance?tenantId=${tenantId}`;
+    if (asOfDate) url += `&asOfDate=${asOfDate}`;
+    
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch trial balance: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get reconciliation report
+  async getReconciliationReport(tenantId: string, municipalityId: string): Promise<ReconciliationResponse> {
+    const response = await fetch(`/api/v1/reconciliation/report/${tenantId}/${municipalityId}`, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch reconciliation: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get journal entries for an entity
+  async getJournalEntries(tenantId: string, entityId: string): Promise<Record<string, unknown>[]> {
+    const response = await fetch(`/api/v1/journal-entries/entity/${tenantId}/${entityId}`, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch journal entries: ${response.status}`);
+    }
+    return response.json();
+  }
+};
 
 const LedgerDashboard: React.FC<LedgerDashboardProps> = ({ 
   userRole, 
   tenantId,
-  filerId 
+  filerId,
+  municipalityId 
 }) => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock data for demo mode
-  const getMockMetrics = (): DashboardMetrics => ({
-    totalRevenue: 2450000,
-    outstandingAR: 125000,
-    recentTransactionsCount: 47,
-    trialBalanceStatus: 'balanced',
-    totalFilers: 3240,
-    paymentsToday: 12,
-    pendingRefunds: 3,
-    lastReconciliationDate: '2024-11-28T10:00:00Z'
-  });
-
-  const getMockTransactions = (): RecentTransaction[] => [
-    { id: '1', date: '2024-11-30', description: 'Q4 Tax Payment - Smith, John', amount: 1250.00, type: 'payment', status: 'completed' },
-    { id: '2', date: '2024-11-29', description: '2024 Tax Assessment - Johnson LLC', amount: 5420.00, type: 'assessment', status: 'posted' },
-    { id: '3', date: '2024-11-29', description: 'Overpayment Refund - Davis, Mary', amount: -250.00, type: 'refund', status: 'approved' },
-    { id: '4', date: '2024-11-28', description: 'Monthly Withholding - ABC Corp', amount: 3200.00, type: 'payment', status: 'completed' },
-    { id: '5', date: '2024-11-27', description: 'Penalty Assessment - Late Filing', amount: 125.00, type: 'assessment', status: 'pending' },
-  ];
-
   useEffect(() => {
     fetchDashboardData();
     // Refresh every 5 minutes
     const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [userRole, tenantId, filerId]);
+  }, [userRole, tenantId, filerId, municipalityId]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch metrics based on role
-      const metricsEndpoint = userRole === 'filer'
-        ? `/api/v1/ledger/dashboard/filer/${filerId}`
-        : `/api/v1/ledger/dashboard/municipality/${tenantId}`;
-
-      try {
-        const metricsResponse = await fetch(metricsEndpoint);
-        if (!metricsResponse.ok) throw new Error('Failed to fetch metrics');
-        const metricsData = await metricsResponse.json();
-        setMetrics(metricsData);
-      } catch {
-        // Use mock data when API is not available
-        console.debug('Ledger Dashboard: Using mock metrics data (API unavailable)');
-        setMetrics(getMockMetrics());
-      }
-
-      // Fetch recent transactions
-      const transactionsEndpoint = userRole === 'filer'
-        ? `/api/v1/account-statements/${filerId}/recent?limit=10`
-        : `/api/v1/ledger/transactions/recent?tenantId=${tenantId}&limit=10`;
-
-      try {
-        const transactionsResponse = await fetch(transactionsEndpoint);
-        if (!transactionsResponse.ok) throw new Error('Failed to fetch transactions');
-        const transactionsData = await transactionsResponse.json();
-        setRecentTransactions(transactionsData.transactions || transactionsData);
-      } catch {
-        // Use mock data when API is not available
-        console.debug('Ledger Dashboard: Using mock transactions data (API unavailable)');
-        setRecentTransactions(getMockTransactions());
+      if (userRole === 'filer' && filerId) {
+        // Fetch filer-specific data
+        await fetchFilerData(filerId);
+      } else {
+        // Fetch municipality/admin data
+        await fetchMunicipalityData();
       }
 
     } catch (err) {
-      // Final fallback - use mock data
-      console.debug('Ledger Dashboard: Using mock data fallback');
-      setMetrics(getMockMetrics());
-      setRecentTransactions(getMockTransactions());
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchFilerData = async (fId: string) => {
+    // Get account statement for filer
+    const statement = await ledgerApi.getAccountStatement(tenantId, fId);
+    
+    // Get filer payments
+    const payments = await ledgerApi.getFilerPayments(fId);
+    
+    // Transform data for dashboard
+    const transformedMetrics: DashboardMetrics = {
+      totalRevenue: 0, // Not applicable for filer
+      outstandingAR: Math.abs(Number(statement.endingBalance) || 0),
+      recentTransactionsCount: statement.transactions?.length || 0,
+      trialBalanceStatus: 'balanced',
+      totalFilers: 0,
+      paymentsToday: payments.filter((p: any) => 
+        new Date(p.transactionDate).toDateString() === new Date().toDateString()
+      ).length,
+      pendingRefunds: 0,
+      lastReconciliationDate: ''
+    };
+    
+    setMetrics(transformedMetrics);
+    
+    // Transform transactions
+    const txns: RecentTransaction[] = (statement.transactions || []).slice(0, 10).map((t: any) => ({
+      id: t.transactionId || t.id,
+      date: t.transactionDate || t.date,
+      description: t.description,
+      amount: Number(t.amount),
+      type: t.debitCredit === 'CREDIT' ? 'payment' : 'assessment',
+      status: t.status || 'posted'
+    }));
+    
+    setRecentTransactions(txns);
+  };
+
+  const fetchMunicipalityData = async () => {
+    // Fetch trial balance for municipality overview
+    const trialBalance = await ledgerApi.getTrialBalance(tenantId);
+    
+    // Fetch reconciliation if municipalityId is provided
+    let reconciliation = null;
+    let lastReconDate = '';
+    if (municipalityId) {
+      try {
+        reconciliation = await ledgerApi.getReconciliationReport(tenantId, municipalityId);
+        lastReconDate = reconciliation.reportDate || '';
+      } catch {
+        // Reconciliation may not exist yet
+      }
+    }
+    
+    // Transform data for dashboard
+    const transformedMetrics: DashboardMetrics = {
+      totalRevenue: Number(trialBalance.totalCredits) || 0,
+      outstandingAR: Number(trialBalance.totalDebits) - Number(trialBalance.totalCredits) || 0,
+      recentTransactionsCount: trialBalance.accountCount || 0,
+      trialBalanceStatus: trialBalance.isBalanced ? 'balanced' : 'unbalanced',
+      totalFilers: trialBalance.accountCount || 0,
+      paymentsToday: 0, // Would need separate endpoint
+      pendingRefunds: reconciliation?.discrepancies?.length || 0,
+      lastReconciliationDate: lastReconDate
+    };
+    
+    setMetrics(transformedMetrics);
+    
+    // For municipality, show account balances as "transactions"
+    const accounts = trialBalance.accounts || [];
+    const txns: RecentTransaction[] = accounts.slice(0, 10).map((acc: any) => ({
+      id: acc.accountCode || acc.id,
+      date: trialBalance.asOfDate || new Date().toISOString(),
+      description: acc.accountName,
+      amount: Number(acc.balance) || 0,
+      type: acc.balance >= 0 ? 'assessment' : 'payment',
+      status: 'posted'
+    }));
+    
+    setRecentTransactions(txns);
   };
 
   const handleNavigation = (path: string) => {

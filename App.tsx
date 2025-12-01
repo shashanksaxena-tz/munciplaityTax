@@ -118,6 +118,7 @@ const LedgerDashboardWrapper = () => {
                     userRole={getLedgerRole()}
                     tenantId={user?.tenantId || 'tenant-1'}
                     filerId={user?.id}
+                    municipalityId={user?.tenantId} // Use tenantId as municipalityId for now
                 />
             </div>
         </div>
