@@ -60,7 +60,7 @@ describe('Dashboard Component', () => {
   });
 
   it('should render create button', async () => {
-    localStorage.setItem('token', 'test-token');
+    localStorage.setItem('auth_token', 'test-token');
     renderWithRouter(<Dashboard onSelectSession={() => {}} onRegisterBusiness={() => {}} />);
     
     // Dashboard should have create/new buttons
