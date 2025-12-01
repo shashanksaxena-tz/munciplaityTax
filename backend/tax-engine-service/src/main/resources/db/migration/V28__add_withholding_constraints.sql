@@ -12,9 +12,9 @@ BEGIN
         ALTER TABLE withholding_reconciliations 
             ADD CONSTRAINT check_resolution_notes 
             CHECK (
-                status != 'RECONCILED' OR 
-                variance_wages = 0 OR 
-                resolution_notes IS NOT NULL
+                (status != 'RECONCILED') OR 
+                (variance_wages = 0) OR 
+                (resolution_notes IS NOT NULL)
             );
     END IF;
 END $$;

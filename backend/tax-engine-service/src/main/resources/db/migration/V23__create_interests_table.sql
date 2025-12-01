@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS interests (
     annual_interest_rate DECIMAL(5,4) NOT NULL CHECK (annual_interest_rate >= 0),
     compounding_frequency VARCHAR(20) NOT NULL DEFAULT 'QUARTERLY' CHECK (compounding_frequency = 'QUARTERLY'),
     
-    -- Calculation period
+    -- Calculation period (end_date is exclusive in financial interest calculations)
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     total_days INTEGER NOT NULL,
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS interests (
     
     -- Constraints
     CONSTRAINT check_interest_dates CHECK (end_date >= start_date),
+    -- Note: total_days = end_date - start_date (end_date exclusive, per financial convention)
     CONSTRAINT check_total_days_calculation CHECK (total_days = (end_date - start_date))
 );
 
@@ -47,3 +48,4 @@ COMMENT ON TABLE interests IS 'Stores interest calculations on unpaid tax with q
 COMMENT ON COLUMN interests.annual_interest_rate IS 'Retrieved from rule engine (federal short-term rate + 3%, typically 3-8%)';
 COMMENT ON COLUMN interests.compounding_frequency IS 'Always QUARTERLY per IRS standard';
 COMMENT ON COLUMN interests.total_interest IS 'Sum of all quarterly compound interest';
+COMMENT ON COLUMN interests.total_days IS 'Days between start_date and end_date (end_date exclusive per financial convention)';

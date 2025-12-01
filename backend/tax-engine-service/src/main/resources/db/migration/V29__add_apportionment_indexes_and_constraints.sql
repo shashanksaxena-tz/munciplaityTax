@@ -39,8 +39,8 @@ BEGIN
         ALTER TABLE schedule_y
             ADD CONSTRAINT chk_schedule_y_formula_weights_valid 
             CHECK (
-                apportionment_formula = 'CUSTOM' AND formula_weights IS NOT NULL
-                OR apportionment_formula != 'CUSTOM'
+                (apportionment_formula = 'CUSTOM' AND formula_weights IS NOT NULL)
+                OR (apportionment_formula != 'CUSTOM')
             );
     END IF;
 END $$;
