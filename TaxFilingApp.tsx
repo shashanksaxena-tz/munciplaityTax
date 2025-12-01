@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { api } from './services/api';
 import { UploadSection } from './components/UploadSection';
 import { ReviewSection } from './components/ReviewSection';
 import { ResultsSection } from './components/ResultsSection';
@@ -17,7 +16,6 @@ import { TaxFormData, AppStep, TaxCalculationResult, TaxFormType, W2Form, Form10
 import { DEFAULT_TAX_RULES, DEFAULT_BUSINESS_RULES } from './constants';
 import { saveSession, createNewSession } from './services/sessionService';
 import { Calculator, Settings, Briefcase, User, Home, Save, CheckCircle } from 'lucide-react';
-
 import { useAuth } from './contexts/AuthContext';
 import { api, UserProfile } from './services/api';
 
