@@ -59,7 +59,7 @@ public class ScheduleYController {
 
         try {
             // Validate that filing doesn't already exist for this business and tax year
-            boolean exists = scheduleYRepository.existsByBusinessIdAndTaxYearAndTenantId(
+            boolean exists = scheduleYRepository.existsByReturnIdAndTaxYearAndTenantId(
                     request.getBusinessId(), request.getTaxYear(), MOCK_TENANT_ID);
             
             if (exists && !Boolean.TRUE.equals(request.getIsAmended())) {
@@ -160,7 +160,7 @@ public class ScheduleYController {
             Page<ScheduleY> scheduleYPage;
 
             if (businessId != null) {
-                scheduleYPage = scheduleYRepository.findByBusinessIdAndTenantIdOrderByTaxYearDesc(
+                scheduleYPage = scheduleYRepository.findByReturnIdAndTenantIdOrderByTaxYearDesc(
                         businessId, MOCK_TENANT_ID, pageable);
             } else if (taxYear != null) {
                 scheduleYPage = scheduleYRepository.findByTaxYearAndTenantId(

@@ -239,6 +239,6 @@ public class PayrollFactorService {
      * @return PayrollFactor or null if not found
      */
     public PayrollFactor getPayrollFactorByScheduleYId(UUID scheduleYId) {
-        return payrollFactorRepository.findByScheduleYId(scheduleYId).orElse(null);
+        return payrollFactorRepository.findByScheduleY_ScheduleYId(scheduleYId).orElse(null);
     }
 }

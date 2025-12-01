@@ -88,8 +88,12 @@ public interface NexusTrackingRepository extends JpaRepository<NexusTracking, UU
      * @param tenantId    the tenant ID for multi-tenant isolation
      * @return List of nexus tracking records with the specified reason
      */
+    @Query("SELECT n FROM NexusTracking n WHERE n.businessId = :businessId " +
+           "AND :nexusReason MEMBER OF n.nexusReasons AND n.tenantId = :tenantId")
     List<NexusTracking> findByBusinessIdAndNexusReasonAndTenantId(
-            UUID businessId, NexusReason nexusReason, UUID tenantId);
+            @Param("businessId") UUID businessId, 
+            @Param("nexusReason") NexusReason nexusReason, 
+            @Param("tenantId") UUID tenantId);
 
     /**
      * Find all nexus records for a tenant.

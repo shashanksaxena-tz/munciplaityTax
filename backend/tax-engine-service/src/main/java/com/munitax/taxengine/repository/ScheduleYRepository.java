@@ -32,23 +32,24 @@ public interface ScheduleYRepository extends JpaRepository<ScheduleY, UUID> {
      * Find all Schedule Y filings for a business with pagination.
      *
      * @param businessId the business ID
+     * @param returnId   the tax return ID
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @param pageable   pagination information
      * @return Page of Schedule Y filings
      */
-    Page<ScheduleY> findByBusinessIdAndTenantIdOrderByTaxYearDesc(
-            UUID businessId, UUID tenantId, Pageable pageable);
+    Page<ScheduleY> findByReturnIdAndTenantIdOrderByTaxYearDesc(
+            UUID returnId, UUID tenantId, Pageable pageable);
 
     /**
-     * Find Schedule Y by business ID, tax year, and tenant ID.
+     * Find Schedule Y by return ID, tax year, and tenant ID.
      *
-     * @param businessId the business ID
+     * @param returnId   the tax return ID
      * @param taxYear    the tax year
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Optional containing the Schedule Y if found
      */
-    Optional<ScheduleY> findByBusinessIdAndTaxYearAndTenantId(
-            UUID businessId, Integer taxYear, UUID tenantId);
+    Optional<ScheduleY> findByReturnIdAndTaxYearAndTenantId(
+            UUID returnId, Integer taxYear, UUID tenantId);
 
     /**
      * Find all Schedule Y filings for a tax year with pagination.
@@ -61,14 +62,14 @@ public interface ScheduleYRepository extends JpaRepository<ScheduleY, UUID> {
     Page<ScheduleY> findByTaxYearAndTenantId(Integer taxYear, UUID tenantId, Pageable pageable);
 
     /**
-     * Check if a Schedule Y filing exists for a business and tax year.
+     * Check if a Schedule Y filing exists for a return and tax year.
      *
-     * @param businessId the business ID
+     * @param returnId   the return ID
      * @param taxYear    the tax year
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return true if a filing exists
      */
-    boolean existsByBusinessIdAndTaxYearAndTenantId(UUID businessId, Integer taxYear, UUID tenantId);
+    boolean existsByReturnIdAndTaxYearAndTenantId(UUID returnId, Integer taxYear, UUID tenantId);
 
     /**
      * Find all Schedule Y filings with a specific sourcing method election.
@@ -89,6 +90,6 @@ public interface ScheduleYRepository extends JpaRepository<ScheduleY, UUID> {
      * @return List of Schedule Y filings flagged for audit
      */
     @Query("SELECT s FROM ScheduleY s WHERE s.tenantId = :tenantId " +
-           "AND (s.apportionmentPercentage > 0.95 OR s.apportionmentPercentage < 0.05)")
+           "AND (s.finalApportionmentPercentage > 0.95 OR s.finalApportionmentPercentage < 0.05)")
     List<ScheduleY> findFilingsRequiringAuditReview(@Param("tenantId") UUID tenantId);
 }

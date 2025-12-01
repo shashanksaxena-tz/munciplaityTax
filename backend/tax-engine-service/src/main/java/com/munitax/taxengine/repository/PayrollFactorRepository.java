@@ -24,7 +24,7 @@ public interface PayrollFactorRepository extends JpaRepository<PayrollFactor, UU
      * @param scheduleYId the Schedule Y ID
      * @return Optional containing the payroll factor if found
      */
-    Optional<PayrollFactor> findByScheduleYId(UUID scheduleYId);
+    Optional<PayrollFactor> findByScheduleY_ScheduleYId(UUID scheduleYId);
 
     /**
      * Find all payroll factors for a tenant.
@@ -32,42 +32,43 @@ public interface PayrollFactorRepository extends JpaRepository<PayrollFactor, UU
      * @param tenantId the tenant ID for multi-tenant isolation
      * @return List of payroll factors
      */
-    List<PayrollFactor> findByTenantId(UUID tenantId);
+    @Query("SELECT pf FROM PayrollFactor pf JOIN pf.scheduleY s WHERE s.tenantId = :tenantId")
+    List<PayrollFactor> findByTenantId(@Param("tenantId") UUID tenantId);
 
     /**
-     * Calculate total Ohio payroll for a business across all filings.
+     * Calculate total Ohio payroll for a return.
      *
-     * @param businessId the business ID (from Schedule Y relationship)
+     * @param returnId   the return ID (from Schedule Y)
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total Ohio payroll
      */
-    @Query("SELECT COALESCE(SUM(pf.ohioPayroll), 0) FROM PayrollFactor pf " +
-           "JOIN pf.scheduleY s WHERE s.businessId = :businessId AND pf.tenantId = :tenantId")
-    BigDecimal sumOhioPayrollByBusiness(
-            @Param("businessId") UUID businessId,
+    @Query("SELECT COALESCE(SUM(pf.totalOhioPayroll), 0) FROM PayrollFactor pf " +
+           "JOIN pf.scheduleY s WHERE s.returnId = :returnId AND s.tenantId = :tenantId")
+    BigDecimal sumOhioPayrollByReturn(
+            @Param("returnId") UUID returnId,
             @Param("tenantId") UUID tenantId);
 
     /**
-     * Calculate total everywhere payroll for a business across all filings.
+     * Calculate total everywhere payroll for a return.
      *
-     * @param businessId the business ID (from Schedule Y relationship)
+     * @param returnId   the return ID (from Schedule Y)
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total everywhere payroll
      */
-    @Query("SELECT COALESCE(SUM(pf.totalPayroll), 0) FROM PayrollFactor pf " +
-           "JOIN pf.scheduleY s WHERE s.businessId = :businessId AND pf.tenantId = :tenantId")
-    BigDecimal sumTotalPayrollByBusiness(
-            @Param("businessId") UUID businessId,
+    @Query("SELECT COALESCE(SUM(pf.totalPayrollEverywhere), 0) FROM PayrollFactor pf " +
+           "JOIN pf.scheduleY s WHERE s.returnId = :returnId AND s.tenantId = :tenantId")
+    BigDecimal sumTotalPayrollByReturn(
+            @Param("returnId") UUID returnId,
             @Param("tenantId") UUID tenantId);
 
     /**
      * Find payroll factors for businesses with remote employees.
      *
      * @param tenantId the tenant ID for multi-tenant isolation
-     * @return List of payroll factors with remote employee count > 0
+     * @return List of payroll factors with remote employee allocation
      */
-    @Query("SELECT pf FROM PayrollFactor pf WHERE pf.remoteEmployeeCount > 0 " +
-           "AND pf.tenantId = :tenantId")
+    @Query("SELECT pf FROM PayrollFactor pf JOIN pf.scheduleY s WHERE SIZE(pf.remoteEmployeeAllocation) > 0 " +
+           "AND s.tenantId = :tenantId")
     List<PayrollFactor> findWithRemoteEmployees(@Param("tenantId") UUID tenantId);
 
     /**
@@ -77,6 +78,6 @@ public interface PayrollFactorRepository extends JpaRepository<PayrollFactor, UU
      * @return Average payroll factor percentage
      */
     @Query("SELECT AVG(pf.payrollFactorPercentage) FROM PayrollFactor pf " +
-           "WHERE pf.tenantId = :tenantId")
+           "JOIN pf.scheduleY s WHERE s.tenantId = :tenantId")
     BigDecimal calculateAveragePayrollFactor(@Param("tenantId") UUID tenantId);
 }
