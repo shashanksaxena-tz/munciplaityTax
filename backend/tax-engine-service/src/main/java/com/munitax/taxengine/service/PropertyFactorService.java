@@ -160,7 +160,7 @@ public class PropertyFactorService {
      * @return PropertyFactor or null if not found
      */
     public PropertyFactor getPropertyFactorByScheduleYId(UUID scheduleYId) {
-        return propertyFactorRepository.findByScheduleYId(scheduleYId).orElse(null);
+        return propertyFactorRepository.findByScheduleY_ScheduleYId(scheduleYId).orElse(null);
     }
 
     /**
