@@ -98,6 +98,7 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
         setMetrics(metricsData);
       } catch {
         // Use mock data when API is not available
+        console.debug('Ledger Dashboard: Using mock metrics data (API unavailable)');
         setMetrics(getMockMetrics());
       }
 
@@ -113,11 +114,13 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
         setRecentTransactions(transactionsData.transactions || transactionsData);
       } catch {
         // Use mock data when API is not available
+        console.debug('Ledger Dashboard: Using mock transactions data (API unavailable)');
         setRecentTransactions(getMockTransactions());
       }
 
     } catch (err) {
       // Final fallback - use mock data
+      console.debug('Ledger Dashboard: Using mock data fallback');
       setMetrics(getMockMetrics());
       setRecentTransactions(getMockTransactions());
     } finally {
