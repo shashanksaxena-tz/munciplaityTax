@@ -13,6 +13,18 @@ export const getSessions = (): TaxReturnSession[] => {
   }
 };
 
+// Get sessions filtered by userId
+export const getSessionsByUserId = (userId: string): TaxReturnSession[] => {
+  const allSessions = getSessions();
+  return allSessions.filter(s => s.userId === userId);
+};
+
+// Get sessions filtered by userId and type
+export const getSessionsByUserIdAndType = (userId: string, type: 'INDIVIDUAL' | 'BUSINESS'): TaxReturnSession[] => {
+  const allSessions = getSessions();
+  return allSessions.filter(s => s.userId === userId && s.type === type);
+};
+
 export const saveSession = (session: TaxReturnSession) => {
   const sessions = getSessions();
   const index = sessions.findIndex(s => s.id === session.id);
@@ -32,7 +44,8 @@ export const saveSession = (session: TaxReturnSession) => {
 export const createNewSession = (
   initialProfile?: TaxPayerProfile | BusinessProfile,
   initialSettings?: TaxReturnSettings,
-  type: 'INDIVIDUAL' | 'BUSINESS' = 'INDIVIDUAL'
+  type: 'INDIVIDUAL' | 'BUSINESS' = 'INDIVIDUAL',
+  userId?: string
 ): TaxReturnSession => {
   
   let defaultProfile: TaxPayerProfile | BusinessProfile;
@@ -55,6 +68,7 @@ export const createNewSession = (
 
   const newSession: TaxReturnSession = {
     id: crypto.randomUUID(),
+    userId: userId,
     createdDate: new Date().toISOString(),
     lastModifiedDate: new Date().toISOString(),
     status: TaxReturnStatus.DRAFT,

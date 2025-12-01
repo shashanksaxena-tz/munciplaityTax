@@ -298,6 +298,7 @@ export interface BusinessTaxRulesConfig {
 
 export interface TaxReturnSession {
   id: string;
+  userId?: string; // Links session to the authenticated user
   createdDate: string;
   lastModifiedDate: string;
   status: TaxReturnStatus;
