@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, FileText, X, FileStack } from 'lucide-react';
-import { TaxFormData } from '../types';
+import { Upload, FileText, X, FileStack, Key, Eye, EyeOff, Settings } from 'lucide-react';
+import { TaxFormData, RealTimeExtractionUpdate } from '../types';
 import { api } from '../services/api';
 import { mapExtractionResultToForms } from '../services/extractionMapper';
 import { ProcessingLoader } from './ProcessingLoader';
@@ -9,6 +9,7 @@ interface ExtractionResult {
   forms: TaxFormData[];
   extractedProfile?: any;
   extractedSettings?: any;
+  summary?: any;
 }
 
 interface UploadSectionProps {
@@ -19,6 +20,10 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [extractionUpdate, setExtractionUpdate] = useState<RealTimeExtractionUpdate | undefined>();
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -35,33 +40,47 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
 
     setIsProcessing(true);
     setError(null);
+    setExtractionUpdate(undefined);
 
     try {
       const allExtractedForms: TaxFormData[] = [];
       let extractedProfile: any = undefined;
       let extractedSettings: any = undefined;
+      let lastSummary: any = undefined;
 
       for (const file of files) {
         await new Promise<void>((resolve, reject) => {
-          api.extraction.uploadAndExtract(file, (update) => {
-            if (update.status === 'COMPLETE' && update.result) {
-              try {
-                const result = mapExtractionResultToForms(update.result, file.name);
-                allExtractedForms.push(...result.forms);
-                if (!extractedProfile && result.extractedProfile) {
-                  extractedProfile = result.extractedProfile;
+          api.extraction.uploadAndExtract(
+            file, 
+            (update: RealTimeExtractionUpdate) => {
+              setExtractionUpdate(update);
+              
+              if (update.status === 'COMPLETE' && update.result) {
+                try {
+                  const result = mapExtractionResultToForms(update.result, file.name);
+                  allExtractedForms.push(...result.forms);
+                  if (!extractedProfile && result.extractedProfile) {
+                    extractedProfile = result.extractedProfile;
+                  }
+                  if (!extractedSettings && result.extractedSettings) {
+                    extractedSettings = result.extractedSettings;
+                  }
+                  if (update.summary) {
+                    lastSummary = update.summary;
+                  }
+                  resolve();
+                } catch (e) {
+                  reject(e);
                 }
-                if (!extractedSettings && result.extractedSettings) {
-                  extractedSettings = result.extractedSettings;
-                }
-                resolve();
-              } catch (e) {
-                reject(e);
+              } else if (update.status === 'ERROR') {
+                reject(new Error(update.log ? update.log.join(' ') : 'Extraction failed'));
               }
-            } else if (update.status === 'ERROR') { // Assuming backend might send ERROR status
-              reject(new Error(update.log ? update.log.join(' ') : 'Extraction failed'));
+            },
+            {
+              geminiApiKey: apiKey || undefined,
+              geminiModel: 'gemini-2.5-flash-preview-05-20'
             }
-          }).catch(reject);
+          ).catch(reject);
         });
       }
 
@@ -69,11 +88,12 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
         throw new Error("No recognizable tax forms were found in the document.");
       }
 
-      if (extractedProfile || extractedSettings) {
+      if (extractedProfile || extractedSettings || lastSummary) {
         onDataExtracted({
           forms: allExtractedForms,
           extractedProfile,
-          extractedSettings
+          extractedSettings,
+          summary: lastSummary
         });
       } else {
         onDataExtracted(allExtractedForms);
@@ -94,7 +114,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
     if (files.length > 0) {
       processFiles(files);
     }
-  }, [onDataExtracted]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onDataExtracted, apiKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -104,11 +124,63 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
   };
 
   if (isProcessing) {
-    return <ProcessingLoader />;
+    return <ProcessingLoader extractionUpdate={extractionUpdate} />;
   }
 
   return (
     <div className="w-full max-w-2xl mx-auto animate-fadeIn">
+      {/* API Key Configuration */}
+      <div className="mb-6">
+        <button
+          onClick={() => setShowApiKeyInput(!showApiKeyInput)}
+          className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 transition-colors"
+        >
+          <Settings className="w-4 h-4" />
+          <span>{showApiKeyInput ? 'Hide' : 'Configure'} Gemini API Key</span>
+        </button>
+        
+        {showApiKeyInput && (
+          <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-slideUp">
+            <div className="flex items-start gap-3 mb-3">
+              <Key className="w-5 h-5 text-indigo-500 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-slate-800">Your Gemini API Key</h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  Provide your own API key for extraction. Keys are never stored and used only for this session.
+                </p>
+              </div>
+            </div>
+            <div className="relative">
+              <input
+                type={showApiKey ? 'text' : 'password'}
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Enter your Gemini API key..."
+                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <p className="text-xs text-slate-400 mt-2">
+              Get your API key from{' '}
+              <a 
+                href="https://aistudio.google.com/app/apikey" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-indigo-600 hover:underline"
+              >
+                Google AI Studio
+              </a>
+            </p>
+          </div>
+        )}
+      </div>
+
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -142,7 +214,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
               Drop your <span className="font-semibold text-indigo-600">PDF, JPG, or PNG</span> files here.
             </p>
             <p className="text-xs text-slate-400 pt-2">
-              Supports multi-page PDFs containing mixed W-2s, 1099s, and Schedules.
+              Supports multi-page PDFs containing mixed W-2s, 1099s, Schedules, and more.
             </p>
           </div>
         </div>
