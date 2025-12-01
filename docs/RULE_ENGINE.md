@@ -595,10 +595,50 @@ Authorization: Bearer {token}
 
 ---
 
+## Integration Status & Known Issues
+
+> **Reference:** See `/RULE_ENGINE_DISCONNECT_ANALYSIS.md` for detailed analysis.
+
+### Current Integration Architecture
+
+```mermaid
+flowchart TB
+    subgraph "Intended Flow"
+        TE1[Tax Engine Service<br/>Port 8085] -->|REST Call| RS1[Rule Service<br/>Port 8087]
+        RS1 --> DB1[(Shared PostgreSQL<br/>munitax_db)]
+        TE1 --> DB1
+    end
+    
+    subgraph "Current Reality - DISCONNECTED"
+        TE2[Tax Engine Service<br/>Port 8085] --> DB2[(Local PostgreSQL<br/>munitax_db)]
+        RS2[Rule Service<br/>Port 8087] --> DB3[(Aiven Cloud<br/>External DB)]
+    end
+```
+
+### Known Issues
+
+| Issue | Severity | Status | Description |
+|-------|----------|--------|-------------|
+| Database Disconnect | CRITICAL | Open | Rule service connects to external cloud DB instead of local Docker postgres |
+| Missing Schema | CRITICAL | Open | tax_rules table not created in munitax_db |
+| Enum Mismatch | LOW | Documented | Spec uses PascalCase, code uses SCREAMING_SNAKE_CASE (code is correct) |
+| Service Isolation | HIGH | Open | Rule service cannot integrate with tax-engine due to separate databases |
+
+### Recommended Fixes
+
+1. **Fix rule-service database configuration** to use local Docker postgres
+2. **Run migrations** to create tax_rules tables in munitax_db
+3. **Update specs** to match actual code enum conventions
+
+For detailed remediation steps, see `/RULE_ENGINE_DISCONNECT_ANALYSIS.md`.
+
+---
+
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1 | 2025-12-01 | Added integration status and known issues section |
 | 1.0 | 2025-12-01 | Initial rule engine documentation |
 
 ---

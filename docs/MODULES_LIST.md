@@ -302,7 +302,8 @@ tax-engine-service/
 ├── config/
 │   └── TaxEngineConfig.java     # Engine configuration
 ├── controller/
-│   └── TaxEngineController.java # Calculation endpoints
+│   ├── TaxEngineController.java # Calculation endpoints
+│   └── ScheduleYController.java # Schedule Y allocation endpoints
 ├── model/
 │   ├── W2Form.java
 │   ├── Form1099.java
@@ -312,6 +313,34 @@ tax-engine-service/
 │   ├── TaxCalculationResult.java
 │   ├── TaxRulesConfig.java
 │   └── BusinessTaxRulesConfig.java
+├── repository/
+│   ├── ApportionmentAuditLogRepository.java
+│   ├── NexusTrackingRepository.java
+│   ├── PayrollFactorRepository.java
+│   ├── PropertyFactorRepository.java
+│   ├── SalesFactorRepository.java
+│   ├── SaleTransactionRepository.java
+│   ├── ScheduleYRepository.java
+│   ├── NOLRepository.java
+│   ├── NOLScheduleRepository.java
+│   ├── NOLUsageRepository.java
+│   ├── NOLCarrybackRepository.java
+│   ├── NOLAmendmentRepository.java
+│   ├── NOLExpirationAlertRepository.java
+│   ├── W1FilingRepository.java
+│   ├── WithholdingPaymentRepository.java
+│   ├── WithholdingReconciliationRepository.java
+│   ├── WithholdingAuditLogRepository.java
+│   ├── CumulativeWithholdingTotalsRepository.java
+│   ├── PenaltyRepository.java
+│   ├── PenaltyAbatementRepository.java
+│   ├── PenaltyAuditLogRepository.java
+│   ├── EstimatedTaxPenaltyRepository.java
+│   ├── InterestRepository.java
+│   ├── QuarterlyInterestRepository.java
+│   ├── QuarterlyUnderpaymentRepository.java
+│   ├── PaymentAllocationRepository.java
+│   └── IgnoredW2Repository.java
 ├── service/
 │   ├── IndividualTaxCalculator.java  # Individual calculation
 │   ├── BusinessTaxCalculator.java    # Business calculation
@@ -345,6 +374,7 @@ tax-engine-service/
 - `POST /api/v1/w1-filings` - File W-1 return
 - `GET /api/v1/w1-filings` - List W-1 filings
 - `POST /api/v1/w1-filings/{id}/amend` - Amend W-1
+- `GET /api/v1/schedule-y` - Get Schedule Y allocations
 
 ### 8. PDF Service Module
 
@@ -371,6 +401,8 @@ pdf-service/
 ### 9. Rule Service Module
 
 **Package:** `com.munitax.rules`
+
+> **⚠️ Note:** See `/RULE_ENGINE_DISCONNECT_ANALYSIS.md` for known integration issues with this service.
 
 ```
 rule-service/

@@ -24,6 +24,12 @@ docs/
 └── README.md                 # This index file
 ```
 
+### Related Documents (Repository Root)
+
+```
+/RULE_ENGINE_DISCONNECT_ANALYSIS.md   # Critical integration issues analysis
+```
+
 ---
 
 ## Quick Reference Guide
@@ -36,6 +42,7 @@ docs/
 | [MODULES_LIST.md](./MODULES_LIST.md) | Code organization, service responsibilities | Finding where code lives |
 | [SEQUENCE_DIAGRAMS.md](./SEQUENCE_DIAGRAMS.md) | Request/response flows | Understanding interactions |
 | [DATA_FLOW.md](./DATA_FLOW.md) | Data transformation pipelines | Debugging data issues |
+| [/RULE_ENGINE_DISCONNECT_ANALYSIS.md](../RULE_ENGINE_DISCONNECT_ANALYSIS.md) | Known integration issues | Debugging rule service issues |
 
 ### For Tax Domain Understanding
 
@@ -145,12 +152,21 @@ Configuration documentation:
 - Multi-tenant configuration
 - Temporal configuration
 
+### RULE_ENGINE_DISCONNECT_ANALYSIS.md (Root)
+Critical analysis document covering:
+- Database connection disconnects between services
+- Missing schema migrations
+- Enum value mismatches
+- Service integration issues
+- Recommended fix strategy
+
 ---
 
 ## External Documentation
 
 | Document | Location | Purpose |
 |----------|----------|---------|
+| Disconnect Analysis | [/RULE_ENGINE_DISCONNECT_ANALYSIS.md](../RULE_ENGINE_DISCONNECT_ANALYSIS.md) | Critical integration issues |
 | API Samples | [/API_SAMPLES.md](/API_SAMPLES.md) | API request/response examples |
 | Docker Guide | [/DOCKER_DEPLOYMENT_GUIDE.md](/DOCKER_DEPLOYMENT_GUIDE.md) | Container deployment |
 | Current Features | [/CURRENT_FEATURES.md](/CURRENT_FEATURES.md) | Implementation status |
@@ -228,6 +244,7 @@ More content.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1 | 2025-12-01 | Updated with latest main branch changes, added disconnect analysis reference |
 | 1.0 | 2025-12-01 | Initial documentation creation |
 
 ---
