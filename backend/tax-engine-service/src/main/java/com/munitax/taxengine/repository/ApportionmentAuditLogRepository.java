@@ -28,7 +28,7 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @param pageable    pagination information
      * @return Page of audit log entries ordered by timestamp descending
      */
-    Page<ApportionmentAuditLog> findByScheduleYIdOrderByChangedAtDesc(
+    Page<ApportionmentAuditLog> findByScheduleYIdOrderByChangeDateDesc(
             UUID scheduleYId, Pageable pageable);
 
     /**
@@ -37,7 +37,7 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @param scheduleYId the Schedule Y ID
      * @return List of audit log entries ordered by timestamp
      */
-    List<ApportionmentAuditLog> findByScheduleYIdOrderByChangedAt(UUID scheduleYId);
+    List<ApportionmentAuditLog> findByScheduleYIdOrderByChangeDate(UUID scheduleYId);
 
     /**
      * Find audit log entries by change type.
@@ -46,7 +46,7 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @param changeType  the type of change
      * @return List of audit log entries of the specified type
      */
-    List<ApportionmentAuditLog> findByScheduleYIdAndChangeTypeOrderByChangedAtDesc(
+    List<ApportionmentAuditLog> findByScheduleYIdAndChangeTypeOrderByChangeDateDesc(
             UUID scheduleYId, AuditChangeType changeType);
 
     /**
@@ -57,7 +57,7 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @param pageable  pagination information
      * @return Page of audit log entries made by the user
      */
-    Page<ApportionmentAuditLog> findByChangedByAndTenantIdOrderByChangedAtDesc(
+    Page<ApportionmentAuditLog> findByChangedByAndTenantIdOrderByChangeDateDesc(
             UUID changedBy, UUID tenantId, Pageable pageable);
 
     /**
@@ -69,7 +69,7 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @return List of audit log entries within the date range
      */
     @Query("SELECT a FROM ApportionmentAuditLog a WHERE a.scheduleYId = :scheduleYId " +
-           "AND a.changedAt BETWEEN :startDate AND :endDate ORDER BY a.changedAt DESC")
+           "AND a.changeDate BETWEEN :startDate AND :endDate ORDER BY a.changeDate DESC")
     List<ApportionmentAuditLog> findByScheduleYIdAndDateRange(
             @Param("scheduleYId") UUID scheduleYId,
             @Param("startDate") LocalDateTime startDate,
@@ -82,7 +82,7 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @param pageable pagination information
      * @return Page of audit log entries
      */
-    Page<ApportionmentAuditLog> findByTenantIdOrderByChangedAtDesc(UUID tenantId, Pageable pageable);
+    Page<ApportionmentAuditLog> findByTenantIdOrderByChangeDateDesc(UUID tenantId, Pageable pageable);
 
     /**
      * Find recent audit log entries for a Schedule Y (last N days).
@@ -92,7 +92,7 @@ public interface ApportionmentAuditLogRepository extends JpaRepository<Apportion
      * @return List of recent audit log entries
      */
     @Query("SELECT a FROM ApportionmentAuditLog a WHERE a.scheduleYId = :scheduleYId " +
-           "AND a.changedAt >= :sinceDate ORDER BY a.changedAt DESC")
+           "AND a.changeDate >= :sinceDate ORDER BY a.changeDate DESC")
     List<ApportionmentAuditLog> findRecentChanges(
             @Param("scheduleYId") UUID scheduleYId,
             @Param("sinceDate") LocalDateTime sinceDate);

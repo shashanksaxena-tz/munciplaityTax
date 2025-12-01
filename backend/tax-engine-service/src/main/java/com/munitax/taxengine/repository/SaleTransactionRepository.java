@@ -26,7 +26,7 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @param salesFactorId the sales factor ID
      * @return List of sale transactions
      */
-    List<SaleTransaction> findBySalesFactorId(UUID salesFactorId);
+    List<SaleTransaction> findBySalesFactor_SalesFactorId(UUID salesFactorId);
 
     /**
      * Find sale transactions for a sales factor with pagination.
@@ -35,7 +35,7 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @param pageable      pagination information
      * @return Page of sale transactions
      */
-    Page<SaleTransaction> findBySalesFactorId(UUID salesFactorId, Pageable pageable);
+    Page<SaleTransaction> findBySalesFactor_SalesFactorId(UUID salesFactorId, Pageable pageable);
 
     /**
      * Find all sale transactions for a tenant.
@@ -52,7 +52,7 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @param saleType      the type of sale
      * @return List of sale transactions of the specified type
      */
-    List<SaleTransaction> findBySalesFactorIdAndSaleType(UUID salesFactorId, SaleType saleType);
+    List<SaleTransaction> findBySalesFactor_SalesFactorIdAndSaleType(UUID salesFactorId, SaleType saleType);
 
     /**
      * Find sale transactions with throwback applied.
@@ -60,7 +60,7 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @param salesFactorId the sales factor ID
      * @return List of sale transactions where throwback was applied
      */
-    @Query("SELECT st FROM SaleTransaction st WHERE st.salesFactorId = :salesFactorId " +
+    @Query("SELECT st FROM SaleTransaction st WHERE st.salesFactor.salesFactorId = :salesFactorId " +
            "AND st.throwbackApplied = true")
     List<SaleTransaction> findThrowbackTransactions(@Param("salesFactorId") UUID salesFactorId);
 
@@ -71,8 +71,8 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @param destinationState the destination state code
      * @return Total sales to the destination state
      */
-    @Query("SELECT COALESCE(SUM(st.amount), 0) FROM SaleTransaction st " +
-           "WHERE st.salesFactorId = :salesFactorId AND st.destinationState = :state")
+    @Query("SELECT COALESCE(SUM(st.saleAmount), 0) FROM SaleTransaction st " +
+           "WHERE st.salesFactor.salesFactorId = :salesFactorId AND st.destinationState = :state")
     BigDecimal sumSalesByDestinationState(
             @Param("salesFactorId") UUID salesFactorId,
             @Param("state") String destinationState);
@@ -84,7 +84,7 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @return Total throwback amount
      */
     @Query("SELECT COALESCE(SUM(st.throwbackAmount), 0) FROM SaleTransaction st " +
-           "WHERE st.salesFactorId = :salesFactorId AND st.throwbackApplied = true")
+           "WHERE st.salesFactor.salesFactorId = :salesFactorId AND st.throwbackApplied = true")
     BigDecimal sumThrowbackAdjustments(@Param("salesFactorId") UUID salesFactorId);
 
     /**
@@ -95,7 +95,7 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @return Count of transactions of the specified type
      */
     @Query("SELECT COUNT(st) FROM SaleTransaction st " +
-           "WHERE st.salesFactorId = :salesFactorId AND st.saleType = :saleType")
+           "WHERE st.salesFactor.salesFactorId = :salesFactorId AND st.saleType = :saleType")
     long countBySaleType(
             @Param("salesFactorId") UUID salesFactorId,
             @Param("saleType") SaleType saleType);
@@ -106,7 +106,7 @@ public interface SaleTransactionRepository extends JpaRepository<SaleTransaction
      * @param salesFactorId the sales factor ID
      * @return List of service sale transactions
      */
-    @Query("SELECT st FROM SaleTransaction st WHERE st.salesFactorId = :salesFactorId " +
-           "AND st.saleType = 'SERVICE' AND st.customerLocation IS NOT NULL")
+    @Query("SELECT st FROM SaleTransaction st WHERE st.salesFactor.salesFactorId = :salesFactorId " +
+           "AND st.saleType = 'SERVICE' AND st.customerState IS NOT NULL")
     List<SaleTransaction> findServiceTransactions(@Param("salesFactorId") UUID salesFactorId);
 }

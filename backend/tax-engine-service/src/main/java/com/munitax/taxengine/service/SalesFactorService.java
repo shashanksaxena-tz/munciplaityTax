@@ -56,7 +56,7 @@ public class SalesFactorService {
                 scheduleYId, sourcingMethodElection);
 
         // Get sales factor entity
-        SalesFactor salesFactor = salesFactorRepository.findByScheduleYId(scheduleYId)
+        SalesFactor salesFactor = salesFactorRepository.findByScheduleY_ScheduleYId(scheduleYId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Sales factor not found for Schedule Y: " + scheduleYId));
 
@@ -126,7 +126,7 @@ public class SalesFactorService {
                         "Sales factor not found: " + salesFactorId));
 
         // Get all transactions for this sales factor
-        List<SaleTransaction> transactions = saleTransactionRepository.findBySalesFactorId(salesFactorId);
+        List<SaleTransaction> transactions = saleTransactionRepository.findBySalesFactor_SalesFactorId(salesFactorId);
 
         BigDecimal totalOhioSourcedAmount = BigDecimal.ZERO;
         BigDecimal totalThrowbackAmount = BigDecimal.ZERO;

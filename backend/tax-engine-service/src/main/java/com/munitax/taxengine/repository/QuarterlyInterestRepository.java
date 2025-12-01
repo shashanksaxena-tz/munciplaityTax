@@ -146,7 +146,7 @@ public interface QuarterlyInterestRepository extends JpaRepository<QuarterlyInte
            "AND q.tenantId = :tenantId AND EXISTS (" +
            "  SELECT q2 FROM QuarterlyInterest q2 " +
            "  WHERE q2.interestId = q.interestId " +
-           "  AND q2.startDate = q.endDate + 1 " +
+           "  AND q2.startDate = DATEADD(DAY, 1, q.endDate) " +
            "  AND ABS(q2.beginningBalance - q.endingBalance) > 0.01" +
            ")")
     List<QuarterlyInterest> findBalanceDiscrepancies(

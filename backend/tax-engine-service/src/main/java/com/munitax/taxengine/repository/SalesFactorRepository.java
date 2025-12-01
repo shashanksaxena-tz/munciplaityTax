@@ -25,7 +25,7 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
      * @return Optional containing the sales factor if found
      */
        @Query("SELECT sf FROM SalesFactor sf WHERE sf.scheduleY.scheduleYId = :scheduleYId")
-       Optional<SalesFactor> findByScheduleYId(@Param("scheduleYId") UUID scheduleYId);
+       Optional<SalesFactor> findByScheduleY_ScheduleYId(@Param("scheduleYId") UUID scheduleYId);
 
     /**
      * Find all sales factors for a tenant.
@@ -36,29 +36,29 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
     List<SalesFactor> findByTenantId(UUID tenantId);
 
     /**
-     * Calculate total Ohio sales for a business across all filings.
+     * Calculate total Ohio sales for a return.
      *
-     * @param businessId the business ID (from Schedule Y relationship)
+     * @param returnId   the return ID (from Schedule Y)
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total Ohio sales
      */
     @Query("SELECT COALESCE(SUM(sf.totalOhioSales), 0) FROM SalesFactor sf " +
-           "JOIN sf.scheduleY s WHERE s.businessId = :businessId AND sf.tenantId = :tenantId")
-    BigDecimal sumOhioSalesByBusiness(
-            @Param("businessId") UUID businessId,
+           "JOIN sf.scheduleY s WHERE s.returnId = :returnId AND sf.tenantId = :tenantId")
+    BigDecimal sumOhioSalesByReturn(
+            @Param("returnId") UUID returnId,
             @Param("tenantId") UUID tenantId);
 
     /**
-     * Calculate total everywhere sales for a business across all filings.
+     * Calculate total everywhere sales for a return.
      *
-     * @param businessId the business ID (from Schedule Y relationship)
+     * @param returnId   the return ID (from Schedule Y)
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total everywhere sales
      */
     @Query("SELECT COALESCE(SUM(sf.totalSalesEverywhere), 0) FROM SalesFactor sf " +
-           "JOIN sf.scheduleY s WHERE s.businessId = :businessId AND sf.tenantId = :tenantId")
-    BigDecimal sumTotalSalesByBusiness(
-            @Param("businessId") UUID businessId,
+           "JOIN sf.scheduleY s WHERE s.returnId = :returnId AND sf.tenantId = :tenantId")
+    BigDecimal sumTotalSalesByReturn(
+            @Param("returnId") UUID returnId,
             @Param("tenantId") UUID tenantId);
 
     /**
@@ -72,16 +72,16 @@ public interface SalesFactorRepository extends JpaRepository<SalesFactor, UUID> 
     List<SalesFactor> findWithThrowbackAdjustments(@Param("tenantId") UUID tenantId);
 
     /**
-     * Calculate total service revenue for a business.
+     * Calculate total service revenue for a return.
      *
-     * @param businessId the business ID (from Schedule Y relationship)
+     * @param returnId   the return ID (from Schedule Y)
      * @param tenantId   the tenant ID for multi-tenant isolation
      * @return Total service revenue
      */
     @Query("SELECT COALESCE(SUM(sf.ohioSalesServices), 0) FROM SalesFactor sf " +
-           "JOIN sf.scheduleY s WHERE s.businessId = :businessId AND sf.tenantId = :tenantId")
-    BigDecimal sumServiceRevenueByBusiness(
-            @Param("businessId") UUID businessId,
+           "JOIN sf.scheduleY s WHERE s.returnId = :returnId AND sf.tenantId = :tenantId")
+    BigDecimal sumServiceRevenueByReturn(
+            @Param("returnId") UUID returnId,
             @Param("tenantId") UUID tenantId);
 
     /**
