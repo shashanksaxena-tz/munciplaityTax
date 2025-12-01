@@ -39,7 +39,7 @@ public class RealGeminiService {
     private static final Logger log = LoggerFactory.getLogger(RealGeminiService.class);
 
     private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
-    private static final String DEFAULT_MODEL = "gemini-2.5-flash-preview-05-20";
+    private static final String DEFAULT_MODEL = "gemini-2.5-flash";
     
     // Field weight classifications for confidence scoring
     private static final Map<String, String> FIELD_WEIGHTS = initializeFieldWeights();
@@ -108,18 +108,29 @@ public class RealGeminiService {
 
             String prompt = buildProductionExtractionPrompt();
 
-            Map<String, Object> request = Map.of(
-                    "contents", List.of(
-                            Map.of("parts", List.of(
-                                    Map.of("text", prompt),
-                                    Map.of("inline_data", Map.of(
-                                            "mime_type", mimeType,
-                                            "data", base64Data))))),
-                    "generationConfig", Map.of(
-                            "response_mime_type", "application/json",
-                            "temperature", 0.1,
-                            "topP", 0.95,
-                            "topK", 40));
+            // Build request using HashMap to avoid Map.of() entry limit
+            Map<String, Object> inlineData = new HashMap<>();
+            inlineData.put("mime_type", mimeType);
+            inlineData.put("data", base64Data);
+
+            Map<String, Object> textPart = new HashMap<>();
+            textPart.put("text", prompt);
+
+            Map<String, Object> dataPart = new HashMap<>();
+            dataPart.put("inline_data", inlineData);
+
+            Map<String, Object> content = new HashMap<>();
+            content.put("parts", List.of(textPart, dataPart));
+
+            Map<String, Object> generationConfig = new HashMap<>();
+            generationConfig.put("response_mime_type", "application/json");
+            generationConfig.put("temperature", 0.1);
+            generationConfig.put("topP", 0.95);
+            generationConfig.put("topK", 40);
+
+            Map<String, Object> request = new HashMap<>();
+            request.put("contents", List.of(content));
+            request.put("generationConfig", generationConfig);
 
             return webClient.post()
                     .uri("/models/" + model + ":generateContent?key=" + trimmedKey)
@@ -159,7 +170,31 @@ public class RealGeminiService {
             long startTime, 
             String model) {
         try {
+            // Validate response is not empty or malformed
+            if (jsonResponse == null || jsonResponse.trim().isEmpty()) {
+                log.warn("Empty response received from Gemini API");
+                return createErrorResponse("Empty response from API", startTime);
+            }
+
+            // Check for common malformed responses
+            String trimmedResponse = jsonResponse.trim();
+            if (trimmedResponse.equals("}") || trimmedResponse.equals("{") || 
+                trimmedResponse.length() < 10) {
+                log.warn("Malformed response received: {}", trimmedResponse);
+                return createErrorResponse("Malformed API response. Please try again.", startTime);
+            }
+
             JsonNode root = objectMapper.readTree(jsonResponse);
+            
+            // Check for API error in response
+            JsonNode error = root.path("error");
+            if (!error.isMissingNode()) {
+                String errorMessage = error.path("message").asText("Unknown API error");
+                int errorCode = error.path("code").asInt(0);
+                log.error("Gemini API returned error: {} (code: {})", errorMessage, errorCode);
+                return createErrorResponse(errorMessage, startTime);
+            }
+            
             JsonNode candidates = root.path("candidates");
 
             if (candidates.isArray() && !candidates.isEmpty()) {
@@ -168,9 +203,23 @@ public class RealGeminiService {
 
                 if (parts.isArray() && !parts.isEmpty()) {
                     String text = parts.get(0).path("text").asText();
+                    
+                    // Validate extracted text is valid JSON
+                    if (text == null || text.trim().isEmpty()) {
+                        log.warn("Empty text content in Gemini response");
+                        return createErrorResponse("No data extracted from document", startTime);
+                    }
 
-                    // Parse extracted forms
-                    JsonNode extractedData = objectMapper.readTree(text);
+                    // Parse extracted forms with additional validation
+                    JsonNode extractedData;
+                    try {
+                        extractedData = objectMapper.readTree(text);
+                    } catch (Exception parseEx) {
+                        log.error("Failed to parse extracted data as JSON: {}", parseEx.getMessage());
+                        log.debug("Raw text that failed parsing: {}", text.substring(0, Math.min(500, text.length())));
+                        return createErrorResponse("Invalid JSON in extraction result. Please try again.", startTime);
+                    }
+                    
                     JsonNode forms = extractedData.path("forms");
 
                     List<String> detectedForms = new ArrayList<>();
@@ -231,11 +280,15 @@ public class RealGeminiService {
                             .delayElements(Duration.ofMillis(400));
                 }
             }
+            
+            // No candidates in response
+            log.warn("No candidates found in Gemini response");
+            return createErrorResponse("No extraction results returned. The document may not contain recognizable tax forms.", startTime);
+            
         } catch (Exception e) {
             log.error("Error parsing Gemini response: {}", e.getMessage(), e);
+            return createErrorResponse("Error processing response: " + e.getMessage(), startTime);
         }
-
-        return Flux.empty();
     }
 
     private String extractTaxpayerName(JsonNode extractedData) {

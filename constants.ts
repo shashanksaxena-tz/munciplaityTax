@@ -1,7 +1,7 @@
 import { TaxRulesConfig, BusinessTaxRulesConfig, W2QualifyingWagesRule } from "./types";
 
 // Gemini AI Configuration
-export const GEMINI_DEFAULT_MODEL = 'gemini-2.5-flash-preview-05-20';
+export const GEMINI_DEFAULT_MODEL = 'gemini-2.5-flash';
 
 export const DEFAULT_TAX_RULES: TaxRulesConfig = {
     municipalRate: 0.020, // 2.0% Dublin

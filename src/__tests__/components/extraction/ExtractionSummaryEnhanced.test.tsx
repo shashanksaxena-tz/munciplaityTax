@@ -70,7 +70,7 @@ describe('ExtractionSummary Enhanced Features', () => {
       'Federal 1040': 0.89
     },
     extractionDurationMs: 3500,
-    modelUsed: 'gemini-2.5-flash-preview-05-20'
+    modelUsed: 'gemini-2.5-flash'
   };
 
   const mockFormProvenances: FormProvenance[] = [
