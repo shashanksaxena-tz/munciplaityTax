@@ -895,7 +895,8 @@ function getMockRules(tenantId: string): TaxRule[] {
       isSystem: true
     }
   ];
-  return rules;
+  // Mark all mock rules with isMock flag
+  return rules.map(rule => ({ ...rule, isMock: true }));
 }
 
 export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = ({
@@ -1249,6 +1250,11 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                           ))}
                         </div>
                       </div>
+                      {rule.isMock && (
+                        <span className="px-1.5 py-0.5 text-xs bg-orange-100 text-orange-700 rounded font-medium">
+                          MOCK
+                        </span>
+                      )}
                       {rule.isSystem && (
                         <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 rounded font-medium">
                           DEFAULT

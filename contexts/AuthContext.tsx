@@ -93,6 +93,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const login = async (email: string, password: string) => {
         try {
             console.log('Login attempt for:', email);
+            
+            // Check for demo mode login
+            if (localStorage.getItem('demo_mode') === 'true' || email === 'demo@example.com') {
+                console.log('Demo mode login');
+                localStorage.setItem('demo_mode', 'true');
+                setUser(DEMO_USER);
+                setToken('demo-token');
+                setIsLoading(false);
+                return;
+            }
+            
             const data = await api.auth.login({ email, password });
             console.log('Login response:', data);
 
