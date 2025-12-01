@@ -1,6 +1,104 @@
-import { TaxFormData, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCalculationResult, NetProfitReturnData, BusinessFederalForm, BusinessTaxRulesConfig } from '../types';
+import { TaxFormData, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCalculationResult, NetProfitReturnData, BusinessFederalForm, BusinessTaxRulesConfig, TaxReturnSession, TaxReturnStatus, BusinessProfile } from '../types';
 
 const API_BASE_URL = '/api/v1';
+
+// Helper to get auth token
+const getAuthToken = () => localStorage.getItem('auth_token');
+
+// Backend session DTO that matches the Java TaxReturnSession entity
+interface BackendSession {
+    id: string;
+    tenantId: string;
+    userId: string;
+    type: 'INDIVIDUAL' | 'BUSINESS';
+    status: 'DRAFT' | 'IN_PROGRESS' | 'CALCULATED' | 'SUBMITTED' | 'AMENDED';
+    profileJson: string;
+    settingsJson: string;
+    formsJson: string;
+    calculationResultJson?: string;
+    businessFilingsJson?: string;
+    netProfitFilingsJson?: string;
+    reconciliationsJson?: string;
+    createdDate: string;
+    lastModifiedDate: string;
+    submittedDate?: string;
+    notes?: string;
+}
+
+// Map backend status to frontend TaxReturnStatus
+const mapBackendStatusToFrontend = (status: BackendSession['status']): TaxReturnStatus => {
+    const statusMap: Record<BackendSession['status'], TaxReturnStatus> = {
+        'DRAFT': TaxReturnStatus.DRAFT,
+        'IN_PROGRESS': TaxReturnStatus.DRAFT,
+        'CALCULATED': TaxReturnStatus.DRAFT,
+        'SUBMITTED': TaxReturnStatus.SUBMITTED,
+        'AMENDED': TaxReturnStatus.AMENDED
+    };
+    return statusMap[status] || TaxReturnStatus.DRAFT;
+};
+
+// Map frontend TaxReturnStatus to backend status
+const mapFrontendStatusToBackend = (status: TaxReturnStatus): BackendSession['status'] => {
+    // Only map statuses that exist in the backend
+    switch (status) {
+        case TaxReturnStatus.SUBMITTED:
+            return 'SUBMITTED';
+        case TaxReturnStatus.AMENDED:
+            return 'AMENDED';
+        case TaxReturnStatus.IN_REVIEW:
+        case TaxReturnStatus.AWAITING_DOCUMENTATION:
+        case TaxReturnStatus.APPROVED:
+        case TaxReturnStatus.REJECTED:
+        case TaxReturnStatus.PAID:
+        case TaxReturnStatus.LATE:
+            return 'SUBMITTED'; // Map all these to SUBMITTED for backend
+        case TaxReturnStatus.DRAFT:
+        default:
+            return 'DRAFT';
+    }
+};
+
+// Convert backend session to frontend TaxReturnSession
+const convertBackendToFrontendSession = (backend: BackendSession): TaxReturnSession => {
+    return {
+        id: backend.id,
+        createdDate: backend.createdDate,
+        lastModifiedDate: backend.lastModifiedDate,
+        status: mapBackendStatusToFrontend(backend.status),
+        type: backend.type,
+        profile: backend.profileJson ? JSON.parse(backend.profileJson) : {},
+        settings: backend.settingsJson ? JSON.parse(backend.settingsJson) : { taxYear: new Date().getFullYear() - 1, isAmendment: false },
+        forms: backend.formsJson ? JSON.parse(backend.formsJson) : [],
+        lastCalculationResult: backend.calculationResultJson ? JSON.parse(backend.calculationResultJson) : undefined,
+        businessFilings: backend.businessFilingsJson ? JSON.parse(backend.businessFilingsJson) : undefined,
+        netProfitFilings: backend.netProfitFilingsJson ? JSON.parse(backend.netProfitFilingsJson) : undefined,
+        reconciliations: backend.reconciliationsJson ? JSON.parse(backend.reconciliationsJson) : undefined
+    };
+};
+
+// Convert frontend TaxReturnSession to backend session DTO
+const convertFrontendToBackendSession = (
+    frontend: TaxReturnSession,
+    tenantId: string,
+    userId: string
+): BackendSession => {
+    return {
+        id: frontend.id,
+        tenantId,
+        userId,
+        type: frontend.type,
+        status: mapFrontendStatusToBackend(frontend.status),
+        profileJson: JSON.stringify(frontend.profile),
+        settingsJson: JSON.stringify(frontend.settings),
+        formsJson: JSON.stringify(frontend.forms),
+        calculationResultJson: frontend.lastCalculationResult ? JSON.stringify(frontend.lastCalculationResult) : undefined,
+        businessFilingsJson: frontend.businessFilings ? JSON.stringify(frontend.businessFilings) : undefined,
+        netProfitFilingsJson: frontend.netProfitFilings ? JSON.stringify(frontend.netProfitFilings) : undefined,
+        reconciliationsJson: frontend.reconciliations ? JSON.stringify(frontend.reconciliations) : undefined,
+        createdDate: frontend.createdDate,
+        lastModifiedDate: frontend.lastModifiedDate
+    };
+};
 
 export const api = {
     auth: {
@@ -44,7 +142,7 @@ export const api = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify({ forms, profile, settings, rules })
             });
@@ -65,7 +163,7 @@ export const api = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify({
                     year, estimates, priorCredit, schX, schY, nolCarryforward, rules
@@ -84,7 +182,7 @@ export const api = {
             const response = await fetch(`${API_BASE_URL}/extraction/extract`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: formData
             });
@@ -133,7 +231,7 @@ export const api = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify(result)
             });
@@ -148,12 +246,82 @@ export const api = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${getAuthToken()}`
                 },
                 body: JSON.stringify(submission)
             });
             if (!response.ok) throw new Error('Submission failed');
             return response.json();
+        }
+    },
+
+    sessions: {
+        // Get all sessions for a user
+        getAll: async (tenantId: string, userId: string): Promise<TaxReturnSession[]> => {
+            const params = new URLSearchParams({ tenantId, userId });
+            const response = await fetch(`${API_BASE_URL}/sessions?${params}`, {
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch sessions');
+            const backendSessions: BackendSession[] = await response.json();
+            return backendSessions.map(convertBackendToFrontendSession);
+        },
+
+        // Get a single session by ID
+        get: async (sessionId: string): Promise<TaxReturnSession> => {
+            const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`, {
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch session');
+            const backendSession: BackendSession = await response.json();
+            return convertBackendToFrontendSession(backendSession);
+        },
+
+        // Create a new session
+        create: async (session: TaxReturnSession, tenantId: string, userId: string): Promise<TaxReturnSession> => {
+            const backendSession = convertFrontendToBackendSession(session, tenantId, userId);
+            const response = await fetch(`${API_BASE_URL}/sessions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                },
+                body: JSON.stringify(backendSession)
+            });
+            if (!response.ok) throw new Error('Failed to create session');
+            const createdSession: BackendSession = await response.json();
+            return convertBackendToFrontendSession(createdSession);
+        },
+
+        // Update an existing session
+        update: async (session: TaxReturnSession, tenantId: string, userId: string): Promise<TaxReturnSession> => {
+            const backendSession = convertFrontendToBackendSession(session, tenantId, userId);
+            const response = await fetch(`${API_BASE_URL}/sessions/${session.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                },
+                body: JSON.stringify(backendSession)
+            });
+            if (!response.ok) throw new Error('Failed to update session');
+            const updatedSession: BackendSession = await response.json();
+            return convertBackendToFrontendSession(updatedSession);
+        },
+
+        // Delete a session
+        delete: async (sessionId: string): Promise<void> => {
+            const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to delete session');
         }
     }
 };

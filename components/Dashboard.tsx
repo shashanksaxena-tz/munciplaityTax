@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { TaxReturnSession, TaxReturnStatus, BusinessProfile, TaxPayerProfile } from '../types';
-import { getSessions, createNewSession, deleteSession } from '../services/sessionService';
-import { Plus, User, FileText, Calendar, Trash2, ArrowRight, Briefcase } from 'lucide-react';
+import { getSessions, createNewSession, deleteSession, fetchSessions, isCacheLoaded } from '../services/sessionService';
+import { Plus, User, FileText, Calendar, Trash2, ArrowRight, Briefcase, Loader2 } from 'lucide-react';
 
 interface DashboardProps {
   onSelectSession: (session: TaxReturnSession) => void;
@@ -11,9 +11,29 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegisterBusiness }) => {
   const [sessions, setSessions] = useState<TaxReturnSession[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setSessions(getSessions());
+    const loadSessions = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch sessions from API if cache is not loaded
+        if (!isCacheLoaded()) {
+          const fetchedSessions = await fetchSessions();
+          setSessions(fetchedSessions);
+        } else {
+          setSessions(getSessions());
+        }
+      } catch (error) {
+        console.error('Failed to load sessions:', error);
+        // Fallback to cached data
+        setSessions(getSessions());
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadSessions();
   }, []);
 
   const handleCreateIndividual = () => {
@@ -21,7 +41,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
     onSelectSession(newSession);
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this return? This cannot be undone.")) {
       deleteSession(id);
@@ -42,6 +62,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
     }
     return (session.profile as TaxPayerProfile).ssn ? `***-**-${(session.profile as TaxPayerProfile).ssn}` : 'No SSN';
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8 animate-fadeIn">
+        <div className="flex flex-col items-center justify-center py-16">
+          <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
+          <p className="text-slate-500">Loading your tax returns...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 animate-fadeIn">

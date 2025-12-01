@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '../services/api';
+import { clearSessionCache } from '../services/sessionService';
 
 interface User {
     id: string;
@@ -33,6 +34,18 @@ interface AuthProviderProps {
     children: ReactNode;
 }
 
+// Helper to save user context for session service
+const saveUserContext = (userId: string, tenantId: string) => {
+    localStorage.setItem('user_id', userId);
+    localStorage.setItem('user_tenant_id', tenantId || 'dublin');
+};
+
+// Helper to clear user context
+const clearUserContext = () => {
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_tenant_id');
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
@@ -52,18 +65,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const fetchUserInfo = async (authToken: string) => {
         try {
             const userData = await api.auth.getCurrentUser(authToken);
-            setUser({
+            const userObj = {
                 id: userData.userId,
                 email: userData.email,
                 firstName: userData.firstName,
                 lastName: userData.lastName,
                 roles: userData.roles.split(','),
                 tenantId: userData.tenantId
-            });
+            };
+            setUser(userObj);
             setToken(authToken);
+            // Save user context for session service
+            saveUserContext(userObj.id, userObj.tenantId);
         } catch (error) {
             console.error('Failed to fetch user info:', error);
             localStorage.removeItem('auth_token');
+            clearUserContext();
             setToken(null);
             setUser(null);
         } finally {
@@ -82,14 +99,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 setToken(data.token);
                 
                 // Use login response data directly - no need to fetch again
-                setUser({
+                const userObj = {
                     id: data.userId,
                     email: data.email,
                     firstName: '',
                     lastName: '',
                     roles: data.roles ? data.roles.split(',') : [],
-                    tenantId: ''
-                });
+                    tenantId: data.tenantId || 'dublin'
+                };
+                setUser(userObj);
+                
+                // Save user context for session service
+                saveUserContext(userObj.id, userObj.tenantId);
                 
                 console.log('Login successful, user state updated');
                 setIsLoading(false);
@@ -105,6 +126,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('auth_token');
+        clearUserContext();
+        clearSessionCache(); // Clear session cache on logout
         setUser(null);
         setToken(null);
     };
