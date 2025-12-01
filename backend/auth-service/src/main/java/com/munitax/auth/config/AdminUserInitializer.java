@@ -4,6 +4,7 @@ import com.munitax.auth.model.User;
 import com.munitax.auth.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,22 +16,26 @@ import java.util.Set;
 
 /**
  * Initializes the default admin user on application startup.
- * Admin credentials: username=admin, password=admin
+ * Admin credentials can be configured via environment variables:
+ * - ADMIN_USERNAME (default: admin)
+ * - ADMIN_PASSWORD (default: admin - should be changed in production)
  */
 @Configuration
 public class AdminUserInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminUserInitializer.class);
-    private static final String ADMIN_EMAIL = "admin";
-    private static final String ADMIN_PASSWORD = "admin";
 
     @Bean
-    public CommandLineRunner initializeAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public CommandLineRunner initializeAdminUser(
+            UserRepository userRepository, 
+            PasswordEncoder passwordEncoder,
+            @Value("${admin.username:admin}") String adminUsername,
+            @Value("${admin.password:admin}") String adminPassword) {
         return args -> {
-            if (!userRepository.existsByEmail(ADMIN_EMAIL)) {
+            if (!userRepository.existsByEmail(adminUsername)) {
                 User adminUser = new User();
-                adminUser.setEmail(ADMIN_EMAIL);
-                adminUser.setPasswordHash(passwordEncoder.encode(ADMIN_PASSWORD));
+                adminUser.setEmail(adminUsername);
+                adminUser.setPasswordHash(passwordEncoder.encode(adminPassword));
                 adminUser.setFirstName("System");
                 adminUser.setLastName("Administrator");
                 adminUser.setPhoneNumber("000-000-0000");
@@ -54,7 +59,12 @@ public class AdminUserInitializer {
                 adminUser.setTenantId(null);
                 
                 userRepository.save(adminUser);
-                logger.info("Default admin user created with email: {}", ADMIN_EMAIL);
+                logger.info("Default admin user created with username: {}", adminUsername);
+                
+                // Warn if using default password
+                if ("admin".equals(adminPassword)) {
+                    logger.warn("Admin user created with default password. Change this in production by setting ADMIN_PASSWORD environment variable.");
+                }
             } else {
                 logger.info("Admin user already exists");
             }

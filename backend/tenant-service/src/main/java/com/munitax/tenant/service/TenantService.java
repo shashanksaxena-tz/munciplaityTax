@@ -1,5 +1,6 @@
 package com.munitax.tenant.service;
 
+import com.munitax.tenant.exception.TenantNotFoundException;
 import com.munitax.tenant.model.Tenant;
 import com.munitax.tenant.repository.TenantRepository;
 import org.springframework.stereotype.Service;
@@ -56,7 +57,7 @@ public class TenantService {
                     }
                     return tenantRepository.save(existing);
                 })
-                .orElseThrow(() -> new RuntimeException("Tenant not found: " + tenantId));
+                .orElseThrow(() -> new TenantNotFoundException(tenantId));
     }
 
     @Transactional
@@ -64,7 +65,7 @@ public class TenantService {
         if (tenantRepository.existsById(tenantId)) {
             tenantRepository.deleteById(tenantId);
         } else {
-            throw new RuntimeException("Tenant not found: " + tenantId);
+            throw new TenantNotFoundException(tenantId);
         }
     }
 
