@@ -2,6 +2,16 @@ import { TaxFormData, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCal
 
 const API_BASE_URL = '/api/v1';
 
+// Tenant interface
+interface Tenant {
+    tenantId: string;
+    name: string;
+    schemaName: string;
+    dbUrl?: string;
+    dbUsername?: string;
+    dbPassword?: string;
+}
+
 export const api = {
     auth: {
         login: async (credentials: any) => {
@@ -30,6 +40,65 @@ export const api = {
                 body: JSON.stringify({ token })
             });
             return response.ok;
+        }
+    },
+
+    // Tenant management API (admin only)
+    tenants: {
+        getAll: async (): Promise<Tenant[]> => {
+            const response = await fetch(`${API_BASE_URL}/tenants`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch tenants');
+            return response.json();
+        },
+        
+        getById: async (tenantId: string): Promise<Tenant> => {
+            const response = await fetch(`${API_BASE_URL}/tenants/${tenantId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch tenant');
+            return response.json();
+        },
+        
+        create: async (tenant: Omit<Tenant, 'tenantId'> & { tenantId?: string }): Promise<Tenant> => {
+            const response = await fetch(`${API_BASE_URL}/tenants`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                },
+                body: JSON.stringify(tenant)
+            });
+            if (!response.ok) throw new Error('Failed to create tenant');
+            return response.json();
+        },
+        
+        update: async (tenantId: string, tenant: Partial<Tenant>): Promise<Tenant> => {
+            const response = await fetch(`${API_BASE_URL}/tenants/${tenantId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                },
+                body: JSON.stringify(tenant)
+            });
+            if (!response.ok) throw new Error('Failed to update tenant');
+            return response.json();
+        },
+        
+        delete: async (tenantId: string): Promise<void> => {
+            const response = await fetch(`${API_BASE_URL}/tenants/${tenantId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to delete tenant');
         }
     },
 

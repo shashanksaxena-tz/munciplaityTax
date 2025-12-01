@@ -5,7 +5,7 @@ import { ProfileSwitcher } from './profile/ProfileSwitcher';
 import { UserMenu } from './UserMenu';
 
 export const Header: React.FC = () => {
-    const { isAuthenticated, user, logout } = useAuth();
+    const { isAuthenticated, user, logout, currentTenant, isAdmin } = useAuth();
 
     return (
         <header className="bg-white shadow-sm border-b border-gray-200">
@@ -21,9 +21,28 @@ export const Header: React.FC = () => {
                             </div>
                             <div>
                                 <h1 className="text-xl font-bold text-gray-900">MuniTax</h1>
-                                <p className="text-xs text-gray-500">Dublin Tax Filing</p>
+                                <p className="text-xs text-gray-500">
+                                    {isAdmin ? 'System Administrator' : currentTenant?.name || 'Dublin Tax Filing'}
+                                </p>
                             </div>
                         </Link>
+                        
+                        {/* Tenant Indicator */}
+                        {isAuthenticated && currentTenant && !isAdmin && (
+                            <div className="ml-6 px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-200">
+                                {currentTenant.name}
+                            </div>
+                        )}
+                        
+                        {/* Admin Badge */}
+                        {isAuthenticated && isAdmin && (
+                            <div className="ml-6 px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full border border-purple-200 flex items-center gap-1">
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                                Admin
+                            </div>
+                        )}
                     </div>
 
                     {/* Navigation */}
@@ -46,7 +65,7 @@ export const Header: React.FC = () => {
                             )}
                             {user.roles.includes('ROLE_ADMIN') && (
                                 <Link to="/admin" className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition">
-                                    Admin
+                                    Admin Console
                                 </Link>
                             )}
                         </nav>

@@ -9,6 +9,7 @@ import { ResetPassword } from './components/auth/ResetPassword';
 import TaxFilingApp from './TaxFilingApp';
 import { AuditorDashboard } from './components/AuditorDashboard';
 import { ReturnReviewPanel } from './components/ReturnReviewPanel';
+import { AdminDashboard } from './components/AdminDashboard';
 import { AppStep } from './types';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -30,6 +31,29 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
 
     console.log('Authenticated, rendering protected content');
+    return <>{children}</>;
+};
+
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+    const { isAuthenticated, isLoading, user, isAdmin } = useAuth();
+    
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+        );
+    }
+    
+    if (!isAuthenticated) {
+        return <Navigate to="/login" />;
+    }
+    
+    // Admin can access everything
+    if (!isAdmin) {
+        return <Navigate to="/" />;
+    }
+    
     return <>{children}</>;
 };
 
@@ -63,6 +87,13 @@ const AppContent = () => {
                     <Route path="/register" element={<RegistrationForm />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
+                    
+                    {/* Admin Routes - Admin can manage tenants, users, and rules */}
+                    <Route path="/admin" element={
+                        <AdminRoute>
+                            <AdminDashboard />
+                        </AdminRoute>
+                    } />
                     
                     {/* Auditor Routes */}
                     <Route path="/auditor" element={
