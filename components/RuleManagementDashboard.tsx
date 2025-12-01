@@ -69,7 +69,11 @@ const ENTITY_TYPES = ['INDIVIDUAL', 'BUSINESS', 'ALL'];
 const ruleApi = {
   async listRules(tenantId: string, filters?: { category?: string; status?: string }): Promise<TaxRule[]> {
     try {
-      const response = await fetch(`/api/rules?tenantId=${tenantId}${filters?.category ? `&category=${filters.category}` : ''}${filters?.status ? `&status=${filters.status}` : ''}`, {
+      const params = new URLSearchParams({ tenantId });
+      if (filters?.category) params.append('category', filters.category);
+      if (filters?.status) params.append('status', filters.status);
+      
+      const response = await fetch(`/api/rules?${params.toString()}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
       });
       if (!response.ok) {
@@ -123,27 +127,39 @@ const ruleApi = {
   },
 
   async approveRule(ruleId: string, approverId: string): Promise<TaxRule> {
-    const response = await fetch(`/api/rules/${ruleId}/approve?approverId=${approverId}`, {
+    const response = await fetch(`/api/rules/${ruleId}/approve`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+      },
+      body: JSON.stringify({ approverId })
     });
     if (!response.ok) throw new Error('Approval failed');
     return response.json();
   },
 
   async rejectRule(ruleId: string, reason: string): Promise<TaxRule> {
-    const response = await fetch(`/api/rules/${ruleId}/reject?reason=${encodeURIComponent(reason)}`, {
+    const response = await fetch(`/api/rules/${ruleId}/reject`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+      },
+      body: JSON.stringify({ reason })
     });
     if (!response.ok) throw new Error('Rejection failed');
     return response.json();
   },
 
   async voidRule(ruleId: string, reason: string): Promise<void> {
-    const response = await fetch(`/api/rules/${ruleId}?reason=${encodeURIComponent(reason)}`, {
+    const response = await fetch(`/api/rules/${ruleId}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
+      },
+      body: JSON.stringify({ reason })
     });
     if (!response.ok) throw new Error('Void failed');
   }
