@@ -65,204 +65,170 @@ const VALUE_TYPES: RuleValueType[] = [
 
 const ENTITY_TYPES = ['INDIVIDUAL', 'BUSINESS', 'ALL'];
 
-// Mock API service for rule management
+// API service for rule management - connects to rule-service backend
 const ruleApi = {
+  getAuthHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+    };
+  },
+
   async listRules(tenantId: string, filters?: { category?: string; status?: string }): Promise<TaxRule[]> {
-    try {
-      const params = new URLSearchParams({ tenantId });
-      if (filters?.category) params.append('category', filters.category);
-      if (filters?.status) params.append('status', filters.status);
-      
-      const response = await fetch(`/api/rules?${params.toString()}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('auth_token')}` }
-      });
-      if (!response.ok) {
-        // Return mock data if API is not available
-        return getMockRules(tenantId);
-      }
-      const data = await response.json();
-      // Check if data is array (valid response)
-      if (Array.isArray(data)) {
-        return data;
-      }
-      return getMockRules(tenantId);
-    } catch (error) {
-      // Return mock data on any error
-      return getMockRules(tenantId);
+    const params = new URLSearchParams();
+    if (tenantId) params.append('tenantId', tenantId);
+    if (filters?.category) params.append('category', filters.category);
+    if (filters?.status) params.append('status', filters.status);
+    
+    const response = await fetch(`/api/rules?${params.toString()}`, {
+      headers: this.getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch rules: ${response.status} ${errorText}`);
     }
+    
+    const data = await response.json();
+    // Transform backend response to frontend TaxRule format
+    return Array.isArray(data) ? data.map(transformRuleResponse) : [];
   },
 
   async createRule(request: CreateRuleRequest): Promise<TaxRule> {
-    try {
-      const response = await fetch('/api/rules', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify(request)
-      });
-      if (!response.ok) {
-        // Simulate success for demo
-        return simulateCreatedRule(request);
-      }
-      return response.json();
-    } catch (error) {
-      // Simulate success for demo
-      return simulateCreatedRule(request);
+    const response = await fetch('/api/rules', {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(request)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create rule: ${response.status} ${errorText}`);
     }
+    
+    return transformRuleResponse(await response.json());
   },
 
   async updateRule(ruleId: string, request: UpdateRuleRequest): Promise<TaxRule> {
     const response = await fetch(`/api/rules/${ruleId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      },
+      headers: this.getAuthHeaders(),
       body: JSON.stringify(request)
     });
-    if (!response.ok) throw new Error('Update failed');
-    return response.json();
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to update rule: ${response.status} ${errorText}`);
+    }
+    
+    return transformRuleResponse(await response.json());
   },
 
   async approveRule(ruleId: string, approverId: string): Promise<TaxRule> {
-    const response = await fetch(`/api/rules/${ruleId}/approve`, {
+    // Backend expects approverId as query param per RuleConfigController
+    const response = await fetch(`/api/rules/${ruleId}/approve?approverId=${encodeURIComponent(approverId)}`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
-      },
-      body: JSON.stringify({ approverId })
+      headers: this.getAuthHeaders()
     });
-    if (!response.ok) throw new Error('Approval failed');
-    return response.json();
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to approve rule: ${response.status} ${errorText}`);
+    }
+    
+    return transformRuleResponse(await response.json());
   },
 
   async rejectRule(ruleId: string, reason: string): Promise<TaxRule> {
-    const response = await fetch(`/api/rules/${ruleId}/reject`, {
+    // Backend expects reason as query param per RuleConfigController
+    const response = await fetch(`/api/rules/${ruleId}/reject?reason=${encodeURIComponent(reason)}`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
-      },
-      body: JSON.stringify({ reason })
+      headers: this.getAuthHeaders()
     });
-    if (!response.ok) throw new Error('Rejection failed');
-    return response.json();
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to reject rule: ${response.status} ${errorText}`);
+    }
+    
+    return transformRuleResponse(await response.json());
   },
 
   async voidRule(ruleId: string, reason: string): Promise<void> {
-    const response = await fetch(`/api/rules/${ruleId}`, {
+    // Backend expects reason as query param per RuleConfigController
+    const response = await fetch(`/api/rules/${ruleId}?reason=${encodeURIComponent(reason)}`, {
       method: 'DELETE',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}` 
-      },
-      body: JSON.stringify({ reason })
+      headers: this.getAuthHeaders()
     });
-    if (!response.ok) throw new Error('Void failed');
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to void rule: ${response.status} ${errorText}`);
+    }
+  },
+
+  async getActiveRules(tenantId: string, taxYear: number, entityType?: string): Promise<TaxRule[]> {
+    const params = new URLSearchParams({ tenantId, taxYear: taxYear.toString() });
+    if (entityType) params.append('entityType', entityType);
+    
+    const response = await fetch(`/api/rules/active?${params.toString()}`, {
+      headers: this.getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch active rules: ${response.status} ${errorText}`);
+    }
+    
+    const data = await response.json();
+    return Array.isArray(data) ? data.map(transformRuleResponse) : [];
+  },
+
+  async getRuleHistory(ruleCode: string, tenantId: string): Promise<TaxRule[]> {
+    const response = await fetch(`/api/rules/history/${ruleCode}?tenantId=${encodeURIComponent(tenantId)}`, {
+      headers: this.getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch rule history: ${response.status} ${errorText}`);
+    }
+    
+    const data = await response.json();
+    return Array.isArray(data) ? data.map(transformRuleResponse) : [];
   }
 };
 
-// Mock data generator
-function getMockRules(tenantId: string): TaxRule[] {
-  return [
-    {
-      ruleId: '1',
-      ruleCode: 'MUNICIPAL_TAX_RATE',
-      ruleName: 'Dublin Municipal Tax Rate',
-      category: 'TaxRates',
-      valueType: 'PERCENTAGE',
-      value: { scalar: 2.0, unit: 'percent' } as PercentageValue,
-      effectiveDate: '2024-01-01',
-      tenantId,
-      entityTypes: ['INDIVIDUAL', 'BUSINESS'],
-      version: 1,
-      approvalStatus: 'APPROVED',
-      approvedBy: 'admin',
-      approvalDate: '2023-12-15T10:00:00Z',
-      createdBy: 'system',
-      createdDate: '2023-12-01T10:00:00Z',
-      changeReason: 'Initial setup',
-      ordinanceReference: 'Dublin Ord. 2024-001'
-    },
-    {
-      ruleId: '2',
-      ruleCode: 'CREDIT_LIMIT_RATE',
-      ruleName: 'Municipal Credit Limit Rate',
-      category: 'TaxRates',
-      valueType: 'PERCENTAGE',
-      value: { scalar: 2.0, unit: 'percent' } as PercentageValue,
-      effectiveDate: '2024-01-01',
-      tenantId,
-      entityTypes: ['INDIVIDUAL'],
-      version: 1,
-      approvalStatus: 'APPROVED',
-      createdBy: 'system',
-      createdDate: '2023-12-01T10:00:00Z',
-      changeReason: 'Initial setup'
-    },
-    {
-      ruleId: '3',
-      ruleCode: 'SCHEDULE_C_INCLUSION',
-      ruleName: 'Include Schedule C Income',
-      category: 'IncomeInclusion',
-      valueType: 'BOOLEAN',
-      value: { flag: true } as BooleanValue,
-      effectiveDate: '2024-01-01',
-      tenantId,
-      entityTypes: ['INDIVIDUAL'],
-      version: 1,
-      approvalStatus: 'PENDING',
-      createdBy: 'admin',
-      createdDate: '2024-11-01T10:00:00Z',
-      changeReason: 'Policy update for 2025'
-    },
-    {
-      ruleId: '4',
-      ruleCode: 'LATE_FILING_PENALTY',
-      ruleName: 'Late Filing Penalty Rate',
-      category: 'Penalties',
-      valueType: 'PERCENTAGE',
-      value: { scalar: 5.0, unit: 'percent' } as PercentageValue,
-      effectiveDate: '2024-01-01',
-      tenantId,
-      entityTypes: ['INDIVIDUAL', 'BUSINESS'],
-      version: 1,
-      approvalStatus: 'PENDING',
-      createdBy: 'manager',
-      createdDate: '2024-11-15T10:00:00Z',
-      changeReason: 'Increase penalty to encourage timely filing'
-    },
-    {
-      ruleId: '5',
-      ruleCode: 'NOL_OFFSET_CAP',
-      ruleName: 'NOL Offset Cap Percentage',
-      category: 'Deductions',
-      valueType: 'PERCENTAGE',
-      value: { scalar: 50.0, unit: 'percent' } as PercentageValue,
-      effectiveDate: '2024-01-01',
-      tenantId,
-      entityTypes: ['BUSINESS'],
-      version: 1,
-      approvalStatus: 'REJECTED',
-      createdBy: 'admin',
-      createdDate: '2024-10-01T10:00:00Z',
-      changeReason: 'Reduce NOL cap to 50%'
-    }
-  ];
+// Transform backend RuleResponse to frontend TaxRule format
+function transformRuleResponse(response: any): TaxRule {
+  return {
+    ruleId: response.ruleId?.toString() || response.id?.toString() || '',
+    ruleCode: response.ruleCode || '',
+    ruleName: response.ruleName || '',
+    category: response.category || 'TaxRates',
+    valueType: response.valueType || 'PERCENTAGE',
+    value: response.value || { scalar: 0, unit: 'percent' },
+    effectiveDate: response.effectiveDate || '',
+    endDate: response.endDate,
+    tenantId: response.tenantId || '',
+    entityTypes: response.entityTypes || [],
+    appliesTo: response.appliesTo,
+    version: response.version || 1,
+    previousVersionId: response.previousVersionId,
+    dependsOn: response.dependsOn,
+    approvalStatus: response.approvalStatus || 'PENDING',
+    approvedBy: response.approvedBy,
+    approvalDate: response.approvalDate,
+    createdBy: response.createdBy || '',
+    createdDate: response.createdDate || new Date().toISOString(),
+    modifiedBy: response.modifiedBy,
+    modifiedDate: response.modifiedDate,
+    changeReason: response.changeReason || '',
+    ordinanceReference: response.ordinanceReference
+  };
 }
 
-function simulateCreatedRule(request: CreateRuleRequest): TaxRule {
-  return {
-    ...request,
-    ruleId: crypto.randomUUID(),
-    version: 1,
-    approvalStatus: 'PENDING',
-    createdDate: new Date().toISOString()
-  } as TaxRule;
-}
+// Note: Mock data removed - now using actual backend API
 
 export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = ({
   userId,
@@ -311,24 +277,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
   const handleApprove = async () => {
     if (!selectedRule) return;
     setActionLoading(true);
+    setError(null);
     try {
-      await ruleApi.approveRule(selectedRule.ruleId, userId);
-      setRules(rules.map(r =>
-        r.ruleId === selectedRule.ruleId
-          ? { ...r, approvalStatus: 'APPROVED' as ApprovalStatus, approvedBy: userId, approvalDate: new Date().toISOString() }
-          : r
-      ));
+      const updatedRule = await ruleApi.approveRule(selectedRule.ruleId, userId);
+      setRules(rules.map(r => r.ruleId === selectedRule.ruleId ? updatedRule : r));
       setShowApproveModal(false);
       setSelectedRule(null);
     } catch (err) {
-      // Simulate success for demo
-      setRules(rules.map(r =>
-        r.ruleId === selectedRule.ruleId
-          ? { ...r, approvalStatus: 'APPROVED' as ApprovalStatus, approvedBy: userId, approvalDate: new Date().toISOString() }
-          : r
-      ));
-      setShowApproveModal(false);
-      setSelectedRule(null);
+      setError(err instanceof Error ? err.message : 'Failed to approve rule');
     } finally {
       setActionLoading(false);
     }
@@ -337,26 +293,15 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
   const handleReject = async () => {
     if (!selectedRule || !rejectReason) return;
     setActionLoading(true);
+    setError(null);
     try {
-      await ruleApi.rejectRule(selectedRule.ruleId, rejectReason);
-      setRules(rules.map(r =>
-        r.ruleId === selectedRule.ruleId
-          ? { ...r, approvalStatus: 'REJECTED' as ApprovalStatus }
-          : r
-      ));
+      const updatedRule = await ruleApi.rejectRule(selectedRule.ruleId, rejectReason);
+      setRules(rules.map(r => r.ruleId === selectedRule.ruleId ? updatedRule : r));
       setShowRejectModal(false);
       setSelectedRule(null);
       setRejectReason('');
     } catch (err) {
-      // Simulate success for demo
-      setRules(rules.map(r =>
-        r.ruleId === selectedRule.ruleId
-          ? { ...r, approvalStatus: 'REJECTED' as ApprovalStatus }
-          : r
-      ));
-      setShowRejectModal(false);
-      setSelectedRule(null);
-      setRejectReason('');
+      setError(err instanceof Error ? err.message : 'Failed to reject rule');
     } finally {
       setActionLoading(false);
     }
@@ -364,6 +309,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
 
   const handleVoid = async (rule: TaxRule) => {
     if (!window.confirm(`Are you sure you want to void the rule "${rule.ruleName}"?`)) return;
+    setError(null);
     try {
       await ruleApi.voidRule(rule.ruleId, 'Voided by administrator');
       setRules(rules.map(r =>
@@ -372,12 +318,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
           : r
       ));
     } catch (err) {
-      // Simulate success for demo
-      setRules(rules.map(r =>
-        r.ruleId === rule.ruleId
-          ? { ...r, approvalStatus: 'VOIDED' as ApprovalStatus }
-          : r
-      ));
+      setError(err instanceof Error ? err.message : 'Failed to void rule');
     }
   };
 
