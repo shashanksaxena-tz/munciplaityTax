@@ -1,19 +1,71 @@
 
-import React, { useState } from 'react';
-import { TaxRulesConfig, W2QualifyingWagesRule } from '../types';
-import { Settings, Save, RotateCcw, Plus, Trash2, Search, Sliders, ToggleLeft, ToggleRight, Hash } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { TaxRulesConfig, TaxRule, W2QualifyingWagesRule } from '../types';
+import { Settings, Save, RotateCcw, Plus, Trash2, Search, Sliders, ToggleLeft, ToggleRight, Hash, RefreshCw, Cloud, CloudOff, AlertCircle } from 'lucide-react';
 import { DEFAULT_TAX_RULES } from '../constants';
+import { ruleService, transformRulesToConfig } from '../services/ruleService';
 
 interface RuleConfigurationScreenProps {
   rules: TaxRulesConfig;
   onUpdateRules: (rules: TaxRulesConfig) => void;
   onClose: () => void;
+  tenantId?: string;
 }
 
-export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = ({ rules, onUpdateRules, onClose }) => {
+export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = ({ rules, onUpdateRules, onClose, tenantId = 'dublin' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [newCityName, setNewCityName] = useState('');
   const [newCityRate, setNewCityRate] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'none' | 'success' | 'error'>('none');
+  const [syncMessage, setSyncMessage] = useState('');
+  const [backendRules, setBackendRules] = useState<TaxRule[]>([]);
+
+  const handleSyncFromBackend = useCallback(async (silent: boolean = false) => {
+    if (!silent) {
+      setSyncing(true);
+      setSyncStatus('none');
+    }
+    
+    try {
+      const activeRules = await ruleService.getActiveRules({
+        tenantId,
+        taxYear: new Date().getFullYear()
+      });
+      
+      setBackendRules(activeRules);
+      
+      if (activeRules.length > 0) {
+        const { taxRules } = transformRulesToConfig(activeRules);
+        onUpdateRules(taxRules);
+        
+        if (!silent) {
+          setSyncStatus('success');
+          setSyncMessage(`Synced ${activeRules.length} rules from backend`);
+        }
+      } else if (!silent) {
+        setSyncStatus('error');
+        setSyncMessage('No rules found in backend');
+      }
+    } catch (err) {
+      console.warn('Failed to sync from backend, using local rules:', err);
+      if (!silent) {
+        setSyncStatus('error');
+        setSyncMessage('Backend unavailable. Using local rules.');
+      }
+    } finally {
+      if (!silent) {
+        setSyncing(false);
+        // Clear status after 3 seconds
+        setTimeout(() => setSyncStatus('none'), 3000);
+      }
+    }
+  }, [tenantId, onUpdateRules]);
+
+  // Attempt to sync rules from backend on first load
+  useEffect(() => {
+    handleSyncFromBackend(true);
+  }, [handleSyncFromBackend]);
 
   const handleRateChange = (key: keyof TaxRulesConfig, value: string) => {
     const num = parseFloat(value);
@@ -83,6 +135,16 @@ export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = (
             <h2 className="font-bold text-lg">Tax Rule Engine</h2>
           </div>
           <div className="flex items-center gap-2">
+            {/* Sync from Backend Button */}
+            <button 
+              onClick={() => handleSyncFromBackend(false)} 
+              disabled={syncing}
+              className="flex items-center gap-1.5 px-3 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors text-sm font-medium disabled:opacity-50" 
+              title="Sync rules from Rule Management Dashboard"
+            >
+              <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Sync from Backend'}
+            </button>
             <button onClick={handleReset} className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Reset to Defaults">
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -91,6 +153,16 @@ export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = (
             </button>
           </div>
         </div>
+
+        {/* Sync Status Banner */}
+        {syncStatus !== 'none' && (
+          <div className={`px-6 py-2 flex items-center gap-2 text-sm ${
+            syncStatus === 'success' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700'
+          }`}>
+            {syncStatus === 'success' ? <Cloud className="w-4 h-4" /> : <CloudOff className="w-4 h-4" />}
+            {syncMessage}
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
 

@@ -675,6 +675,7 @@ export interface TaxRule {
   changeReason: string;
   ordinanceReference?: string;
   isSystem?: boolean;     // Indicates if this is a default/system rule
+  isMock?: boolean;       // Indicates if this is a mock/demo rule (not from backend)
 }
 
 export interface CreateRuleRequest {
