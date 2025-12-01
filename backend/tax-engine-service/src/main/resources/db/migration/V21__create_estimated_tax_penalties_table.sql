@@ -1,4 +1,4 @@
--- V1.41: Create estimated_tax_penalties table for quarterly underpayment penalties
+-- Flyway Migration V21: Create estimated_tax_penalties table for quarterly underpayment penalties
 --
 -- Functional Requirements:
 -- FR-015 to FR-019: Safe harbor evaluation (90% current year OR 100%/110% prior year)
@@ -37,6 +37,11 @@ CREATE TABLE IF NOT EXISTS estimated_tax_penalties (
     )
 );
 
+-- Create indexes
+CREATE INDEX idx_estimated_penalty_tenant_year ON estimated_tax_penalties(tenant_id, tax_year);
+CREATE INDEX idx_estimated_penalty_safe_harbor ON estimated_tax_penalties(safe_harbor_1_met, safe_harbor_2_met);
+
+-- Comments
 COMMENT ON TABLE estimated_tax_penalties IS 'Stores estimated tax underpayment penalties with safe harbor evaluation';
 COMMENT ON COLUMN estimated_tax_penalties.safe_harbor_1_met IS 'TRUE if paid >= 90% of current year tax';
 COMMENT ON COLUMN estimated_tax_penalties.safe_harbor_2_met IS 'TRUE if paid >= 100% of prior year tax (110% if AGI > $150K)';

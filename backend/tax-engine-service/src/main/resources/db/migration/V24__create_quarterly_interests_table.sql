@@ -1,4 +1,4 @@
--- V1.44: Create quarterly_interests table for per-quarter interest breakdown
+-- Flyway Migration V24: Create quarterly_interests table for per-quarter interest breakdown
 --
 -- Functional Requirements:
 -- FR-029: Quarterly compounding (add accrued interest to principal each quarter)
@@ -27,9 +27,17 @@ CREATE TABLE IF NOT EXISTS quarterly_interests (
         ABS(ending_balance - (beginning_balance + interest_accrued)) < 0.01
     ),
     CONSTRAINT check_days_calculation CHECK (days = (end_date - start_date + 1)),
-    CONSTRAINT check_quarter_dates CHECK (end_date >= start_date)
+    CONSTRAINT check_quarter_dates CHECK (end_date >= start_date),
+    CONSTRAINT fk_quarterly_interest_interest FOREIGN KEY (interest_id) 
+        REFERENCES interests(id) ON DELETE CASCADE
 );
 
+-- Create indexes
+CREATE INDEX idx_quarterly_interest_parent ON quarterly_interests(interest_id);
+CREATE INDEX idx_quarterly_interest_quarter ON quarterly_interests(quarter);
+CREATE INDEX idx_quarterly_interest_dates ON quarterly_interests(start_date, end_date);
+
+-- Comments
 COMMENT ON TABLE quarterly_interests IS 'Stores interest breakdown by quarter with compounding';
 COMMENT ON COLUMN quarterly_interests.quarter IS 'Quarter label like "Q1 2024", "Q2 2024"';
 COMMENT ON COLUMN quarterly_interests.beginning_balance IS 'Principal at start of quarter (includes prior interest)';

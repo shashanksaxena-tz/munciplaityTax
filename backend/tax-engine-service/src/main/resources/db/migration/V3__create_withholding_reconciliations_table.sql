@@ -1,8 +1,8 @@
--- Flyway Migration V1.22: Create withholding_reconciliations table
+-- Flyway Migration V3: Create withholding_reconciliations table
 -- Feature: Withholding Reconciliation System
 -- Purpose: Year-end reconciliation comparing W-1 totals to W-2/W-3 totals
 
-CREATE TABLE IF NOT EXISTS dublin.withholding_reconciliations (
+CREATE TABLE IF NOT EXISTS withholding_reconciliations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL,
     business_id UUID NOT NULL,
@@ -32,15 +32,15 @@ CREATE TABLE IF NOT EXISTS dublin.withholding_reconciliations (
 );
 
 -- Unique constraint: One reconciliation per business + tax year
-CREATE UNIQUE INDEX unique_reconciliation_business_year ON dublin.withholding_reconciliations(business_id, tax_year);
+CREATE UNIQUE INDEX unique_reconciliation_business_year ON withholding_reconciliations(business_id, tax_year);
 
 -- Indexes
-CREATE INDEX idx_reconciliation_tenant_year ON dublin.withholding_reconciliations(tenant_id, tax_year);
-CREATE INDEX idx_reconciliation_status ON dublin.withholding_reconciliations(status);
-CREATE INDEX idx_reconciliation_discrepancy ON dublin.withholding_reconciliations(status) WHERE status = 'DISCREPANCY';
+CREATE INDEX idx_reconciliation_tenant_year ON withholding_reconciliations(tenant_id, tax_year);
+CREATE INDEX idx_reconciliation_status ON withholding_reconciliations(status);
+CREATE INDEX idx_reconciliation_discrepancy ON withholding_reconciliations(status) WHERE status = 'DISCREPANCY';
 
 -- Comments
-COMMENT ON TABLE dublin.withholding_reconciliations IS 'Year-end W-1 to W-2/W-3 reconciliation per FR-006, FR-007, FR-009';
-COMMENT ON COLUMN dublin.withholding_reconciliations.variance_wages IS 'w1_total_wages - w2_total_wages. Flag if > $100 or > 1% (FR-006)';
-COMMENT ON COLUMN dublin.withholding_reconciliations.resolution_notes IS 'Required explanation if RECONCILED with variance (FR-008)';
-COMMENT ON COLUMN dublin.withholding_reconciliations.ignored_w2_count IS 'W-2s not matched to business EIN (Constitution IV - AI Transparency)';
+COMMENT ON TABLE withholding_reconciliations IS 'Year-end W-1 to W-2/W-3 reconciliation per FR-006, FR-007, FR-009';
+COMMENT ON COLUMN withholding_reconciliations.variance_wages IS 'w1_total_wages - w2_total_wages. Flag if > $100 or > 1% (FR-006)';
+COMMENT ON COLUMN withholding_reconciliations.resolution_notes IS 'Required explanation if RECONCILED with variance (FR-008)';
+COMMENT ON COLUMN withholding_reconciliations.ignored_w2_count IS 'W-2s not matched to business EIN (Constitution IV - AI Transparency)';

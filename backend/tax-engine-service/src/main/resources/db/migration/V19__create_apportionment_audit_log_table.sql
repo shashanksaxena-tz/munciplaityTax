@@ -1,4 +1,4 @@
--- Migration V1.36: Create apportionment_audit_log table
+-- Flyway Migration V19: Create apportionment_audit_log table
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Immutable audit trail for apportionment calculations and election changes
 
@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS apportionment_audit_log (
     affected_calculation VARCHAR(100),
     ip_address INET,
     user_agent TEXT
-    -- Note: FK to tenants removed due to type mismatch (UUID vs BIGINT)
 );
 
 -- Indexes for audit queries

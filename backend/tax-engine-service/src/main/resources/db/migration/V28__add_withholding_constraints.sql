@@ -1,8 +1,6 @@
--- Flyway Migration V1.27: Add validation constraints for withholding tables
+-- Flyway Migration V28: Add additional constraints for withholding tables
 -- Feature: Withholding Reconciliation System
 -- Purpose: Data integrity and business rule enforcement
--- Note: Most constraints are already created in table creation migrations (V1.21, V1.22)
--- This migration adds only the check_resolution_notes constraint which was missing
 
 -- If reconciled with variance, must have resolution notes
 -- This constraint enforces FR-008: Businesses must explain discrepancies when reconciling
@@ -11,16 +9,16 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'check_resolution_notes'
     ) THEN
-        ALTER TABLE dublin.withholding_reconciliations 
+        ALTER TABLE withholding_reconciliations 
             ADD CONSTRAINT check_resolution_notes 
             CHECK (
-                status != 'RECONCILED' OR 
-                variance_wages = 0 OR 
-                resolution_notes IS NOT NULL
+                (status != 'RECONCILED') OR 
+                (variance_wages = 0) OR 
+                (resolution_notes IS NOT NULL)
             );
     END IF;
 END $$;
 
 -- Comments for documentation
-COMMENT ON CONSTRAINT check_resolution_notes ON dublin.withholding_reconciliations 
+COMMENT ON CONSTRAINT check_resolution_notes ON withholding_reconciliations 
     IS 'Enforces explanation requirement per FR-008: RECONCILED status with variance requires resolution_notes';

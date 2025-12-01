@@ -1,9 +1,8 @@
--- Flyway Migration V1.20: Create w1_filings table
+-- Flyway Migration V1: Create w1_filings table
 -- Feature: Withholding Reconciliation System
 -- Purpose: Store individual W-1 withholding return filings
 
--- Create w1_filings table
-CREATE TABLE IF NOT EXISTS dublin.w1_filings (
+CREATE TABLE IF NOT EXISTS w1_filings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL,
     business_id UUID NOT NULL,
@@ -31,8 +30,8 @@ CREATE TABLE IF NOT EXISTS dublin.w1_filings (
     created_by UUID NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     
-    -- Foreign key constraints
-    CONSTRAINT fk_w1_amends_filing FOREIGN KEY (amends_filing_id) REFERENCES dublin.w1_filings(id),
+    -- Self-referencing FK for amendments
+    CONSTRAINT fk_w1_amends_filing FOREIGN KEY (amends_filing_id) REFERENCES w1_filings(id),
     
     -- Business rules
     CONSTRAINT check_amended_filing CHECK (
@@ -42,20 +41,20 @@ CREATE TABLE IF NOT EXISTS dublin.w1_filings (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_w1_business_year ON dublin.w1_filings(business_id, tax_year);
-CREATE INDEX idx_w1_tenant_year ON dublin.w1_filings(tenant_id, tax_year);
-CREATE INDEX idx_w1_due_date ON dublin.w1_filings(due_date);
-CREATE INDEX idx_w1_filing_date ON dublin.w1_filings(filing_date);
-CREATE INDEX idx_w1_status ON dublin.w1_filings(status);
-CREATE INDEX idx_w1_amended ON dublin.w1_filings(is_amended) WHERE is_amended = TRUE;
+CREATE INDEX idx_w1_business_year ON w1_filings(business_id, tax_year);
+CREATE INDEX idx_w1_tenant_year ON w1_filings(tenant_id, tax_year);
+CREATE INDEX idx_w1_due_date ON w1_filings(due_date);
+CREATE INDEX idx_w1_filing_date ON w1_filings(filing_date);
+CREATE INDEX idx_w1_status ON w1_filings(status);
+CREATE INDEX idx_w1_amended ON w1_filings(is_amended) WHERE is_amended = TRUE;
 
 -- Unique constraint: Cannot file same period twice (unless amended)
-CREATE UNIQUE INDEX unique_w1_filing ON dublin.w1_filings(business_id, tax_year, period, is_amended)
+CREATE UNIQUE INDEX unique_w1_filing ON w1_filings(business_id, tax_year, period, is_amended)
     WHERE is_amended = FALSE;
 
 -- Comments for documentation
-COMMENT ON TABLE dublin.w1_filings IS 'W-1 withholding return filings per FR-001, FR-003, FR-013';
-COMMENT ON COLUMN dublin.w1_filings.tenant_id IS 'Multi-tenant isolation per Constitution Principle II';
-COMMENT ON COLUMN dublin.w1_filings.amends_filing_id IS 'References original filing if amended (FR-003)';
-COMMENT ON COLUMN dublin.w1_filings.late_filing_penalty IS 'FR-011: 5% per month, max 25%, min $50 if tax due > $200';
-COMMENT ON COLUMN dublin.w1_filings.created_at IS 'Immutable audit timestamp per Constitution Principle III';
+COMMENT ON TABLE w1_filings IS 'W-1 withholding return filings per FR-001, FR-003, FR-013';
+COMMENT ON COLUMN w1_filings.tenant_id IS 'Multi-tenant isolation per Constitution Principle II';
+COMMENT ON COLUMN w1_filings.amends_filing_id IS 'References original filing if amended (FR-003)';
+COMMENT ON COLUMN w1_filings.late_filing_penalty IS 'FR-011: 5% per month, max 25%, min $50 if tax due > $200';
+COMMENT ON COLUMN w1_filings.created_at IS 'Immutable audit timestamp per Constitution Principle III';

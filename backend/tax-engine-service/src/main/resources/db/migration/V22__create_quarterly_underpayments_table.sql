@@ -1,4 +1,4 @@
--- V1.42: Create quarterly_underpayments table for per-quarter underpayment details
+-- Flyway Migration V22: Create quarterly_underpayments table for per-quarter underpayment details
 --
 -- Functional Requirements:
 -- FR-022: Calculate underpayment per quarter (Required - Actual)
@@ -27,9 +27,17 @@ CREATE TABLE IF NOT EXISTS quarterly_underpayments (
     
     -- Constraints
     CONSTRAINT unique_quarterly_underpayment UNIQUE(estimated_penalty_id, quarter),
-    CONSTRAINT check_underpayment_calculation CHECK (underpayment = (required_payment - actual_payment))
+    CONSTRAINT check_underpayment_calculation CHECK (underpayment = (required_payment - actual_payment)),
+    CONSTRAINT fk_quarterly_underpayment_estimated_penalty FOREIGN KEY (estimated_penalty_id) 
+        REFERENCES estimated_tax_penalties(id) ON DELETE CASCADE
 );
 
+-- Create indexes
+CREATE INDEX idx_quarterly_underpayment_penalty ON quarterly_underpayments(estimated_penalty_id);
+CREATE INDEX idx_quarterly_underpayment_quarter ON quarterly_underpayments(quarter);
+CREATE INDEX idx_quarterly_underpayment_due_date ON quarterly_underpayments(due_date);
+
+-- Comments
 COMMENT ON TABLE quarterly_underpayments IS 'Stores underpayment details for each quarter (Q1-Q4)';
 COMMENT ON COLUMN quarterly_underpayments.quarter IS 'Quarter: Q1 (Apr 15), Q2 (Jun 15), Q3 (Sep 15), Q4 (Jan 15)';
 COMMENT ON COLUMN quarterly_underpayments.underpayment IS 'Required minus Actual; negative value means overpayment';

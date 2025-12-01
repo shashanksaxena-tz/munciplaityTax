@@ -1,9 +1,8 @@
--- Flyway Migration V1.32: Create nol_carrybacks table
+-- Flyway Migration V9: Create nol_carrybacks table
 -- Feature: Net Operating Loss (NOL) Carryforward & Carryback Tracking System
 -- Purpose: Track NOL carryback elections (CARES Act provision)
 
--- Create nol_carrybacks table
-CREATE TABLE IF NOT EXISTS dublin.nol_carrybacks (
+CREATE TABLE IF NOT EXISTS nol_carrybacks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL,
     nol_id UUID NOT NULL,
@@ -21,7 +20,7 @@ CREATE TABLE IF NOT EXISTS dublin.nol_carrybacks (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     
     -- Foreign key constraints
-    CONSTRAINT fk_nol_carryback_nol FOREIGN KEY (nol_id) REFERENCES dublin.nols(id) ON DELETE CASCADE,
+    CONSTRAINT fk_nol_carryback_nol FOREIGN KEY (nol_id) REFERENCES nols(id) ON DELETE CASCADE,
     
     -- Business rules
     CONSTRAINT check_refund_date CHECK (
@@ -31,12 +30,12 @@ CREATE TABLE IF NOT EXISTS dublin.nol_carrybacks (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_nol_carryback_nol ON dublin.nol_carrybacks(nol_id);
-CREATE INDEX idx_nol_carryback_year ON dublin.nol_carrybacks(carryback_year);
-CREATE INDEX idx_nol_carryback_status ON dublin.nol_carrybacks(refund_status);
-CREATE INDEX idx_nol_carryback_tenant ON dublin.nol_carrybacks(tenant_id);
+CREATE INDEX idx_nol_carryback_nol ON nol_carrybacks(nol_id);
+CREATE INDEX idx_nol_carryback_year ON nol_carrybacks(carryback_year);
+CREATE INDEX idx_nol_carryback_status ON nol_carrybacks(refund_status);
+CREATE INDEX idx_nol_carryback_tenant ON nol_carrybacks(tenant_id);
 
 -- Add comments
-COMMENT ON TABLE dublin.nol_carrybacks IS 'CARES Act carryback tracking: 2018-2020 losses can be carried back 5 years';
-COMMENT ON COLUMN dublin.nol_carrybacks.refund_amount IS 'Refund = nol_applied × prior_year_tax_rate';
-COMMENT ON COLUMN dublin.nol_carrybacks.refund_status IS 'CLAIMED → APPROVED → PAID or DENIED';
+COMMENT ON TABLE nol_carrybacks IS 'CARES Act carryback tracking: 2018-2020 losses can be carried back 5 years';
+COMMENT ON COLUMN nol_carrybacks.refund_amount IS 'Refund = nol_applied × prior_year_tax_rate';
+COMMENT ON COLUMN nol_carrybacks.refund_status IS 'CLAIMED → APPROVED → PAID or DENIED';

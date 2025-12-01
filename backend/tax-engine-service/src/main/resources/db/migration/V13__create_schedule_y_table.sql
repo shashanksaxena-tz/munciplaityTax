@@ -1,4 +1,4 @@
--- Migration V1.30: Create schedule_y table for multi-state apportionment
+-- Flyway Migration V13: Create schedule_y table for multi-state apportionment
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Store apportionment schedule data with factor calculations and elections
 
@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS schedule_y (
     created_by UUID NOT NULL,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_modified_by UUID
-    -- Note: FK to tenants removed due to type mismatch (UUID vs BIGINT)
 );
 
 -- Indexes for performance

@@ -1,4 +1,4 @@
--- Migration V1.35: Create nexus_tracking table
+-- Flyway Migration V18: Create nexus_tracking table
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Track nexus status by state/municipality for throwback determination
 
@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS nexus_tracking (
     nexus_terminated_date DATE,
     created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    -- Note: FK to tenants removed due to type mismatch (UUID vs BIGINT)
     CONSTRAINT uk_nexus_tracking_business_state_year UNIQUE (business_id, state, municipality, tax_year)
 );
 

@@ -1,9 +1,8 @@
--- Flyway Migration V1.30: Create nols table
+-- Flyway Migration V7: Create nols table
 -- Feature: Net Operating Loss (NOL) Carryforward & Carryback Tracking System
 -- Purpose: Store net operating loss records with multi-year tracking
 
--- Create nols table
-CREATE TABLE IF NOT EXISTS dublin.nols (
+CREATE TABLE IF NOT EXISTS nols (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL,
     business_id UUID NOT NULL,
@@ -44,14 +43,14 @@ CREATE TABLE IF NOT EXISTS dublin.nols (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_nol_business_year ON dublin.nols(business_id, tax_year);
-CREATE INDEX idx_nol_jurisdiction ON dublin.nols(jurisdiction, municipality_code);
-CREATE INDEX idx_nol_expiration ON dublin.nols(expiration_date) WHERE expiration_date IS NOT NULL;
-CREATE INDEX idx_nol_tenant_business ON dublin.nols(tenant_id, business_id);
-CREATE INDEX idx_nol_balance ON dublin.nols(current_nol_balance) WHERE current_nol_balance > 0;
+CREATE INDEX idx_nol_business_year ON nols(business_id, tax_year);
+CREATE INDEX idx_nol_jurisdiction ON nols(jurisdiction, municipality_code);
+CREATE INDEX idx_nol_expiration ON nols(expiration_date) WHERE expiration_date IS NOT NULL;
+CREATE INDEX idx_nol_tenant_business ON nols(tenant_id, business_id);
+CREATE INDEX idx_nol_balance ON nols(current_nol_balance) WHERE current_nol_balance > 0;
 
 -- Add comments
-COMMENT ON TABLE dublin.nols IS 'Net Operating Loss tracking with multi-year carryforward and carryback support';
-COMMENT ON COLUMN dublin.nols.expiration_date IS 'Pre-2018 NOLs expire after 20 years, post-2017 NOLs are indefinite (NULL)';
-COMMENT ON COLUMN dublin.nols.is_carried_back IS 'CARES Act provision: 2018-2020 losses can be carried back 5 years';
-COMMENT ON COLUMN dublin.nols.apportionment_percentage IS 'Ohio apportionment % for multi-state businesses (state NOL = federal NOL × %)';
+COMMENT ON TABLE nols IS 'Net Operating Loss tracking with multi-year carryforward and carryback support';
+COMMENT ON COLUMN nols.expiration_date IS 'Pre-2018 NOLs expire after 20 years, post-2017 NOLs are indefinite (NULL)';
+COMMENT ON COLUMN nols.is_carried_back IS 'CARES Act provision: 2018-2020 losses can be carried back 5 years';
+COMMENT ON COLUMN nols.apportionment_percentage IS 'Ohio apportionment % for multi-state businesses (state NOL = federal NOL × %)';

@@ -1,4 +1,4 @@
--- Migration V1.31: Create property_factor table
+-- Flyway Migration V14: Create property_factor table
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Store property factor calculation details for apportionment
 
@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS property_factor (
     ohio_rented_property_rent DECIMAL(15,2) DEFAULT 0 CHECK (ohio_rented_property_rent >= 0),
     ohio_rented_property_capitalized DECIMAL(15,2) DEFAULT 0 CHECK (ohio_rented_property_capitalized >= 0),
     total_ohio_property DECIMAL(15,2) NOT NULL CHECK (total_ohio_property >= 0),
-    total_property_everywhere DECIMAL(15,2) NOT NULL CHECK (total_property_everywhere > 0),
+    total_property_everywhere DECIMAL(15,2) NOT NULL CHECK (total_property_everywhere >= 0),
     property_factor_percentage DECIMAL(5,2) NOT NULL CHECK (property_factor_percentage >= 0 AND property_factor_percentage <= 100),
     averaging_method VARCHAR(30) NOT NULL DEFAULT 'AVERAGE_BEGINNING_ENDING' CHECK (averaging_method IN (
         'AVERAGE_BEGINNING_ENDING',

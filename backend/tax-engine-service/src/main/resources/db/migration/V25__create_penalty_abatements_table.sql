@@ -1,4 +1,4 @@
--- V1.45: Create penalty_abatements table for reasonable cause abatement requests
+-- Flyway Migration V25: Create penalty_abatements table for reasonable cause abatement requests
 --
 -- Functional Requirements:
 -- FR-033 to FR-039: Penalty abatement request, review, and approval workflow
@@ -45,9 +45,18 @@ CREATE TABLE IF NOT EXISTS penalty_abatements (
         status = 'PENDING' OR 
         (reviewed_by IS NOT NULL AND review_date IS NOT NULL)
     ),
-    CONSTRAINT check_approved_vs_requested CHECK (approved_amount IS NULL OR approved_amount <= requested_amount)
+    CONSTRAINT check_approved_vs_requested CHECK (approved_amount IS NULL OR approved_amount <= requested_amount),
+    CONSTRAINT fk_penalty_abatement_penalty FOREIGN KEY (penalty_id) REFERENCES penalties(id) ON DELETE SET NULL
 );
 
+-- Create indexes
+CREATE INDEX idx_abatement_return ON penalty_abatements(return_id);
+CREATE INDEX idx_abatement_penalty ON penalty_abatements(penalty_id);
+CREATE INDEX idx_abatement_status ON penalty_abatements(status);
+CREATE INDEX idx_abatement_reason ON penalty_abatements(reason);
+CREATE INDEX idx_abatement_reviewed_by ON penalty_abatements(reviewed_by);
+
+-- Comments
 COMMENT ON TABLE penalty_abatements IS 'Stores penalty abatement requests for reasonable cause';
 COMMENT ON COLUMN penalty_abatements.reason IS 'Reason: DEATH, ILLNESS, DISASTER, MISSING_RECORDS, ERRONEOUS_ADVICE, FIRST_TIME, OTHER';
 COMMENT ON COLUMN penalty_abatements.status IS 'Status: PENDING, APPROVED, PARTIAL, DENIED, WITHDRAWN';
