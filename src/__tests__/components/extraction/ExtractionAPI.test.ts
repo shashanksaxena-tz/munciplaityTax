@@ -75,7 +75,7 @@ describe('Extraction API Service', () => {
 
       await api.extraction.uploadAndExtract(file, onProgress, {
         geminiApiKey: 'user-provided-api-key',
-        geminiModel: 'gemini-2.5-flash'
+        geminiModel: 'gemini-2.0-flash'
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -83,7 +83,7 @@ describe('Extraction API Service', () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             'X-Gemini-Api-Key': 'user-provided-api-key',
-            'X-Gemini-Model': 'gemini-2.5-flash'
+            'X-Gemini-Model': 'gemini-2.0-flash'
           })
         })
       );

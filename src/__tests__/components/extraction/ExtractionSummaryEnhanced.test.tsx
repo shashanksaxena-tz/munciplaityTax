@@ -70,7 +70,7 @@ describe('ExtractionSummary Enhanced Features', () => {
       'Federal 1040': 0.89
     },
     extractionDurationMs: 3500,
-    modelUsed: 'gemini-2.5-flash'
+    modelUsed: 'gemini-2.0-flash'
   };
 
   const mockFormProvenances: FormProvenance[] = [
@@ -180,7 +180,7 @@ describe('ExtractionSummary Enhanced Features', () => {
         onCancel={mockOnCancel} 
       />
     );
-    expect(screen.getByText(/gemini-2.5-flash/i)).toBeTruthy();
+    expect(screen.getByText(/gemini-2.0-flash/i)).toBeTruthy();
   });
 
   it('should display extracted form types', () => {

@@ -39,7 +39,10 @@ public class RealGeminiService {
     private static final Logger log = LoggerFactory.getLogger(RealGeminiService.class);
 
     private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
-    private static final String DEFAULT_MODEL = "gemini-2.5-flash";
+    // Use gemini-2.0-flash for stable document processing (1M token context, multimodal support)
+    // Alternative models: gemini-1.5-flash-latest, gemini-2.5-flash, gemini-2.5-pro
+    // See: https://ai.google.dev/gemini-api/docs/models
+    private static final String DEFAULT_MODEL = "gemini-2.0-flash";
     
     // Field weight classifications for confidence scoring
     private static final Map<String, String> FIELD_WEIGHTS = initializeFieldWeights();

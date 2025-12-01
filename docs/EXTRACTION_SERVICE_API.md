@@ -1,12 +1,23 @@
 # Gemini AI Extraction Service API Documentation
 
 > **Version:** 2.0.0  
-> **Model:** Gemini 2.5 Flash (`gemini-2.5-flash`)  
+> **Model:** Gemini 2.0 Flash (`gemini-2.0-flash`)  
 > **Base URL:** `/api/v1/extraction`
 
 ## Overview
 
-The Extraction Service provides AI-powered document extraction for U.S. Federal, State, and Local municipality tax forms. It uses Google's Gemini 2.5 Flash model to extract structured data from uploaded tax documents with high precision and confidence scoring.
+The Extraction Service provides AI-powered document extraction for U.S. Federal, State, and Local municipality tax forms. It uses Google's Gemini 2.0 Flash model to extract structured data from uploaded tax documents with high precision and confidence scoring.
+
+### Supported Gemini Models
+
+| Model Name | Description | Recommended For |
+|------------|-------------|-----------------|
+| `gemini-2.0-flash` | Stable document processing, 1M token context | **Default - Production use** |
+| `gemini-1.5-flash-latest` | Latest 1.5 Flash version | Fallback option |
+| `gemini-2.5-flash` | Newer version (may have intermittent issues) | Testing new features |
+| `gemini-2.5-pro` | Higher reasoning capability | Complex documents |
+
+> **Note:** Model availability and behavior may change. See [Google's official documentation](https://ai.google.dev/gemini-api/docs/models) for the latest model list.
 
 ## Features
 
@@ -58,7 +69,7 @@ Upload a tax document for AI-powered extraction.
 |--------|----------|-------------|
 | `Authorization` | Yes | Bearer token for authentication |
 | `X-Gemini-Api-Key` | No | User's Gemini API key (optional, uses server default if not provided) |
-| `X-Gemini-Model` | No | Model override (default: `gemini-2.5-flash`) |
+| `X-Gemini-Model` | No | Model override (default: `gemini-2.0-flash`) |
 | `Content-Type` | Yes | `multipart/form-data` |
 
 #### Request Body
@@ -129,7 +140,7 @@ data: {
       "Schedule C": 0.92
     },
     "extractionDurationMs": 3500,
-    "modelUsed": "gemini-2.5-flash"
+    "modelUsed": "gemini-2.0-flash"
   },
   "result": {
     // Final extracted data (only on COMPLETE status)
@@ -382,7 +393,7 @@ interface ExtractedForm {
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `GEMINI_API_KEY` | (none) | Default Gemini API key |
-| `GEMINI_API_MODEL` | `gemini-2.5-flash` | Default model |
+| `GEMINI_API_MODEL` | `gemini-2.0-flash` | Default model |
 
 ### Application Properties
 
@@ -390,7 +401,7 @@ interface ExtractedForm {
 gemini:
   api:
     key: ${GEMINI_API_KEY:}
-    model: ${GEMINI_API_MODEL:gemini-2.5-flash}
+    model: ${GEMINI_API_MODEL:gemini-2.0-flash}
 
 spring:
   servlet:
