@@ -1,7 +1,7 @@
 # Gemini AI Extraction Service API Documentation
 
 > **Version:** 2.0.0  
-> **Model:** Gemini 2.5 Flash  
+> **Model:** Gemini 2.5 Flash (`gemini-2.5-flash-preview-05-20`)  
 > **Base URL:** `/api/v1/extraction`
 
 ## Overview

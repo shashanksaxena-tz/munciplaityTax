@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.munitax.extraction.model.ExtractionDto;
 import com.munitax.extraction.model.ExtractionDto.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,8 @@ import java.util.*;
  */
 @Service
 public class RealGeminiService {
+
+    private static final Logger log = LoggerFactory.getLogger(RealGeminiService.class);
 
     private static final String GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
     private static final String DEFAULT_MODEL = "gemini-2.5-flash-preview-05-20";
@@ -90,12 +94,12 @@ public class RealGeminiService {
                     : defaultModel;
             
             if (apiKey == null || apiKey.trim().isEmpty()) {
-                System.out.println("Gemini API Key is missing. Using mock extraction.");
+                log.info("Gemini API Key is missing. Using mock extraction.");
                 return mockExtraction(fileName, startTime);
             }
 
             if (base64Data == null) {
-                System.out.println("No file data provided. Using mock extraction.");
+                log.info("No file data provided. Using mock extraction.");
                 return mockExtraction(fileName, startTime);
             }
 
@@ -125,13 +129,11 @@ public class RealGeminiService {
                     .bodyToFlux(String.class)
                     .flatMap(response -> parseStreamingResponse(response, startTime, model))
                     .onErrorResume(error -> {
-                        System.err.println("Gemini API Error: " + error.getMessage());
-                        error.printStackTrace();
+                        log.error("Gemini API Error: {}", error.getMessage(), error);
                         return createErrorResponse(error.getMessage(), startTime);
                     });
         } catch (Exception e) {
-            System.err.println("Unexpected error in extractData:");
-            e.printStackTrace();
+            log.error("Unexpected error in extractData", e);
             return createErrorResponse(e.getMessage(), startTime);
         }
     }
@@ -148,8 +150,8 @@ public class RealGeminiService {
         String maskedKey = apiKey.length() > 10 
                 ? apiKey.substring(0, 5) + "..." + apiKey.substring(apiKey.length() - 5)
                 : "***";
-        System.out.println("Using Gemini API Key: " + maskedKey);
-        System.out.println("Using Gemini Model: " + model);
+        log.info("Using Gemini API Key: {}", maskedKey);
+        log.info("Using Gemini Model: {}", model);
     }
 
     private Flux<ExtractionUpdate> parseStreamingResponse(
@@ -230,8 +232,7 @@ public class RealGeminiService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error parsing Gemini response: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error parsing Gemini response: {}", e.getMessage(), e);
         }
 
         return Flux.empty();

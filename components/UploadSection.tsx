@@ -4,6 +4,7 @@ import { TaxFormData, RealTimeExtractionUpdate } from '../types';
 import { api } from '../services/api';
 import { mapExtractionResultToForms } from '../services/extractionMapper';
 import { ProcessingLoader } from './ProcessingLoader';
+import { GEMINI_DEFAULT_MODEL } from '../constants';
 
 interface ExtractionResult {
   forms: TaxFormData[];
@@ -78,7 +79,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
             },
             {
               geminiApiKey: apiKey || undefined,
-              geminiModel: 'gemini-2.5-flash-preview-05-20'
+              geminiModel: GEMINI_DEFAULT_MODEL
             }
           ).catch(reject);
         });
