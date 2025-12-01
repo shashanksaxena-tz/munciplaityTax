@@ -740,6 +740,7 @@ export interface TaxRule {
   modifiedDate?: string;  // ISO 8601 timestamp
   changeReason: string;
   ordinanceReference?: string;
+  isSystem?: boolean;     // Indicates if this is a default/system rule
 }
 
 export interface CreateRuleRequest {
