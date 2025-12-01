@@ -1,4 +1,4 @@
--- V1.43: Create interests table for compound quarterly interest calculation
+-- Flyway Migration V23: Create interests table for compound quarterly interest calculation
 --
 -- Functional Requirements:
 -- FR-027 to FR-032: Interest calculation with quarterly compounding
@@ -36,6 +36,13 @@ CREATE TABLE IF NOT EXISTS interests (
     CONSTRAINT check_total_days_calculation CHECK (total_days = (end_date - start_date))
 );
 
+-- Create indexes
+CREATE INDEX idx_interest_return ON interests(return_id);
+CREATE INDEX idx_interest_tenant ON interests(tenant_id);
+CREATE INDEX idx_interest_start_date ON interests(start_date);
+CREATE INDEX idx_interest_end_date ON interests(end_date);
+
+-- Comments
 COMMENT ON TABLE interests IS 'Stores interest calculations on unpaid tax with quarterly compounding';
 COMMENT ON COLUMN interests.annual_interest_rate IS 'Retrieved from rule engine (federal short-term rate + 3%, typically 3-8%)';
 COMMENT ON COLUMN interests.compounding_frequency IS 'Always QUARTERLY per IRS standard';

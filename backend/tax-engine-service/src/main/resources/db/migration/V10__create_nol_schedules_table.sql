@@ -1,9 +1,8 @@
--- Flyway Migration V1.33: Create nol_schedules table
+-- Flyway Migration V10: Create nol_schedules table
 -- Feature: Net Operating Loss (NOL) Carryforward & Carryback Tracking System
 -- Purpose: Store consolidated NOL schedules for tax returns
 
--- Create nol_schedules table
-CREATE TABLE IF NOT EXISTS dublin.nol_schedules (
+CREATE TABLE IF NOT EXISTS nol_schedules (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL,
     business_id UUID NOT NULL,
@@ -36,11 +35,11 @@ CREATE TABLE IF NOT EXISTS dublin.nol_schedules (
 );
 
 -- Create indexes for performance
-CREATE INDEX idx_nol_schedule_return ON dublin.nol_schedules(return_id);
-CREATE INDEX idx_nol_schedule_business_year ON dublin.nol_schedules(business_id, tax_year);
-CREATE INDEX idx_nol_schedule_tenant ON dublin.nol_schedules(tenant_id);
+CREATE INDEX idx_nol_schedule_return ON nol_schedules(return_id);
+CREATE INDEX idx_nol_schedule_business_year ON nol_schedules(business_id, tax_year);
+CREATE INDEX idx_nol_schedule_tenant ON nol_schedules(tenant_id);
 
 -- Add comments
-COMMENT ON TABLE dublin.nol_schedules IS 'Consolidated NOL schedule (Form 27-NOL) showing beginning balance, additions, deductions, and ending balance';
-COMMENT ON COLUMN dublin.nol_schedules.limitation_percentage IS 'Post-2017: 80%, Pre-2018: 100%';
-COMMENT ON COLUMN dublin.nol_schedules.total_ending_balance IS 'Carried forward to next year as beginning balance';
+COMMENT ON TABLE nol_schedules IS 'Consolidated NOL schedule (Form 27-NOL) showing beginning balance, additions, deductions, and ending balance';
+COMMENT ON COLUMN nol_schedules.limitation_percentage IS 'Post-2017: 80%, Pre-2018: 100%';
+COMMENT ON COLUMN nol_schedules.total_ending_balance IS 'Carried forward to next year as beginning balance';

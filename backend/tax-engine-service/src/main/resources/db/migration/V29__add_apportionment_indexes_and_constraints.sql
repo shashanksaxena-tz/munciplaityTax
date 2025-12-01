@@ -1,6 +1,6 @@
--- Migration V1.37: Add indexes for apportionment queries
+-- Flyway Migration V29: Add additional indexes and constraints for apportionment tables
 -- Feature: Schedule Y Multi-State Sourcing
--- Purpose: Optimize query performance for apportionment calculations and reporting
+-- Purpose: Optimize query performance and enforce business rules for apportionment calculations
 
 -- Composite indexes for common query patterns
 CREATE INDEX IF NOT EXISTS idx_schedule_y_tenant_tax_year ON schedule_y(tenant_id, tax_year);
@@ -31,6 +31,32 @@ CREATE INDEX IF NOT EXISTS idx_nexus_tracking_state_has_nexus ON nexus_tracking(
 -- Audit log composite indexes for compliance queries
 CREATE INDEX IF NOT EXISTS idx_apportionment_audit_schedule_change ON apportionment_audit_log(schedule_y_id, change_type, change_date);
 CREATE INDEX IF NOT EXISTS idx_apportionment_audit_entity ON apportionment_audit_log(entity_type, entity_id);
+
+-- Schedule Y constraints
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_schedule_y_formula_weights_valid') THEN
+        ALTER TABLE schedule_y
+            ADD CONSTRAINT chk_schedule_y_formula_weights_valid 
+            CHECK (
+                apportionment_formula = 'CUSTOM' AND formula_weights IS NOT NULL
+                OR apportionment_formula != 'CUSTOM'
+            );
+    END IF;
+END $$;
+
+-- Nexus tracking constraints
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_nexus_tracking_dates') THEN
+        ALTER TABLE nexus_tracking
+            ADD CONSTRAINT chk_nexus_tracking_dates
+            CHECK (
+                nexus_terminated_date IS NULL 
+                OR nexus_terminated_date >= nexus_established_date
+            );
+    END IF;
+END $$;
 
 -- Comments
 COMMENT ON INDEX idx_schedule_y_tenant_tax_year IS 'Optimize queries for tenant-specific Schedule Y filings by tax year';

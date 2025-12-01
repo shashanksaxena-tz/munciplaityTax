@@ -1,4 +1,4 @@
--- V1.40: Create penalties table for late filing and late payment penalties
+-- Flyway Migration V20: Create penalties table for late filing and late payment penalties
 -- 
 -- Functional Requirements:
 -- FR-001 to FR-006: Late filing penalty calculation (5% per month, max 25%)
@@ -38,13 +38,19 @@ CREATE TABLE IF NOT EXISTS penalties (
     
     -- Constraints
     CONSTRAINT check_penalty_cap CHECK (penalty_amount <= maximum_penalty),
-    CONSTRAINT check_maximum_penalty_calculation CHECK (maximum_penalty = unpaid_tax_amount * 0.25::DECIMAL(5,4)),
     CONSTRAINT check_late_date CHECK (actual_date >= tax_due_date),
     CONSTRAINT check_abatement_fields CHECK (
         (is_abated = FALSE) OR 
         (is_abated = TRUE AND abatement_reason IS NOT NULL AND abatement_date IS NOT NULL)
     )
 );
+
+-- Create indexes
+CREATE INDEX idx_penalty_return ON penalties(return_id);
+CREATE INDEX idx_penalty_tenant_year ON penalties(tenant_id, assessment_date);
+CREATE INDEX idx_penalty_type ON penalties(penalty_type);
+CREATE INDEX idx_penalty_abated ON penalties(is_abated) WHERE is_abated = TRUE;
+CREATE INDEX idx_penalty_due_date ON penalties(tax_due_date);
 
 -- Comments for documentation
 COMMENT ON TABLE penalties IS 'Stores penalty assessments for tax returns (late filing, late payment, estimated underpayment)';

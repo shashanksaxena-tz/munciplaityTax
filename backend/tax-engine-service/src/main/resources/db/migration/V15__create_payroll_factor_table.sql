@@ -1,4 +1,4 @@
--- Migration V1.32: Create payroll_factor table
+-- Flyway Migration V15: Create payroll_factor table
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Store payroll factor calculation details for apportionment
 
@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS payroll_factor (
     ohio_contractor_payments DECIMAL(15,2) DEFAULT 0 CHECK (ohio_contractor_payments >= 0),
     ohio_officer_compensation DECIMAL(15,2) DEFAULT 0 CHECK (ohio_officer_compensation >= 0),
     total_ohio_payroll DECIMAL(15,2) NOT NULL CHECK (total_ohio_payroll >= 0),
-    total_payroll_everywhere DECIMAL(15,2) NOT NULL CHECK (total_payroll_everywhere > 0),
+    total_payroll_everywhere DECIMAL(15,2) NOT NULL CHECK (total_payroll_everywhere >= 0),
     payroll_factor_percentage DECIMAL(5,2) NOT NULL CHECK (payroll_factor_percentage >= 0 AND payroll_factor_percentage <= 100),
     employee_count INTEGER DEFAULT 0 CHECK (employee_count >= 0),
-    ohio_employee_count INTEGER DEFAULT 0 CHECK (ohio_employee_count >= 0 AND ohio_employee_count <= employee_count),
+    ohio_employee_count INTEGER DEFAULT 0 CHECK (ohio_employee_count >= 0),
     remote_employee_allocation JSONB,
     created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP

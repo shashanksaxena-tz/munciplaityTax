@@ -1,4 +1,4 @@
--- Migration V1.34: Create sale_transaction table
+-- Flyway Migration V17: Create sale_transaction table
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Store individual sale transactions for detailed sourcing tracking
 

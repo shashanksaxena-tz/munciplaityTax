@@ -1,4 +1,4 @@
--- V1.47: Create penalty_audit_log table for immutable audit trail
+-- Flyway Migration V27: Create penalty_audit_log table for immutable audit trail
 --
 -- Functional Requirements:
 -- Constitution III: Audit Trail Immutability
@@ -31,6 +31,12 @@ CREATE TABLE IF NOT EXISTS penalty_audit_logs (
     -- Immutable timestamp
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+-- Create indexes
+CREATE INDEX idx_penalty_audit_entity ON penalty_audit_logs(entity_type, entity_id);
+CREATE INDEX idx_penalty_audit_actor ON penalty_audit_logs(actor_id);
+CREATE INDEX idx_penalty_audit_created_at ON penalty_audit_logs(created_at);
+CREATE INDEX idx_penalty_audit_tenant ON penalty_audit_logs(tenant_id);
 
 -- No UPDATE or DELETE allowed on this table (Constitution III)
 COMMENT ON TABLE penalty_audit_logs IS 'Immutable audit trail for all penalty and interest actions - NEVER UPDATE OR DELETE';

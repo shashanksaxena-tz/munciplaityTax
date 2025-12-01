@@ -1,4 +1,4 @@
--- Migration V1.33: Create sales_factor table
+-- Flyway Migration V16: Create sales_factor table
 -- Feature: Schedule Y Multi-State Sourcing
 -- Purpose: Store sales factor calculation details for apportionment
 
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS sales_factor (
     ohio_sales_other DECIMAL(15,2) DEFAULT 0 CHECK (ohio_sales_other >= 0),
     throwback_adjustment DECIMAL(15,2) DEFAULT 0,
     total_ohio_sales DECIMAL(15,2) NOT NULL CHECK (total_ohio_sales >= 0),
-    total_sales_everywhere DECIMAL(15,2) NOT NULL CHECK (total_sales_everywhere > 0),
+    total_sales_everywhere DECIMAL(15,2) NOT NULL CHECK (total_sales_everywhere >= 0),
     sales_factor_percentage DECIMAL(5,2) NOT NULL CHECK (sales_factor_percentage >= 0 AND sales_factor_percentage <= 100),
     created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_modified_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
