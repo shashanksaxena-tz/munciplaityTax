@@ -3,7 +3,13 @@
 **Feature Branch**: `013-system-deep-analysis`  
 **Created**: December 2, 2025  
 **Status**: Draft  
-**Input**: Deep analysis of backend and frontend systems including sequence flows, data flows, user journeys, rule engine, tax engine, API coverage, UI component mapping, Swagger documentation, and gap identification with logical flow validation.
+**Input**: Comprehensive system analysis covering:
+- Sequence flows and data flows
+- User journeys with role-based logical validation
+- Rule engine and tax engine integration
+- API coverage mapping (backend ↔ frontend)
+- Swagger documentation status
+- UI component inventory and gap identification
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -37,7 +43,7 @@ As a product owner, I want to see a complete map of all user journeys (taxpayer 
 
 1. **Given** the taxpayer individual filing journey (document upload → extraction → review → calculation → submission → payment), **When** the analysis runs, **Then** each step shows its completion status (COMPLETE, PARTIAL, MISSING) with specific details about what's working vs. missing.
 
-2. **Given** the business net profits filing journey (federal data entry → Schedule X reconciliation → Schedule Y allocation → tax calculation → submission), **When** the analysis runs, **Then** the report identifies all incomplete steps, particularly highlighting that Schedule X only has 6 fields when production requires 25+ fields.
+2. **Given** the business net profits filing journey (federal data entry → Schedule X reconciliation → Schedule Y allocation → tax calculation → submission), **When** the analysis runs, **Then** the report identifies all incomplete steps, particularly highlighting where Schedule X fields are insufficient compared to production requirements as documented in Gaps.md.
 
 3. **Given** the auditor review journey (view queue → assign case → review return → approve/reject → document request → e-signature), **When** the analysis runs, **Then** the report shows which auditor workflow steps exist vs. are completely missing (currently 0% implemented per documentation).
 
@@ -75,7 +81,7 @@ As a developer, I want to understand how the rule engine integrates (or fails to
 
 1. **Given** the rule-service and tax-engine-service, **When** the analysis examines their configurations, **Then** a clear diagram shows data flow between services, identifying any database connection mismatches.
 
-2. **Given** the documented rule engine disconnect (rule-service connecting to external cloud DB while tax-engine uses local Docker postgres), **When** the analysis runs, **Then** this integration failure is prominently highlighted with specific remediation steps.
+2. **Given** the documented rule engine disconnect (rule-service database configuration differs from tax-engine-service), **When** the analysis runs, **Then** this integration failure is prominently highlighted with specific remediation steps.
 
 3. **Given** rule categories (TAX_RATES, INCOME_INCLUSION, DEDUCTIONS, PENALTIES, FILING, ALLOCATION, WITHHOLDING, VALIDATION), **When** the analysis runs, **Then** a report shows which rules are actually loaded dynamically vs. hardcoded in Java source code.
 
@@ -95,7 +101,7 @@ As a QA lead, I want detailed sequence diagrams for each major system flow with 
 
 2. **Given** the document extraction flow (upload → Gemini AI processing → streaming response → form data parsing), **When** the analysis runs, **Then** the diagram shows implemented capabilities and missing features (e.g., visual provenance, bounding boxes).
 
-3. **Given** the payment processing flow (calculate balance → collect payment → update ledger → generate receipt), **When** the analysis runs, **Then** the diagram clearly shows which steps exist vs. are unimplemented (payment integration is currently 0% complete per documentation).
+3. **Given** the payment processing flow (calculate balance → collect payment → update ledger → generate receipt), **When** the analysis runs, **Then** the diagram clearly shows which steps exist vs. are unimplemented (per current documentation status).
 
 ---
 
@@ -190,8 +196,8 @@ As a security officer, I want to understand how sensitive data (SSN, EIN, bank a
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of backend API endpoints (estimated 50+ across 9 services) are cataloged with consumer mapping status.
-- **SC-002**: 100% of UI components (approximately 95 planned) are cataloged with implementation and linkage status.
+- **SC-001**: All backend API endpoints across all 9 services are cataloged with consumer mapping status.
+- **SC-002**: All UI components are cataloged with implementation and linkage status.
 - **SC-003**: All 4 primary user journeys (individual filing, business filing, auditor workflow, admin configuration) are documented with step-by-step completion status.
 - **SC-004**: Each of the 9 microservices has a documented Swagger status (AVAILABLE with link, or MISSING with specific gap).
 - **SC-005**: The rule engine integration analysis identifies all disconnects between intended architecture and current implementation.
