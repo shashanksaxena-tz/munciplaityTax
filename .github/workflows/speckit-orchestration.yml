@@ -1,0 +1,272 @@
+name: Speckit Agent Orchestration
+
+on:
+  workflow_dispatch:
+    inputs:
+      feature_description:
+        description: 'Feature description for spec generation'
+        required: true
+        type: string
+      short_name:
+        description: 'Short name for the feature branch (optional)'
+        required: false
+        type: string
+      run_agents:
+        description: 'Agents to run (comma-separated: specify,clarify,plan,tasks,checklist,analyze,implement,documentation,constitution)'
+        required: false
+        default: 'specify,clarify,plan,tasks,checklist,analyze'
+        type: string
+      skip_implementation:
+        description: 'Skip implementation step (plan-only mode)'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  SPECIFY_FEATURE: ''
+
+jobs:
+  # Step 1: Create feature and generate specification
+  specify:
+    name: Create Feature Specification
+    runs-on: ubuntu-latest
+    if: contains(github.event.inputs.run_agents, 'specify')
+    outputs:
+      branch_name: ${{ steps.create-feature.outputs.branch_name }}
+      spec_file: ${{ steps.create-feature.outputs.spec_file }}
+      feature_num: ${{ steps.create-feature.outputs.feature_num }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        shell: bash
+        run: |
+          # PowerShell is pre-installed on ubuntu-latest
+
+      - name: Create new feature
+        id: create-feature
+        shell: pwsh
+        run: |
+          $result = ./.specify/scripts/powershell/create-new-feature.ps1 `
+            -Json `
+            ${{ inputs.short_name && format('-ShortName "{0}"', inputs.short_name) || '' }} `
+            "${{ github.event.inputs.feature_description }}"
+          
+          $json = $result | ConvertFrom-Json
+          echo "branch_name=$($json.BRANCH_NAME)" >> $env:GITHUB_OUTPUT
+          echo "spec_file=$($json.SPEC_FILE)" >> $env:GITHUB_OUTPUT
+          echo "feature_num=$($json.FEATURE_NUM)" >> $env:GITHUB_OUTPUT
+          
+          echo "Created feature: $($json.BRANCH_NAME)"
+
+      - name: Push feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: Initialize spec for ${{ steps.create-feature.outputs.branch_name }}" || echo "No changes to commit"
+          git push origin HEAD:${{ steps.create-feature.outputs.branch_name }}
+
+  # Step 2: Run clarification agent
+  clarify:
+    name: Clarify Specification
+    runs-on: ubuntu-latest
+    needs: specify
+    if: contains(github.event.inputs.run_agents, 'clarify')
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Clarification placeholder
+        run: |
+          echo "🔍 Clarification agent would run here"
+          echo "Feature: ${{ needs.specify.outputs.branch_name }}"
+          echo "This step uses the speckit.clarify prompt to identify underspecified areas"
+          echo "See: .github/prompts/speckit.clarify.prompt.md"
+
+  # Step 3: Generate implementation plan
+  plan:
+    name: Generate Plan
+    runs-on: ubuntu-latest
+    needs: [specify, clarify]
+    if: contains(github.event.inputs.run_agents, 'plan')
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Setup plan
+        shell: pwsh
+        run: |
+          $env:SPECIFY_FEATURE = "${{ needs.specify.outputs.branch_name }}"
+          ./.specify/scripts/powershell/setup-plan.ps1 -Json
+
+      - name: Plan generation placeholder
+        run: |
+          echo "📋 Plan agent would run here"
+          echo "This step uses the speckit.plan prompt to generate plan.md"
+          echo "See: .github/prompts/speckit.plan.prompt.md"
+
+      - name: Commit plan
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "docs: Add implementation plan for ${{ needs.specify.outputs.branch_name }}" || echo "No changes to commit"
+          git push
+
+  # Step 4: Generate tasks
+  tasks:
+    name: Generate Tasks
+    runs-on: ubuntu-latest
+    needs: [specify, plan]
+    if: contains(github.event.inputs.run_agents, 'tasks')
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Tasks generation placeholder
+        run: |
+          echo "📝 Tasks agent would run here"
+          echo "This step uses the speckit.tasks prompt to generate tasks.md"
+          echo "See: .github/prompts/speckit.tasks.prompt.md"
+
+  # Step 5: Generate checklist
+  checklist:
+    name: Generate Checklist
+    runs-on: ubuntu-latest
+    needs: [specify, tasks]
+    if: contains(github.event.inputs.run_agents, 'checklist')
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Checklist generation placeholder
+        run: |
+          echo "✅ Checklist agent would run here"
+          echo "This step uses the speckit.checklist prompt to generate verification checklist"
+          echo "See: .github/prompts/speckit.checklist.prompt.md"
+
+  # Step 6: Analyze spec quality
+  analyze:
+    name: Analyze Specification
+    runs-on: ubuntu-latest
+    needs: [specify, tasks, checklist]
+    if: contains(github.event.inputs.run_agents, 'analyze')
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Analysis placeholder
+        run: |
+          echo "🔬 Analyze agent would run here"
+          echo "This step uses the speckit.analyze prompt for cross-artifact consistency check"
+          echo "See: .github/prompts/speckit.analyze.prompt.md"
+
+  # Step 7: Implementation (optional)
+  implement:
+    name: Implement Feature
+    runs-on: ubuntu-latest
+    needs: [specify, tasks, analyze]
+    if: |
+      contains(github.event.inputs.run_agents, 'implement') && 
+      github.event.inputs.skip_implementation != 'true'
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Implementation placeholder
+        run: |
+          echo "🛠️ Implement agent would run here"
+          echo "This step uses the speckit.implement prompt to execute tasks"
+          echo "See: .github/prompts/speckit.implement.prompt.md"
+
+  # Step 8: Generate documentation
+  documentation:
+    name: Generate Documentation
+    runs-on: ubuntu-latest
+    needs: [specify, implement]
+    if: |
+      always() && 
+      contains(github.event.inputs.run_agents, 'documentation') &&
+      needs.specify.result == 'success'
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Documentation placeholder
+        run: |
+          echo "📚 Documentation agent would run here"
+          echo "This step uses the documentation prompt to generate docs"
+          echo "See: .github/prompts/documentation.prompt.md"
+
+  # Step 9: Constitution compliance check
+  constitution:
+    name: Constitution Check
+    runs-on: ubuntu-latest
+    needs: [specify, analyze]
+    if: contains(github.event.inputs.run_agents, 'constitution')
+
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.specify.outputs.branch_name }}
+
+      - name: Constitution check placeholder
+        run: |
+          echo "⚖️ Constitution agent would run here"
+          echo "This step uses the speckit.constitution prompt to verify compliance"
+          echo "See: .github/prompts/speckit.constitution.prompt.md"
+          echo "Constitution: .specify/memory/constitution.md"
+
+  # Summary job
+  summary:
+    name: Workflow Summary
+    runs-on: ubuntu-latest
+    needs: [specify, clarify, plan, tasks, checklist, analyze, implement, documentation, constitution]
+    if: always()
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# Speckit Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Feature" >> $GITHUB_STEP_SUMMARY
+          echo "- **Description**: ${{ github.event.inputs.feature_description }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ needs.specify.outputs.branch_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Agent Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Agent | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Specify | ${{ needs.specify.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Clarify | ${{ needs.clarify.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Plan | ${{ needs.plan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tasks | ${{ needs.tasks.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Checklist | ${{ needs.checklist.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Analyze | ${{ needs.analyze.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Implement | ${{ needs.implement.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation | ${{ needs.documentation.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Constitution | ${{ needs.constitution.result }} |" >> $GITHUB_STEP_SUMMARY
