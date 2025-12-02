@@ -28,6 +28,19 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Dqi4Vp_81RqaSKw_9bwsdp
 - **Audit Trail**: Complete immutable history of all actions for compliance
 - **Role-Based Access**: Support for AUDITOR, SENIOR_AUDITOR, SUPERVISOR, MANAGER roles
 
+### Gemini AI Extraction Service (NEW)
+
+The extraction service leverages **Google Gemini 2.5 Flash** for intelligent document analysis:
+
+- **Universal Form Support**: Extracts data from Federal 1040, W-2, 1099-NEC/MISC, W-2G, Schedules C/E/F, and business forms (1120, 1065, Form 27)
+- **User-Provided API Keys**: Users can provide their own Gemini API key directly from the UI (never stored, session-only)
+- **Real-Time Feedback**: Live extraction progress with detected forms, taxpayer name preview, and confidence scores
+- **Confidence Scoring**: Field-level confidence with weighted scoring (Critical > High > Medium > Low)
+- **Document Provenance**: Track which page and location each field was extracted from
+- **Extraction Summary**: Detailed report of extracted forms, skipped pages, and processing duration
+
+See [docs/EXTRACTION_SERVICE_API.md](./docs/EXTRACTION_SERVICE_API.md) for complete API documentation.
+
 ## Architecture
 
 ### Frontend
@@ -48,7 +61,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Dqi4Vp_81RqaSKw_9bwsdp
 3. **Auth Service**: User authentication and authorization (port 8081)
 4. **Submission Service**: Tax return submissions and auditor workflow (port 8082)
 5. **Tax Engine Service**: Tax calculations and rules engine (port 8083)
-6. **Extraction Service**: AI-powered document extraction (port 8084)
+6. **Extraction Service**: AI-powered document extraction with Gemini 2.5 Flash (port 8084)
 7. **PDF Service**: PDF generation and manipulation (port 8085)
 8. **Tenant Service**: Multi-tenant management (port 8086)
 
@@ -59,6 +72,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Dqi4Vp_81RqaSKw_9bwsdp
 - Java 21
 - Maven 3.8+
 - PostgreSQL 15+
+- Gemini API Key (optional - users can provide their own via UI)
 
 ### Frontend
 
@@ -67,7 +81,7 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Dqi4Vp_81RqaSKw_9bwsdp
    npm install
    ```
 
-2. Set the `GEMINI_API_KEY` in `.env.local` to your Gemini API key
+2. (Optional) Set the `GEMINI_API_KEY` in `.env.local` for server-default API key. Users can also provide their own key directly in the UI.
 
 3. Run the development server:
    ```bash

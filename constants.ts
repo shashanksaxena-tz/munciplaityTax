@@ -1,5 +1,11 @@
 import { TaxRulesConfig, BusinessTaxRulesConfig, W2QualifyingWagesRule } from "./types";
 
+// Gemini AI Configuration
+// Use gemini-2.0-flash for stable document processing (1M token context, multimodal support)
+// Alternative models: gemini-1.5-flash-latest, gemini-2.5-flash, gemini-2.5-pro
+// See: https://ai.google.dev/gemini-api/docs/models
+export const GEMINI_DEFAULT_MODEL = 'gemini-2.0-flash';
+
 export const DEFAULT_TAX_RULES: TaxRulesConfig = {
     municipalRate: 0.020, // 2.0% Dublin
     municipalCreditLimitRate: 0.020, // 2.0% Cap
