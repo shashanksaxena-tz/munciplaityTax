@@ -22,6 +22,9 @@ on:
         default: true
         type: boolean
 
+permissions:
+  contents: write
+
 jobs:
   # Step 1: Create feature and generate specification
   specify:
