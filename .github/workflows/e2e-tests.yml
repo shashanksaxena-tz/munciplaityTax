@@ -72,17 +72,55 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: password
           EUREKA_CLIENT_ENABLED: 'false'
         run: |
-          # Start discovery service
-          java -jar backend/discovery-service/target/*.jar &
-          sleep 15
+          # Find and start discovery service
+          DISCOVERY_JAR=$(find backend/discovery-service/target -name "*.jar" -type f ! -name "*-sources.jar" | head -1)
+          if [ -z "$DISCOVERY_JAR" ]; then
+            echo "Error: Discovery service JAR not found"
+            exit 1
+          fi
+          echo "Starting discovery service: $DISCOVERY_JAR"
+          java -jar "$DISCOVERY_JAR" &
+          DISCOVERY_PID=$!
           
-          # Start gateway service
-          java -jar backend/gateway-service/target/*.jar &
-          sleep 10
+          # Wait for discovery service to be healthy
+          echo "Waiting for discovery service to be healthy..."
+          for i in {1..30}; do
+            if curl -sf http://localhost:8761/actuator/health > /dev/null 2>&1; then
+              echo "Discovery service is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Error: Discovery service failed to start"
+              exit 1
+            fi
+            sleep 2
+          done
           
-          # Wait for services to be ready
-          echo "Waiting for backend services..."
-          timeout 60 bash -c 'until curl -s http://localhost:8761/actuator/health > /dev/null; do sleep 2; done' || true
+          # Find and start gateway service
+          GATEWAY_JAR=$(find backend/gateway-service/target -name "*.jar" -type f ! -name "*-sources.jar" | head -1)
+          if [ -z "$GATEWAY_JAR" ]; then
+            echo "Error: Gateway service JAR not found"
+            exit 1
+          fi
+          echo "Starting gateway service: $GATEWAY_JAR"
+          java -jar "$GATEWAY_JAR" &
+          GATEWAY_PID=$!
+          
+          # Wait for gateway service to be healthy
+          echo "Waiting for gateway service to be healthy..."
+          for i in {1..30}; do
+            if curl -sf http://localhost:8080/actuator/health > /dev/null 2>&1; then
+              echo "Gateway service is healthy"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Error: Gateway service failed to start"
+              exit 1
+            fi
+            sleep 2
+          done
+          
+          echo "All backend services are running"
 
       - name: Run E2E tests
         run: npm run test:e2e

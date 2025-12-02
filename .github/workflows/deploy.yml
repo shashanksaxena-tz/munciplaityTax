@@ -25,7 +25,7 @@ jobs:
     name: Build Frontend
     runs-on: ubuntu-latest
     outputs:
-      image-tag: ${{ steps.meta.outputs.tags }}
+      image-tags: ${{ steps.meta.outputs.tags }}
 
     steps:
       - name: Checkout code
@@ -141,7 +141,7 @@ jobs:
         run: |
           echo "🚀 Deploying to ${{ github.event.inputs.environment || 'staging' }}"
           echo "Image tags:"
-          echo "  Frontend: ${{ needs.build-frontend.outputs.image-tag }}"
+          echo "  Frontend: ${{ needs.build-frontend.outputs.image-tags }}"
           echo "  Backend services: Built and pushed"
 
       # Add your deployment steps here based on your infrastructure
