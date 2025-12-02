@@ -139,9 +139,24 @@ public class RealGeminiService {
                     .uri("/models/" + model + ":generateContent?key=" + trimmedKey)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(request)
-                    .retrieve()
-                    .bodyToFlux(String.class)
-                    .flatMap(response -> parseStreamingResponse(response, startTime, model))
+                    .exchangeToFlux(response -> {
+                        if (response.statusCode().isError()) {
+                            // Extract error message from response body
+                            return response.bodyToMono(String.class)
+                                    .flatMapMany(errorBody -> {
+                                        String errorMessage = extractGeminiErrorMessage(errorBody, response.statusCode().value());
+                                        log.error("Gemini API Error (HTTP {}): {}", response.statusCode().value(), errorMessage);
+                                        return createErrorResponse(errorMessage, startTime);
+                                    })
+                                    .onErrorResume(e -> {
+                                        String fallbackMessage = "API Error (HTTP " + response.statusCode().value() + ")";
+                                        log.error("Failed to parse error response: {}", e.getMessage());
+                                        return createErrorResponse(fallbackMessage, startTime);
+                                    });
+                        }
+                        return response.bodyToFlux(String.class)
+                                .flatMap(body -> parseStreamingResponse(body, startTime, model));
+                    })
                     .onErrorResume(error -> {
                         log.error("Gemini API Error: {}", error.getMessage(), error);
                         return createErrorResponse(error.getMessage(), startTime);
@@ -149,6 +164,42 @@ public class RealGeminiService {
         } catch (Exception e) {
             log.error("Unexpected error in extractData", e);
             return createErrorResponse(e.getMessage(), startTime);
+        }
+    }
+
+    /**
+     * Extract error message from Gemini API error response.
+     * Expected format: {"error":{"code":400,"message":"API key not valid...","status":"INVALID_ARGUMENT"}}
+     */
+    private String extractGeminiErrorMessage(String errorBody, int httpStatus) {
+        try {
+            if (errorBody == null || errorBody.trim().isEmpty()) {
+                return "API Error (HTTP " + httpStatus + ")";
+            }
+            
+            JsonNode root = objectMapper.readTree(errorBody);
+            JsonNode error = root.path("error");
+            
+            if (!error.isMissingNode()) {
+                String message = error.path("message").asText("");
+                String status = error.path("status").asText("");
+                int code = error.path("code").asInt(httpStatus);
+                
+                if (!message.isEmpty()) {
+                    // Return the actual API error message (e.g., "API key not valid...")
+                    log.debug("Gemini API error - Code: {}, Status: {}, Message: {}", code, status, message);
+                    return message;
+                }
+            }
+            
+            // Fallback: return truncated raw body
+            String truncated = errorBody.length() > 200 ? errorBody.substring(0, 200) + "..." : errorBody;
+            return "API Error: " + truncated;
+            
+        } catch (Exception e) {
+            log.warn("Failed to parse error body: {}", e.getMessage());
+            return "API Error (HTTP " + httpStatus + "): " + 
+                   (errorBody != null ? errorBody.substring(0, Math.min(100, errorBody.length())) : "Unknown");
         }
     }
 

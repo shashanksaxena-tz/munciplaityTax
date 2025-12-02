@@ -316,11 +316,13 @@ interface ExtractedForm {
 
 ### Error Response Format
 
+The extraction service properly parses Gemini API error responses and returns meaningful error messages. When an invalid API key is used, users will see the actual error message from Google's API (e.g., "API key not valid. Please pass a valid API key.") rather than generic HTTP error codes.
+
 ```json
 {
   "status": "ERROR",
   "progress": 0,
-  "log": ["Extraction failed: API key invalid"],
+  "log": ["Extraction failed: API key not valid. Please pass a valid API key."],
   "detectedForms": [],
   "confidence": 0,
   "summary": {
@@ -332,7 +334,7 @@ interface ExtractedForm {
       {
         "formType": "Unknown",
         "pageNumber": 0,
-        "reason": "API Error: Invalid API key",
+        "reason": "API Error: API key not valid. Please pass a valid API key.",
         "suggestion": "Please check your API key and try again"
       }
     ],
@@ -344,15 +346,26 @@ interface ExtractedForm {
 }
 ```
 
-### Common Error Codes
+### Gemini API Error Messages
+
+The service extracts and returns the actual error message from Google's Gemini API:
+
+| Error Message | Cause | Resolution |
+|--------------|-------|------------|
+| `API key not valid. Please pass a valid API key.` | Invalid or malformed API key | Verify API key in Google AI Studio |
+| `Request lacks valid authentication credentials.` | Missing API key | Provide API key via header or config |
+| `Resource has been exhausted` | API quota exceeded | Wait or increase quota |
+| `Model not found` | Invalid model name | Use supported model (e.g., `gemini-2.0-flash`) |
+
+### HTTP Status Codes
 
 | Error | Description | Resolution |
 |-------|-------------|------------|
 | `401 Unauthorized` | Missing or invalid JWT token | Provide valid authentication |
-| `400 Bad Request` | Invalid file format | Use PDF, JPG, or PNG |
+| `400 Bad Request` | Invalid file format or Gemini API error | Check file and API key |
 | `413 Payload Too Large` | File exceeds 50MB limit | Reduce file size |
 | `429 Too Many Requests` | API rate limit exceeded | Wait and retry |
-| `500 Internal Server Error` | Extraction processing error | Check API key and retry |
+| `500 Internal Server Error` | Extraction processing error | Check logs and retry |
 
 ---
 
