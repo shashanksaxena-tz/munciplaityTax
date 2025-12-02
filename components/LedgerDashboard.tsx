@@ -219,25 +219,47 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
   const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [useMockData, setUseMockData] = useState<boolean>(() => {
+    const saved = localStorage.getItem('ledger_dashboard_use_mock');
+    return saved === 'true';
+  });
+  const [dataSource, setDataSource] = useState<'backend' | 'mock'>('backend');
 
   useEffect(() => {
     fetchDashboardData();
     // Refresh every 5 minutes
     const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [userRole, tenantId, filerId, municipalityId]);
+  }, [userRole, tenantId, filerId, municipalityId, useMockData]);
+
+  const toggleDataSource = () => {
+    const newValue = !useMockData;
+    setUseMockData(newValue);
+    localStorage.setItem('ledger_dashboard_use_mock', String(newValue));
+  };
 
   const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    // If mock mode is explicitly enabled, use mock data
+    if (useMockData) {
+      setMetrics(getMockDashboardMetrics());
+      setRecentTransactions(getMockTransactions());
+      setDataSource('mock');
+      setLoading(false);
+      return;
+    }
+    
     try {
-      setLoading(true);
-      setError(null);
-
       if (userRole === 'filer' && filerId) {
         // Fetch filer-specific data
         await fetchFilerData(filerId);
+        setDataSource('backend');
       } else {
         // Fetch municipality/admin data
         await fetchMunicipalityData();
+        setDataSource('backend');
       }
 
     } catch (err) {
@@ -245,6 +267,7 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
       console.warn('Backend not available, using mock data:', err);
       setMetrics(getMockDashboardMetrics());
       setRecentTransactions(getMockTransactions());
+      setDataSource('mock');
       setError(null); // Clear error since we have fallback data
     } finally {
       setLoading(false);
@@ -370,14 +393,35 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
                 : 'Monitor revenue, receivables, and financial reconciliation'}
             </p>
           </div>
-          <button
-            onClick={fetchDashboardData}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Data Source Toggle */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+              <span className={`text-xs font-medium ${dataSource === 'backend' ? 'text-green-600' : 'text-orange-600'}`}>
+                {dataSource === 'backend' ? '● Backend' : '● Mock'}
+              </span>
+              <button
+                onClick={toggleDataSource}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  useMockData ? 'bg-orange-500' : 'bg-green-500'
+                }`}
+                title={useMockData ? 'Switch to Backend Data' : 'Switch to Mock Data'}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                    useMockData ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            <button
+              onClick={fetchDashboardData}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 

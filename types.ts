@@ -654,6 +654,7 @@ export interface TaxRule {
   ruleId: string;
   ruleCode: string;
   ruleName: string;
+  description?: string;    // Human-readable description of what this rule does
   category: RuleCategory;
   valueType: RuleValueType;
   value: RuleValue;
