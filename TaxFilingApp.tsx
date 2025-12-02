@@ -274,6 +274,8 @@ export default function TaxFilingApp() {
     }
   };
 
+  const { currentTenant, isAdmin } = useAuth();
+  
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20">
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
@@ -284,8 +286,22 @@ export default function TaxFilingApp() {
             </button>
             <div className="h-6 w-px bg-slate-200"></div>
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-blue-600">
-              MuniTax <span className="font-light text-slate-400">| Dublin</span>
+              MuniTax <span className="font-light text-slate-400">| {currentTenant?.name || 'Dublin'}</span>
             </h1>
+            
+            {/* Tenant Badge */}
+            {currentTenant && (
+              <div className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-200">
+                Tenant: {currentTenant.id}
+              </div>
+            )}
+            
+            {/* Admin Badge */}
+            {isAdmin && (
+              <div className="px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full border border-purple-200">
+                Admin
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

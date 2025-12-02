@@ -2,9 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
+// Available tenants for selection
+const AVAILABLE_TENANTS = [
+    { id: 'dublin', name: 'Dublin Municipality' },
+    { id: 'columbus', name: 'Columbus City' },
+    { id: 'westerville', name: 'Westerville Township' },
+];
+
 export const LoginForm: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [selectedTenant, setSelectedTenant] = useState('dublin');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
@@ -13,17 +21,24 @@ export const LoginForm: React.FC = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
+    // Check if this is admin login
+    const isAdminLogin = email.toLowerCase() === 'admin';
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
         try {
-            await login(email, password);
+            await login(email, password, isAdminLogin ? undefined : selectedTenant);
 
-            // Redirect based on user role (will be implemented in AuthContext)
-            // For now, redirect to main app
-            navigate('/');
+            // Redirect based on user role
+            // Admin users go to admin dashboard
+            if (isAdminLogin) {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
         } catch (err: any) {
             setError(err.message || 'Invalid email or password');
         } finally {
@@ -66,20 +81,50 @@ export const LoginForm: React.FC = () => {
                         {/* Email Input */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                Email Address
+                                Username / Email Address
                             </label>
                             <input
                                 id="email"
                                 name="email"
-                                type="email"
-                                autoComplete="email"
+                                type="text"
+                                autoComplete="username"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-150 ease-in-out"
-                                placeholder="you@example.com"
+                                placeholder="you@example.com or 'admin'"
                             />
+                            {isAdminLogin && (
+                                <p className="mt-1 text-xs text-indigo-600">
+                                    Admin login detected - full system access
+                                </p>
+                            )}
                         </div>
+
+                        {/* Tenant Selection - shown only for non-admin users */}
+                        {!isAdminLogin && (
+                            <div>
+                                <label htmlFor="tenant" className="block text-sm font-medium text-gray-700 mb-1">
+                                    Municipality / Tenant
+                                </label>
+                                <select
+                                    id="tenant"
+                                    name="tenant"
+                                    value={selectedTenant}
+                                    onChange={(e) => setSelectedTenant(e.target.value)}
+                                    className="appearance-none relative block w-full px-4 py-3 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition duration-150 ease-in-out bg-white"
+                                >
+                                    {AVAILABLE_TENANTS.map((tenant) => (
+                                        <option key={tenant.id} value={tenant.id}>
+                                            {tenant.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <p className="mt-1 text-xs text-gray-500">
+                                    Select the municipality you're filing for
+                                </p>
+                            </div>
+                        )}
 
                         {/* Password Input */}
                         <div>
