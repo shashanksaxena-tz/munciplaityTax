@@ -208,6 +208,13 @@ export interface BaseTaxForm {
   extractionReason?: string;
   formType: TaxFormType;
   owner?: 'PRIMARY' | 'SPOUSE';
+  // Enhanced extraction metadata
+  isAiExtracted?: boolean;           // True if form was extracted by AI, false/undefined if manually entered
+  sourceDocumentUrl?: string;        // URL to the original uploaded PDF for validation
+  sourceDocumentName?: string;       // Original filename of uploaded document
+  fieldExtractionReasons?: Record<string, string>;  // Per-field explanation of why value was extracted
+  fieldPageNumbers?: Record<string, number>;        // Per-field page number in source document
+  fieldBoundingBoxes?: Record<string, BoundingBox>; // Per-field location in PDF for highlighting
 }
 
 export interface W2Form extends BaseTaxForm { formType: TaxFormType.W2; employer: string; employerEin: string; employerAddress: Address; employerCounty?: string; totalMonthsInCity?: number; employee: string; employeeInfo?: TaxPayerProfile; federalWages: number; medicareWages: number; localWages: number; localWithheld: number; locality: string; taxDue?: number; lowConfidenceFields?: string[]; }
@@ -370,12 +377,71 @@ export interface DiscrepancySummary {
 export interface PaymentRecord { id: string; date: string; amount: number; confirmationNumber: string; method: 'CREDIT_CARD' | 'ACH'; status: 'SUCCESS' | 'FAILED'; }
 
 export interface RealTimeExtractionUpdate {
-  status: 'SCANNING' | 'ANALYZING' | 'EXTRACTING' | 'COMPLETE';
+  status: 'SCANNING' | 'ANALYZING' | 'EXTRACTING' | 'COMPLETE' | 'ERROR';
   progress: number;
   log: string[];
   detectedForms: string[];
   currentProfile?: { name: string; ssn: string };
   confidence: number;
+  // Enhanced provenance and confidence tracking
+  currentFormType?: string;
+  currentTaxpayerName?: string;
+  fieldConfidences?: Record<string, FieldConfidenceInfo>;
+  formProvenances?: FormProvenance[];
+  summary?: ExtractionSummary;
+  result?: any;
+}
+
+export interface FieldConfidenceInfo {
+  fieldName: string;
+  confidence: number;        // 0.0 - 1.0
+  weight: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  weightedScore: number;     // confidence * weight multiplier
+  extractionSource: 'AI_EXTRACTED' | 'DERIVED' | 'DEFAULT';
+}
+
+export interface FormProvenance {
+  formType: string;
+  pageNumber: number;
+  boundingBox?: BoundingBox;
+  extractionReason: string;
+  formConfidence: number;
+  fields: FieldProvenance[];
+}
+
+export interface BoundingBox {
+  x: number;      // Left position (0-1 normalized)
+  y: number;      // Top position (0-1 normalized)
+  width: number;  // Width (0-1 normalized)
+  height: number; // Height (0-1 normalized)
+}
+
+export interface FieldProvenance {
+  fieldName: string;
+  pageNumber: number;
+  boundingBox?: BoundingBox;
+  rawValue?: string;
+  processedValue?: string;
+  confidence: number;
+}
+
+export interface ExtractionSummary {
+  totalPagesScanned: number;
+  formsExtracted: number;
+  formsSkipped: number;
+  extractedFormTypes: string[];
+  skippedForms: SkippedForm[];
+  overallConfidence: number;
+  confidenceByFormType: Record<string, number>;
+  extractionDurationMs: number;
+  modelUsed: string;
+}
+
+export interface SkippedForm {
+  formType: string;
+  pageNumber: number;
+  reason: string;
+  suggestion: string;
 }
 
 // ===== AUDITOR WORKFLOW TYPES =====
