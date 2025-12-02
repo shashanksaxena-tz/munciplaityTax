@@ -129,14 +129,16 @@ services:
       args:
         SERVICE_NAME: extraction-service
     container_name: extraction-service
+    ports:
+      - "8083:8083"
     networks:
       - munitax-network
     depends_on:
       - discovery-service
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
-      GEMINI_API_KEY: AIzaSyBeSnWAPWvR_ShBti6dsL0zkXLMpDoSKjQ
-      GEMINI_API_MODEL: gemini-1.5-flash-latest
+      GEMINI_API_KEY: xxxxx
+      GEMINI_API_MODEL: gemini-2.0-flash
 
   submission-service:
     build:

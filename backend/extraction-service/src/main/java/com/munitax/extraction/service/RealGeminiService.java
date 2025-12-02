@@ -2,7 +2,6 @@ package com.munitax.extraction.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.munitax.extraction.model.ExtractionDto;
 import com.munitax.extraction.model.ExtractionDto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,8 +153,10 @@ public class RealGeminiService {
                                         return createErrorResponse(fallbackMessage, startTime);
                                     });
                         }
-                        return response.bodyToFlux(String.class)
-                                .flatMap(body -> parseStreamingResponse(body, startTime, model));
+                        // Use bodyToMono to ensure we get the complete JSON response before parsing
+                        // bodyToFlux(String.class) can split the response into chunks, causing malformed JSON errors
+                        return response.bodyToMono(String.class)
+                                .flatMapMany(body -> parseStreamingResponse(body, startTime, model));
                     })
                     .onErrorResume(error -> {
                         log.error("Gemini API Error: {}", error.getMessage(), error);
@@ -252,7 +253,20 @@ public class RealGeminiService {
             JsonNode candidates = root.path("candidates");
 
             if (candidates.isArray() && !candidates.isEmpty()) {
-                JsonNode content = candidates.get(0).path("content");
+                JsonNode candidate = candidates.get(0);
+                
+                // Check for finishReason to handle safety blocks or other stop reasons
+                String finishReason = candidate.path("finishReason").asText("");
+                if ("SAFETY".equals(finishReason)) {
+                    log.warn("Gemini API blocked content due to safety settings");
+                    return createErrorResponse("Content blocked by safety filters. Please ensure the document is appropriate.", startTime);
+                }
+                if ("RECITATION".equals(finishReason)) {
+                    log.warn("Gemini API blocked content due to recitation check");
+                    return createErrorResponse("Content blocked by copyright/recitation filters.", startTime);
+                }
+
+                JsonNode content = candidate.path("content");
                 JsonNode parts = content.path("parts");
 
                 if (parts.isArray() && !parts.isEmpty()) {
@@ -473,40 +487,47 @@ public class RealGeminiService {
     }
 
     private Object buildMockResult() {
-        return Map.of(
-                "scanMetadata", Map.of("pageCount", 2, "scanQuality", "HIGH"),
-                "taxPayerProfile", Map.of(
-                        "name", "John Q. Taxpayer",
-                        "ssn", "***-**-1234",
-                        "filingStatus", "SINGLE",
-                        "address", Map.of(
-                                "street", "123 Main St",
-                                "city", "Dublin",
-                                "state", "OH",
-                                "zip", "43017"
-                        )
-                ),
-                "forms", List.of(
-                        Map.of(
-                                "formType", "W-2",
-                                "confidenceScore", 0.95,
-                                "pageNumber", 1,
-                                "extractionReason", "Standard W-2 form detected",
-                                "employer", "Acme Corporation",
-                                "employerEin", "12-3456789",
-                                "federalWages", 75000.00,
-                                "medicareWages", 75000.00,
-                                "localWages", 75000.00,
-                                "localWithheld", 1500.00,
-                                "locality", "Dublin OH",
-                                "fieldConfidence", Map.of(
-                                        "federalWages", 0.98,
-                                        "localWages", 0.92,
-                                        "employer", 0.95
-                                )
-                        )
-                )
-        );
+        Map<String, Object> scanMetadata = new HashMap<>();
+        scanMetadata.put("pageCount", 2);
+        scanMetadata.put("scanQuality", "HIGH");
+
+        Map<String, Object> address = new HashMap<>();
+        address.put("street", "123 Main St");
+        address.put("city", "Dublin");
+        address.put("state", "OH");
+        address.put("zip", "43017");
+
+        Map<String, Object> taxPayerProfile = new HashMap<>();
+        taxPayerProfile.put("name", "John Q. Taxpayer");
+        taxPayerProfile.put("ssn", "***-**-1234");
+        taxPayerProfile.put("filingStatus", "SINGLE");
+        taxPayerProfile.put("address", address);
+
+        Map<String, Object> fieldConfidence = new HashMap<>();
+        fieldConfidence.put("federalWages", 0.98);
+        fieldConfidence.put("localWages", 0.92);
+        fieldConfidence.put("employer", 0.95);
+
+        Map<String, Object> w2Form = new HashMap<>();
+        w2Form.put("formType", "W-2");
+        w2Form.put("confidenceScore", 0.95);
+        w2Form.put("pageNumber", 1);
+        w2Form.put("extractionReason", "Standard W-2 form detected");
+        w2Form.put("employer", "Acme Corporation");
+        w2Form.put("employerEin", "12-3456789");
+        w2Form.put("federalWages", 75000.00);
+        w2Form.put("medicareWages", 75000.00);
+        w2Form.put("localWages", 75000.00);
+        w2Form.put("localWithheld", 1500.00);
+        w2Form.put("locality", "Dublin OH");
+        w2Form.put("fieldConfidence", fieldConfidence);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("scanMetadata", scanMetadata);
+        result.put("taxPayerProfile", taxPayerProfile);
+        result.put("forms", List.of(w2Form));
+
+        return result;
     }
 
     private Flux<ExtractionUpdate> createErrorResponse(String errorMessage, long startTime) {
