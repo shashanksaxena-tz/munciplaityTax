@@ -162,6 +162,25 @@ export const LoginForm: React.FC = () => {
                         </button>
                     </div>
 
+                    {/* Demo Credentials Hint */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <p className="text-xs text-gray-500 font-medium mb-2">Demo Credentials:</p>
+                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                            <div>
+                                <span className="font-medium">Admin:</span> admin@example.com / admin
+                            </div>
+                            <div>
+                                <span className="font-medium">Auditor:</span> auditor@example.com / auditor
+                            </div>
+                            <div>
+                                <span className="font-medium">Filer:</span> filer@example.com / filer
+                            </div>
+                            <div>
+                                <span className="font-medium">Business:</span> business@example.com / business
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Register Link */}
                     <div className="text-center">
                         <p className="text-sm text-gray-600">

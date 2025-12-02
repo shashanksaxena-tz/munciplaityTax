@@ -36,10 +36,40 @@ interface AuthProviderProps {
 // Demo user for testing UI without backend
 const DEMO_USER: User = {
     id: 'demo-user-1',
-    email: 'admin@dublin.gov',
+    email: 'admin@example.com',
     firstName: 'Demo',
     lastName: 'Admin',
     roles: ['ROLE_ADMIN', 'ROLE_TAX_ADMINISTRATOR', 'ROLE_MANAGER', 'ROLE_AUDITOR', 'ROLE_SUPERVISOR'],
+    tenantId: 'tenant-1'
+};
+
+// Auditor demo user  
+const AUDITOR_USER: User = {
+    id: 'auditor-user-1',
+    email: 'auditor@example.com',
+    firstName: 'Demo',
+    lastName: 'Auditor',
+    roles: ['ROLE_AUDITOR', 'ROLE_SENIOR_AUDITOR'],
+    tenantId: 'tenant-1'
+};
+
+// Filer demo user
+const FILER_USER: User = {
+    id: 'filer-user-1',
+    email: 'filer@example.com',
+    firstName: 'Test',
+    lastName: 'Filer',
+    roles: ['ROLE_INDIVIDUAL'],
+    tenantId: 'tenant-1'
+};
+
+// Business demo user
+const BUSINESS_USER: User = {
+    id: 'business-user-1',
+    email: 'business@example.com',
+    firstName: 'Business',
+    lastName: 'Owner',
+    roles: ['ROLE_BUSINESS'],
     tenantId: 'tenant-1'
 };
 
@@ -94,7 +124,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
             console.log('Login attempt for:', email);
             
-            // Check for demo mode login
+            // Check for demo/admin/auditor mode login
+            // admin@example.com with password 'admin' enables admin demo mode
+            if (email === 'admin@example.com' && password === 'admin') {
+                console.log('Admin demo mode login');
+                localStorage.setItem('demo_mode', 'true');
+                setUser(DEMO_USER);
+                setToken('demo-token-admin');
+                setIsLoading(false);
+                return;
+            }
+            
+            // auditor@example.com with password 'auditor' enables auditor demo mode
+            if (email === 'auditor@example.com' && password === 'auditor') {
+                console.log('Auditor demo mode login');
+                localStorage.setItem('demo_mode', 'true');
+                setUser(AUDITOR_USER);
+                setToken('demo-token-auditor');
+                setIsLoading(false);
+                return;
+            }
+            
+            // filer@example.com with password 'filer' enables filer demo mode
+            if (email === 'filer@example.com' && password === 'filer') {
+                console.log('Filer demo mode login');
+                localStorage.setItem('demo_mode', 'true');
+                setUser(FILER_USER);
+                setToken('demo-token-filer');
+                setIsLoading(false);
+                return;
+            }
+            
+            // business@example.com with password 'business' enables business demo mode
+            if (email === 'business@example.com' && password === 'business') {
+                console.log('Business demo mode login');
+                localStorage.setItem('demo_mode', 'true');
+                setUser(BUSINESS_USER);
+                setToken('demo-token-business');
+                setIsLoading(false);
+                return;
+            }
+            
+            // Legacy demo@example.com still works
             if (localStorage.getItem('demo_mode') === 'true' || email === 'demo@example.com') {
                 console.log('Demo mode login');
                 localStorage.setItem('demo_mode', 'true');

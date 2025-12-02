@@ -97,6 +97,15 @@ export const RegistrationForm: React.FC = () => {
     };
 
     const validateStep3 = (): boolean => {
+        // Auditors don't need to provide SSN/address - they only need basic info
+        if (formData.userRole === 'ROLE_AUDITOR') {
+            if (!formData.agreeToTerms) {
+                setError('You must agree to the terms and conditions');
+                return false;
+            }
+            return true;
+        }
+        
         if (!formData.ssnOrEin) {
             setError('Please enter your SSN or EIN');
             return false;
@@ -363,92 +372,111 @@ export const RegistrationForm: React.FC = () => {
                     {/* Step 3: Profile & Address */}
                     {step === 3 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Profile & Address</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                {formData.userRole === 'ROLE_AUDITOR' ? 'Confirmation' : 'Profile & Address'}
+                            </h3>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    {formData.profileType === 'BUSINESS' ? 'EIN' : 'SSN'} *
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.ssnOrEin}
-                                    onChange={(e) => updateField('ssnOrEin', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    placeholder={formData.profileType === 'BUSINESS' ? '12-3456789' : '123-45-6789'}
-                                />
-                            </div>
-
-                            {formData.profileType === 'BUSINESS' && (
+                            {/* Auditors don't need SSN/EIN or address */}
+                            {formData.userRole === 'ROLE_AUDITOR' ? (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <div className="flex items-center">
+                                        <svg className="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p className="text-sm text-blue-800">
+                                            As an auditor, you don't need to provide SSN or address information.
+                                            Your account will be reviewed and approved by an administrator.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
                                 <>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            {formData.profileType === 'BUSINESS' ? 'EIN' : 'SSN'} *
+                                        </label>
                                         <input
                                             type="text"
                                             required
-                                            value={formData.businessName}
-                                            onChange={(e) => updateField('businessName', e.target.value)}
+                                            value={formData.ssnOrEin}
+                                            onChange={(e) => updateField('ssnOrEin', e.target.value)}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            placeholder={formData.profileType === 'BUSINESS' ? '12-3456789' : '123-45-6789'}
+                                        />
+                                    </div>
+
+                                    {formData.profileType === 'BUSINESS' && (
+                                        <>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    value={formData.businessName}
+                                                    onChange={(e) => updateField('businessName', e.target.value)}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Fiscal Year End</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.fiscalYearEnd}
+                                                    onChange={(e) => updateField('fiscalYearEnd', e.target.value)}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    placeholder="12/31"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.street}
+                                            onChange={(e) => updateField('street', e.target.value)}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                                         />
                                     </div>
+
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.city}
+                                                onChange={(e) => updateField('city', e.target.value)}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                                            <select
+                                                value={formData.state}
+                                                onChange={(e) => updateField('state', e.target.value)}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            >
+                                                <option value="OH">OH</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Fiscal Year End</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code *</label>
                                         <input
                                             type="text"
-                                            value={formData.fiscalYearEnd}
-                                            onChange={(e) => updateField('fiscalYearEnd', e.target.value)}
+                                            required
+                                            value={formData.zip}
+                                            onChange={(e) => updateField('zip', e.target.value)}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                            placeholder="12/31"
+                                            placeholder="43016"
                                         />
                                     </div>
                                 </>
                             )}
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.street}
-                                    onChange={(e) => updateField('street', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.city}
-                                        onChange={(e) => updateField('city', e.target.value)}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
-                                    <select
-                                        value={formData.state}
-                                        onChange={(e) => updateField('state', e.target.value)}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    >
-                                        <option value="OH">OH</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.zip}
-                                    onChange={(e) => updateField('zip', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    placeholder="43016"
-                                />
-                            </div>
 
                             <div className="flex items-start">
                                 <input
