@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { api } from './services/api';
 import { UploadSection } from './components/UploadSection';
 import { ReviewSection } from './components/ReviewSection';
 import { ResultsSection } from './components/ResultsSection';
@@ -17,13 +16,14 @@ import { TaxFormData, AppStep, TaxCalculationResult, TaxFormType, W2Form, Form10
 import { DEFAULT_TAX_RULES, DEFAULT_BUSINESS_RULES } from './constants';
 import { saveSession, createNewSession } from './services/sessionService';
 import { Calculator, Settings, Briefcase, User, Home, Save, CheckCircle } from 'lucide-react';
-
 import { useAuth } from './contexts/AuthContext';
+import { api, UserProfile } from './services/api';
 
 export default function TaxFilingApp() {
   const { user } = useAuth();
   const [currentSession, setCurrentSession] = useState<TaxReturnSession | null>(null);
   const [step, setStep] = useState<AppStep>(AppStep.DASHBOARD);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   // State
   const [forms, setForms] = useState<TaxFormData[]>([]);
@@ -43,6 +43,41 @@ export default function TaxFilingApp() {
   const [businessRules, setBusinessRules] = useState<BusinessTaxRulesConfig>(DEFAULT_BUSINESS_RULES);
   const [showBizRules, setShowBizRules] = useState(false);
 
+  // Fetch user profile on mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const profile = await api.users.getPrimaryProfile();
+        if (profile) {
+          setUserProfile(profile);
+        }
+      } catch (error) {
+        console.warn('Could not fetch user profile:', error);
+      }
+    };
+
+    if (user?.id) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  // Pre-populate taxpayer profile from user profile when session is loaded or created
+  useEffect(() => {
+    if (currentSession?.type === 'INDIVIDUAL' && userProfile && !currentSession.profile) {
+      const prePopulatedProfile: TaxPayerProfile = {
+        name: userProfile.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+        ssn: userProfile.ssnOrEin ? userProfile.ssnOrEin.slice(-4) : undefined,
+        address: userProfile.address ? {
+          street: userProfile.address.street || '',
+          city: userProfile.address.city || '',
+          state: userProfile.address.state || '',
+          zip: userProfile.address.zip || ''
+        } : { street: '', city: '', state: '', zip: '' }
+      };
+      setTaxPayerProfile(prePopulatedProfile);
+    }
+  }, [currentSession, userProfile, user]);
+
   // Sync Session on Load
   useEffect(() => {
     if (currentSession) {
@@ -53,7 +88,30 @@ export default function TaxFilingApp() {
         }
       } else {
         setIndividualForms(currentSession.forms);
-        setTaxPayerProfile(currentSession.profile as TaxPayerProfile);
+        
+        // Pre-populate profile from user profile if session profile is empty
+        let sessionProfile = currentSession.profile as TaxPayerProfile;
+        if (!sessionProfile.name && userProfile) {
+          sessionProfile = {
+            ...sessionProfile,
+            name: userProfile.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim(),
+            ssn: userProfile.ssnOrEin ? userProfile.ssnOrEin.slice(-4) : sessionProfile.ssn,
+            address: userProfile.address ? {
+              street: userProfile.address.street || sessionProfile.address?.street || '',
+              city: userProfile.address.city || sessionProfile.address?.city || '',
+              state: userProfile.address.state || sessionProfile.address?.state || '',
+              zip: userProfile.address.zip || sessionProfile.address?.zip || ''
+            } : sessionProfile.address
+          };
+        } else if (!sessionProfile.name && user) {
+          // Fallback to auth user data if no profile data
+          sessionProfile = {
+            ...sessionProfile,
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim()
+          };
+        }
+        
+        setTaxPayerProfile(sessionProfile);
         setReturnSettings(currentSession.settings);
         setCalculationResult(currentSession.lastCalculationResult as TaxCalculationResult || null);
 
@@ -70,7 +128,7 @@ export default function TaxFilingApp() {
         setStep(AppStep.DASHBOARD);
       }
     }
-  }, [currentSession]);
+  }, [currentSession, userProfile, user]);
 
   const handleSave = () => {
     if (currentSession) {
@@ -337,11 +395,15 @@ export default function TaxFilingApp() {
         {step === AppStep.REGISTER_BUSINESS && (
           <BusinessRegistration
             onRegister={(profile) => {
-              const s = createNewSession(profile, undefined, 'BUSINESS');
+              const s = createNewSession(profile, undefined, 'BUSINESS', user?.id);
               setCurrentSession(s);
               setStep(AppStep.BUSINESS_DASHBOARD);
             }}
             onCancel={() => setStep(AppStep.DASHBOARD)}
+            userProfile={user ? {
+              name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+              email: user.email
+            } : undefined}
           />
         )}
 

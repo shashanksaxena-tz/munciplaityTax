@@ -2,6 +2,26 @@ import { TaxFormData, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCal
 
 const API_BASE_URL = '/api/v1';
 
+export interface UserProfile {
+    id: string;
+    userId: string;
+    type: 'INDIVIDUAL' | 'BUSINESS';
+    name: string;
+    ssnOrEin: string;
+    businessName?: string;
+    fiscalYearEnd?: string;
+    address: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+        country: string;
+    };
+    relationshipToUser?: string;
+    isPrimary: boolean;
+    active: boolean;
+}
+
 export const api = {
     auth: {
         login: async (credentials: any) => {
@@ -30,6 +50,30 @@ export const api = {
                 body: JSON.stringify({ token })
             });
             return response.ok;
+        }
+    },
+
+    users: {
+        getProfiles: async (): Promise<UserProfile[]> => {
+            const response = await fetch(`${API_BASE_URL}/users/profiles`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch profiles');
+            return response.json();
+        },
+        getPrimaryProfile: async (): Promise<UserProfile | null> => {
+            const response = await fetch(`${API_BASE_URL}/users/profiles/primary`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                }
+            });
+            if (!response.ok) {
+                if (response.status === 404) return null;
+                throw new Error('Failed to fetch primary profile');
+            }
+            return response.json();
         }
     },
 

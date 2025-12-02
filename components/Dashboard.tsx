@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { TaxReturnSession, TaxReturnStatus, BusinessProfile, TaxPayerProfile } from '../types';
-import { getSessions, createNewSession, deleteSession } from '../services/sessionService';
+import { getSessionsByUserId, createNewSession, deleteSession } from '../services/sessionService';
 import { Plus, User, FileText, Calendar, Trash2, ArrowRight, Briefcase } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DashboardProps {
   onSelectSession: (session: TaxReturnSession) => void;
@@ -11,13 +12,42 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegisterBusiness }) => {
   const [sessions, setSessions] = useState<TaxReturnSession[]>([]);
+  const { user } = useAuth();
+
+  // Determine user type based on roles
+  const isBusinessUser = user?.roles?.some(role => role === 'ROLE_BUSINESS');
+  const isIndividualUser = user?.roles?.some(role => role === 'ROLE_INDIVIDUAL');
 
   useEffect(() => {
-    setSessions(getSessions());
-  }, []);
+    if (user?.id) {
+      // Get sessions filtered by userId
+      const userSessions = getSessionsByUserId(user.id);
+      
+      // Further filter by user role type if user has a specific role
+      let filteredSessions = userSessions;
+      if (isBusinessUser && !isIndividualUser) {
+        // Business-only users see only business sessions
+        filteredSessions = userSessions.filter(s => s.type === 'BUSINESS');
+      } else if (isIndividualUser && !isBusinessUser) {
+        // Individual-only users see only individual sessions
+        filteredSessions = userSessions.filter(s => s.type === 'INDIVIDUAL');
+      }
+      // Users with both roles see all their sessions
+      
+      setSessions(filteredSessions);
+    }
+  }, [user, isBusinessUser, isIndividualUser]);
 
   const handleCreateIndividual = () => {
-    const newSession = createNewSession(undefined, undefined, 'INDIVIDUAL');
+    if (!user?.id) return;
+    
+    // Pre-populate profile with user data
+    const initialProfile: TaxPayerProfile = {
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+      address: { street: '', city: '', state: '', zip: '' }
+    };
+    
+    const newSession = createNewSession(initialProfile, undefined, 'INDIVIDUAL', user.id);
     onSelectSession(newSession);
   };
 
@@ -25,7 +55,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
     e.stopPropagation();
     if (window.confirm("Are you sure you want to delete this return? This cannot be undone.")) {
       deleteSession(id);
-      setSessions(getSessions());
+      if (user?.id) {
+        const userSessions = getSessionsByUserId(user.id);
+        setSessions(userSessions);
+      }
     }
   };
 
@@ -43,26 +76,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
     return (session.profile as TaxPayerProfile).ssn ? `***-**-${(session.profile as TaxPayerProfile).ssn}` : 'No SSN';
   };
 
+  // Determine which action buttons to show based on user role
+  const canCreateIndividual = isIndividualUser || (!isBusinessUser && !isIndividualUser);
+  const canRegisterBusiness = isBusinessUser || (!isBusinessUser && !isIndividualUser);
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 animate-fadeIn">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
            <h2 className="text-2xl font-bold text-slate-900">Tax Returns Dashboard</h2>
            <p className="text-slate-500">Manage multiple taxpayer profiles and filings.</p>
+           {user && (
+             <p className="text-sm text-indigo-600 mt-1">
+               Welcome, {user.firstName || user.email}
+             </p>
+           )}
         </div>
         <div className="flex gap-3">
-          <button 
-            onClick={onRegisterBusiness}
-            className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl shadow-lg transition-all font-medium"
-          >
-            <Briefcase className="w-5 h-5" /> Register Business
-          </button>
-          <button 
-            onClick={handleCreateIndividual}
-            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-200 transition-all font-medium"
-          >
-            <Plus className="w-5 h-5" /> Start Individual Return
-          </button>
+          {canRegisterBusiness && (
+            <button 
+              onClick={onRegisterBusiness}
+              className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl shadow-lg transition-all font-medium"
+            >
+              <Briefcase className="w-5 h-5" /> Register Business
+            </button>
+          )}
+          {canCreateIndividual && (
+            <button 
+              onClick={handleCreateIndividual}
+              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-200 transition-all font-medium"
+            >
+              <Plus className="w-5 h-5" /> Start Individual Return
+            </button>
+          )}
         </div>
       </div>
 

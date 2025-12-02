@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BusinessProfile, FilingFrequency, Address } from '../types';
 import { verifyLocalAddress } from '../utils/addressUtils';
 import { Briefcase, ArrowRight, CheckCircle } from 'lucide-react';
@@ -7,9 +7,13 @@ import { Briefcase, ArrowRight, CheckCircle } from 'lucide-react';
 interface BusinessRegistrationProps {
   onRegister: (profile: BusinessProfile) => void;
   onCancel: () => void;
+  userProfile?: {
+    name: string;
+    email: string;
+  };
 }
 
-export const BusinessRegistration: React.FC<BusinessRegistrationProps> = ({ onRegister, onCancel }) => {
+export const BusinessRegistration: React.FC<BusinessRegistrationProps> = ({ onRegister, onCancel, userProfile }) => {
   const [profile, setProfile] = useState<BusinessProfile>({
     businessName: '',
     fein: '',
@@ -18,6 +22,14 @@ export const BusinessRegistration: React.FC<BusinessRegistrationProps> = ({ onRe
     filingFrequency: FilingFrequency.QUARTERLY,
     fiscalYearEnd: '12-31'
   });
+
+  // Pre-populate with user profile data if available
+  useEffect(() => {
+    if (userProfile?.name) {
+      // If the business name is empty, we could suggest it but typically business name differs from personal name
+      // The address will be populated from the user's stored profile when the API is called
+    }
+  }, [userProfile]);
 
   const handleAddressChange = (field: keyof Address, value: string) => {
     setProfile({
