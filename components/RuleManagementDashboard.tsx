@@ -205,6 +205,7 @@ function transformRuleResponse(response: any): TaxRule {
     ruleId: response.ruleId?.toString() || response.id?.toString() || '',
     ruleCode: response.ruleCode || '',
     ruleName: response.ruleName || '',
+    description: response.description || getRuleDescription(response.ruleCode),
     category: response.category || 'TaxRates',
     valueType: response.valueType || 'PERCENTAGE',
     value: response.value || { scalar: 0, unit: 'percent' },
@@ -227,6 +228,43 @@ function transformRuleResponse(response: any): TaxRule {
     ordinanceReference: response.ordinanceReference,
     isSystem: response.isSystem ?? (response.createdBy === 'system')
   };
+}
+
+// Rule descriptions for non-technical users
+const RULE_DESCRIPTIONS: Record<string, string> = {
+  'MUNICIPAL_TAX_RATE': 'The percentage tax rate applied to taxable income for individual taxpayers. This is the primary municipal income tax rate.',
+  'MUNICIPAL_CREDIT_LIMIT_RATE': 'Maximum credit percentage that can be claimed for taxes paid to other municipalities. Limits duplicate taxation.',
+  'BUSINESS_MUNICIPAL_TAX_RATE': 'Tax rate applied to net profit of businesses operating in the municipality.',
+  'MINIMUM_TAX': 'Minimum tax amount a business must pay regardless of income level.',
+  'W2_QUALIFYING_WAGES_RULE': 'Determines which W-2 box (Box 1, 5, or 18) is used to calculate taxable wages. HIGHEST_OF_ALL uses the highest amount.',
+  'INCLUDE_SCHEDULE_C': 'Whether self-employment income from Schedule C (sole proprietorships, freelance) is subject to municipal tax.',
+  'INCLUDE_SCHEDULE_E': 'Whether rental, royalty, and partnership income from Schedule E is taxable.',
+  'INCLUDE_SCHEDULE_F': 'Whether farm income from Schedule F is included in taxable income.',
+  'INCLUDE_W2G': 'Whether gambling winnings reported on W-2G forms are subject to municipal tax.',
+  'INCLUDE_1099': 'Whether contractor and freelance income reported on 1099 forms is taxable.',
+  'PENALTY_RATE_LATE_FILING': 'Fixed dollar penalty for filing a tax return after the due date.',
+  'PENALTY_RATE_UNDERPAYMENT': 'Percentage penalty applied when estimated taxes paid are less than required.',
+  'INTEREST_RATE_ANNUAL': 'Annual interest rate charged on unpaid tax balances.',
+  'SAFE_HARBOR_PERCENT': 'Minimum percentage of tax liability that must be paid via estimates to avoid underpayment penalty.',
+  'ALLOCATION_METHOD': 'Method used to allocate multi-location business income. 3_FACTOR uses property, payroll, and sales.',
+  'ALLOCATION_SALES_FACTOR_WEIGHT': 'Weighting multiplier for sales factor in business allocation formula.',
+  'ENABLE_NOL': 'Whether businesses can carry forward net operating losses to offset future profits.',
+  'NOL_OFFSET_CAP_PERCENT': 'Maximum percentage of current year income that can be offset by NOL carryforwards.',
+  'INTANGIBLE_EXPENSE_RATE': 'Limit on deductible intangible expenses (royalties, license fees) as a percentage of income.',
+  'ENABLE_ROUNDING': 'Whether tax amounts are rounded to the nearest dollar on the return.',
+  'FILING_THRESHOLD': 'Minimum income amount that requires filing a tax return.',
+  'EXTENSION_DAYS': 'Number of days a filing extension grants beyond the original due date.',
+  'QUARTERLY_ESTIMATE_THRESHOLD': 'Tax liability threshold above which quarterly estimated payments are required.',
+};
+
+// Get description for a rule code
+function getRuleDescription(ruleCode: string): string {
+  // Check for locality rates
+  if (ruleCode.startsWith('LOCALITY_RATE_')) {
+    const city = ruleCode.replace('LOCALITY_RATE_', '').replace(/_/g, ' ');
+    return `Municipal income tax rate for ${city}. Used for calculating Schedule Y credits for taxes paid to this municipality.`;
+  }
+  return RULE_DESCRIPTIONS[ruleCode] || 'Tax calculation rule configured by the municipality.';
 }
 
 // Comprehensive mock rules matching Ohio municipality tax rules - driven from backend
@@ -919,33 +957,59 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
   const [showDocumentation, setShowDocumentation] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [useMockData, setUseMockData] = useState<boolean>(() => {
+    // Check localStorage for saved preference
+    const saved = localStorage.getItem('rule_dashboard_use_mock');
+    return saved === 'true';
+  });
+  const [dataSource, setDataSource] = useState<'backend' | 'mock'>('backend');
 
   useEffect(() => {
     loadRules();
-  }, [tenantId, categoryFilter, statusFilter]);
+  }, [tenantId, categoryFilter, statusFilter, useMockData]);
 
   const loadRules = async () => {
     setLoading(true);
     setError(null);
+    
+    // If mock mode is explicitly enabled, use mock data
+    if (useMockData) {
+      const mockRules = getMockRules(tenantId).map(r => ({ ...r, description: getRuleDescription(r.ruleCode) }));
+      setRules(mockRules);
+      setDataSource('mock');
+      setLoading(false);
+      return;
+    }
+    
     try {
       const data = await ruleApi.listRules(tenantId, {
         category: categoryFilter || undefined,
         status: statusFilter || undefined
       });
       setRules(data);
+      setDataSource('backend');
     } catch (err) {
       // Fall back to mock data when backend is not available
       console.warn('Backend not available, using mock data:', err);
-      setRules(getMockRules(tenantId));
+      const mockRules = getMockRules(tenantId).map(r => ({ ...r, description: getRuleDescription(r.ruleCode) }));
+      setRules(mockRules);
+      setDataSource('mock');
       setError(null); // Clear error since we have fallback data
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleDataSource = () => {
+    const newValue = !useMockData;
+    setUseMockData(newValue);
+    localStorage.setItem('rule_dashboard_use_mock', String(newValue));
+  };
+
   const filteredRules = rules.filter(rule => {
     const matchesSearch = rule.ruleName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rule.ruleCode.toLowerCase().includes(searchTerm.toLowerCase());
+      rule.ruleCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (rule.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     const matchesEntityType = !entityTypeFilter || 
       rule.entityTypes.some(e => e.toUpperCase() === entityTypeFilter.toUpperCase());
     return matchesSearch && matchesEntityType;
@@ -1079,6 +1143,25 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Data Source Toggle */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg">
+              <span className={`text-xs font-medium ${dataSource === 'backend' ? 'text-green-600' : 'text-orange-600'}`}>
+                {dataSource === 'backend' ? '● Backend' : '● Mock'}
+              </span>
+              <button
+                onClick={toggleDataSource}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  useMockData ? 'bg-orange-500' : 'bg-green-500'
+                }`}
+                title={useMockData ? 'Switch to Backend Data' : 'Switch to Mock Data'}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                    useMockData ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
             <button
               onClick={loadRules}
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -1239,9 +1322,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                 <tr key={rule.ruleId} className="hover:bg-slate-50">
                   <td className="px-6 py-4">
                     <div className="flex items-start gap-2">
-                      <div>
+                      <div className="max-w-md">
                         <p className="font-medium text-slate-900">{rule.ruleName}</p>
                         <p className="text-sm text-slate-500">{rule.ruleCode}</p>
+                        {rule.description && (
+                          <p className="text-xs text-slate-400 mt-1 overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }} title={rule.description}>
+                            {rule.description}
+                          </p>
+                        )}
                         <div className="flex gap-1 mt-1">
                           {rule.entityTypes.map(et => (
                             <span key={et} className="px-1.5 py-0.5 text-xs bg-slate-100 text-slate-600 rounded">
@@ -1250,16 +1338,18 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                           ))}
                         </div>
                       </div>
-                      {rule.isMock && (
-                        <span className="px-1.5 py-0.5 text-xs bg-orange-100 text-orange-700 rounded font-medium">
-                          MOCK
-                        </span>
-                      )}
-                      {rule.isSystem && (
-                        <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 rounded font-medium">
-                          DEFAULT
-                        </span>
-                      )}
+                      <div className="flex flex-col gap-1">
+                        {rule.isMock && (
+                          <span className="px-1.5 py-0.5 text-xs bg-orange-100 text-orange-700 rounded font-medium">
+                            MOCK
+                          </span>
+                        )}
+                        {rule.isSystem && (
+                          <span className="px-1.5 py-0.5 text-xs bg-purple-100 text-purple-700 rounded font-medium">
+                            DEFAULT
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">

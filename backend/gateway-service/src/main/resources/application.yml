@@ -39,6 +39,21 @@ spring:
           uri: lb://tenant-service
           predicates:
             - Path=/api/v1/tenants/**
+        # Rule service routes - for tax rule management
+        - id: rule-service
+          uri: lb://rule-service
+          predicates:
+            - Path=/api/rules/**
+        # Ledger service routes - for payments, journal entries, trial balance, etc.
+        - id: ledger-service
+          uri: lb://ledger-service
+          predicates:
+            - Path=/api/v1/payments/**,/api/v1/journal-entries/**,/api/v1/trial-balance/**,/api/v1/statements/**,/api/v1/reconciliation/**,/api/v1/refunds/**,/api/v1/assessments/**
+        # Workflow service routes - for approval workflows
+        - id: workflow-service
+          uri: lb://workflow-service
+          predicates:
+            - Path=/api/v1/workflows/**,/api/v1/tasks/**
 
 eureka:
   client:
