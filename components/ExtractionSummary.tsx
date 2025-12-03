@@ -1,12 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { TaxFormData, TaxFormType, ExtractionSummary as ExtractionSummaryType, FormProvenance, FieldConfidenceInfo } from '../types';
-import { FileText, CheckCircle, AlertTriangle, ArrowRight, FilePlus, Clock, Gauge, Eye, MapPin, Info } from 'lucide-react';
+import { FileText, CheckCircle, AlertTriangle, ArrowRight, FilePlus, Clock, Gauge, Eye, MapPin, Info, SplitSquareHorizontal, X } from 'lucide-react';
+import { SplitViewLayout } from './ExtractionReview';
 
 interface ExtractionSummaryProps {
   forms: TaxFormData[];
   summary?: ExtractionSummaryType;
   formProvenances?: FormProvenance[];
+  pdfData?: string; // Base64 PDF data for split view
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -15,9 +17,11 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
   forms, 
   summary, 
   formProvenances,
+  pdfData,
   onConfirm, 
   onCancel 
 }) => {
+  const [showSplitView, setShowSplitView] = useState(false);
   
   const counts = forms.reduce((acc, form) => {
     acc[form.formType] = (acc[form.formType] || 0) + 1;
@@ -46,6 +50,58 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
     return colors[weight] || colors.MEDIUM;
   };
 
+  // Split View Modal
+  if (showSplitView && pdfData) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900/80 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] h-[90vh] flex flex-col overflow-hidden">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+            <div className="flex items-center gap-3">
+              <SplitSquareHorizontal className="w-6 h-6" />
+              <h2 className="text-xl font-bold">Review Extraction with PDF Source</h2>
+            </div>
+            <button
+              onClick={() => setShowSplitView(false)}
+              className="p-2 rounded-lg hover:bg-white/20 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {/* Split View Content */}
+          <div className="flex-1 overflow-hidden">
+            <SplitViewLayout
+              pdfData={pdfData}
+              forms={forms}
+              formProvenances={formProvenances}
+              summary={summary}
+            />
+          </div>
+          
+          {/* Modal Footer */}
+          <div className="flex items-center justify-end gap-4 px-6 py-4 bg-slate-50 border-t border-slate-200">
+            <button
+              onClick={() => setShowSplitView(false)}
+              className="px-6 py-2.5 bg-white border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+            >
+              Close Preview
+            </button>
+            <button
+              onClick={() => {
+                setShowSplitView(false);
+                onConfirm();
+              }}
+              className="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+            >
+              Proceed to Review <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto animate-fadeIn">
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
@@ -61,12 +117,25 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
                 We identified <strong className="text-white">{forms.length}</strong> distinct tax form{forms.length !== 1 && 's'} in your document.
               </p>
             </div>
-            {summary && (
-              <div className="text-right">
-                <div className="text-3xl font-bold">{Math.round(summary.overallConfidence * 100)}%</div>
-                <div className="text-xs text-indigo-200">Overall Confidence</div>
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              {/* View with PDF button */}
+              {pdfData && (
+                <button
+                  onClick={() => setShowSplitView(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-colors"
+                  title="View extracted data alongside the original PDF"
+                >
+                  <SplitSquareHorizontal className="w-5 h-5" />
+                  <span className="text-sm font-medium">View with PDF</span>
+                </button>
+              )}
+              {summary && (
+                <div className="text-right">
+                  <div className="text-3xl font-bold">{Math.round(summary.overallConfidence * 100)}%</div>
+                  <div className="text-xs text-indigo-200">Overall Confidence</div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

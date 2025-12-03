@@ -795,3 +795,112 @@ export interface ImpactEstimate {
   minImpact: number;
   medianImpact: number;
 }
+
+// ===== SUBMISSION DOCUMENT TYPES (Spec 015) =====
+
+/**
+ * Links an uploaded PDF document to a tax return submission
+ */
+export interface SubmissionDocument {
+  id: string;
+  submissionId: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+  base64Data?: string; // For viewing
+  thumbnailUrl?: string;
+}
+
+/**
+ * Tracks manual entries with optional supporting documents
+ */
+export interface ManualEntry {
+  id: string;
+  formType: TaxFormType;
+  fieldName: string;
+  value: string | number;
+  enteredBy: string;
+  enteredAt: string;
+  supportingDocumentId?: string;
+  note?: string;
+}
+
+/**
+ * Tracks changes to extracted values for audit trail
+ */
+export interface FieldAuditTrail {
+  fieldId: string;
+  formId: string;
+  fieldName: string;
+  originalValue: string | number;
+  correctedValue: string | number;
+  correctedBy: string;
+  correctedAt: string;
+  reason?: string;
+  sourceDocumentId?: string;
+  sourcePageNumber?: number;
+  sourceBoundingBox?: BoundingBox;
+}
+
+/**
+ * Extended W-2 form with all box fields (Spec 015 - Extended Extraction)
+ */
+export interface ExtendedW2Form extends W2Form {
+  // Additional W-2 boxes for comprehensive extraction
+  socialSecurityWages?: number;    // Box 3
+  socialSecurityTaxWithheld?: number; // Box 4
+  medicareTaxWithheld?: number;    // Box 6
+  socialSecurityTips?: number;     // Box 7
+  allocatedTips?: number;          // Box 8
+  dependentCareBenefits?: number;  // Box 10
+  nonqualifiedPlans?: number;      // Box 11
+  box12Codes?: { code: string; amount: number }[]; // Box 12a-d
+  statutoryEmployee?: boolean;     // Box 13
+  retirementPlan?: boolean;        // Box 13
+  thirdPartySickPay?: boolean;     // Box 13
+  box14Other?: string;             // Box 14
+  stateWages?: number;             // Box 16
+  stateIncomeTax?: number;         // Box 17
+}
+
+/**
+ * Extended Federal 1040 with all key lines (Spec 015 - Extended Extraction)
+ */
+export interface ExtendedFederal1040 extends FederalTaxForm {
+  // Income lines
+  taxExemptInterest?: number;       // Line 2a
+  taxableInterest?: number;         // Line 2b
+  ordinaryDividends?: number;       // Line 3b
+  iraDistributions?: number;        // Line 4a
+  taxableIra?: number;              // Line 4b
+  pensionsAnnuities?: number;       // Line 5a
+  taxablePensions?: number;         // Line 5b
+  socialSecurityBenefits?: number;  // Line 6a
+  taxableSocialSecurity?: number;   // Line 6b
+  
+  // Deductions and tax
+  standardDeduction?: number;       // Line 12
+  qualifiedBusinessIncome?: number; // Line 13
+  taxableIncome?: number;           // Line 15
+  totalTax?: number;                // Line 24
+  federalWithholding?: number;      // Line 25a
+  estimatedTaxPayments?: number;    // Line 26
+  refundAmount?: number;            // Line 35a
+  amountOwed?: number;              // Line 37
+}
+
+/**
+ * PDF Viewer state for source highlighting
+ */
+export interface PdfViewerState {
+  currentPage: number;
+  totalPages: number;
+  zoom: number;
+  highlightedField?: {
+    fieldName: string;
+    boundingBox: BoundingBox;
+    formType: string;
+  };
+  documentUrl: string;
+}
