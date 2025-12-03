@@ -5,8 +5,8 @@ import { BoundingBox, FieldProvenance } from '../../types';
 import { HighlightOverlay } from './HighlightOverlay';
 import { FieldSourceTooltip } from './FieldSourceTooltip';
 
-// Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Configure PDF.js worker - use HTTPS for security
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface PdfViewerProps {
   pdfData: string; // Base64 encoded PDF or URL

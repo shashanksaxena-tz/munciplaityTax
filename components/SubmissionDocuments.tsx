@@ -101,7 +101,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
         >
           <input
             type="file"
-            accept="application/pdf,image/*"
+            accept="application/pdf,image/jpeg,image/png,image/gif"
             multiple
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"

@@ -69,14 +69,28 @@ export const SplitViewLayout: React.FC<SplitViewLayoutProps> = ({
   // Get all field provenances for current page
   const allFieldProvenances = formProvenances?.flatMap(fp => fp.fields) || [];
 
-  // Determine split widths
+  // Determine split widths using standard Tailwind classes
   const getGridCols = () => {
     if (!showPdf) return 'grid-cols-1';
     switch (splitRatio) {
-      case 'pdf-large': return 'grid-cols-[2fr_1fr]';
-      case 'data-large': return 'grid-cols-[1fr_2fr]';
+      case 'pdf-large': return 'grid-cols-3'; // PDF gets 2/3, data gets 1/3
+      case 'data-large': return 'grid-cols-3'; // PDF gets 1/3, data gets 2/3
       default: return 'grid-cols-2';
     }
+  };
+  
+  // Get col-span for PDF panel based on split ratio
+  const getPdfColSpan = () => {
+    if (splitRatio === 'pdf-large') return 'col-span-2';
+    if (splitRatio === 'data-large') return 'col-span-1';
+    return '';
+  };
+  
+  // Get col-span for data panel based on split ratio
+  const getDataColSpan = () => {
+    if (splitRatio === 'pdf-large') return 'col-span-1';
+    if (splitRatio === 'data-large') return 'col-span-2';
+    return '';
   };
 
   return (
@@ -135,7 +149,7 @@ export const SplitViewLayout: React.FC<SplitViewLayoutProps> = ({
       <div className={`flex-1 grid ${getGridCols()} gap-4 p-4 overflow-hidden`}>
         {/* PDF Panel */}
         {showPdf && (
-          <div className="h-full overflow-hidden">
+          <div className={`h-full overflow-hidden ${getPdfColSpan()}`}>
             <PdfViewer
               pdfData={pdfData}
               currentPage={currentPage}
@@ -148,7 +162,7 @@ export const SplitViewLayout: React.FC<SplitViewLayoutProps> = ({
         )}
 
         {/* Data Panel */}
-        <div className="h-full overflow-auto">
+        <div className={`h-full overflow-auto ${getDataColSpan()}`}>
           <div className="space-y-4">
             {/* Extraction Failures */}
             {summary?.skippedForms && summary.skippedForms.length > 0 && (

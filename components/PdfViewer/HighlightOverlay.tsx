@@ -70,10 +70,10 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
     );
   }
 
-  // Full highlight style for active field
+  // Full highlight style for active field - respects reduced motion preference
   return (
     <div
-      className="absolute pointer-events-none animate-pulse"
+      className="absolute pointer-events-none"
       style={{
         left: `${left}px`,
         top: `${top}px`,
@@ -82,7 +82,8 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
         backgroundColor: getHighlightColor(),
         border: `2px solid ${getBorderColor()}`,
         borderRadius: '4px',
-        zIndex: 20
+        zIndex: 20,
+        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

@@ -49,7 +49,7 @@ export const FieldSourceTooltip: React.FC<FieldSourceTooltipProps> = ({
 
   return (
     <div
-      className="absolute z-50 bg-white rounded-lg shadow-xl border border-slate-200 p-4 min-w-[240px] max-w-[320px] animate-fadeIn"
+      className="absolute z-50 bg-white rounded-lg shadow-xl border border-slate-200 p-4 min-w-[240px] max-w-[320px] transition-opacity duration-200"
       style={{
         left: `${tooltipLeft}px`,
         top: `${tooltipTop}px`

@@ -60,6 +60,29 @@ const FORM_DISPLAY_FIELDS: Record<string, { label: string; key: string; format?:
   ],
 };
 
+// Properly convert camelCase to Title Case, preserving acronyms
+const camelToTitle = (camelCase: string): string => {
+  // Handle common acronyms
+  const acronyms: Record<string, string> = {
+    'ein': 'EIN',
+    'ssn': 'SSN',
+    'tin': 'TIN',
+    'agi': 'AGI',
+    'nol': 'NOL',
+  };
+  
+  // Split on capital letters and numbers
+  const words = camelCase.replace(/([A-Z])/g, ' $1').split(' ');
+  
+  return words
+    .map(word => {
+      const lower = word.toLowerCase();
+      return acronyms[lower] || (word.charAt(0).toUpperCase() + word.slice(1));
+    })
+    .join(' ')
+    .trim();
+};
+
 export const FieldWithSource: React.FC<FieldWithSourceProps> = ({
   form,
   formProvenance,
@@ -80,7 +103,7 @@ export const FieldWithSource: React.FC<FieldWithSourceProps> = ({
           (typeof value === 'string' || typeof value === 'number')
         )
         .map(([key, value]) => ({
-          label: key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()),
+          label: camelToTitle(key),
           key,
           format: typeof value === 'number' && value > 100 ? 'currency' : 'text'
         }));

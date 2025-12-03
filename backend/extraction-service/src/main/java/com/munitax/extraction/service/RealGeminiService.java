@@ -425,8 +425,9 @@ public class RealGeminiService {
         double width = boxNode.path("width").asDouble(-1);
         double height = boxNode.path("height").asDouble(-1);
         
-        // Validate coordinates are in expected range
+        // Validate coordinates are in expected range (0-1 normalized)
         if (x < 0 || x > 1 || y < 0 || y > 1 || width <= 0 || height <= 0) {
+            log.debug("Invalid bounding box coordinates: x={}, y={}, width={}, height={}", x, y, width, height);
             return null;
         }
         
