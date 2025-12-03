@@ -369,18 +369,35 @@ public class RealGeminiService {
         double confidence = form.path("confidenceScore").asDouble(0.8);
         String reason = form.path("extractionReason").asText("AI Identified Form");
 
-        // Build field provenances
+        // Parse form-level bounding box if available
+        BoundingBox formBoundingBox = parseBoundingBox(form.path("boundingBox"));
+
+        // Build field provenances with bounding boxes
         List<FieldProvenance> fieldProvenances = new ArrayList<>();
         JsonNode fieldConfidences = form.path("fieldConfidence");
+        JsonNode fieldBoundingBoxes = form.path("fieldBoundingBoxes");
+        
         if (fieldConfidences.isObject()) {
             fieldConfidences.fields().forEachRemaining(entry -> {
+                String fieldName = entry.getKey();
+                double fieldConf = entry.getValue().asDouble(0.8);
+                
+                // Try to get bounding box for this field
+                BoundingBox fieldBox = null;
+                if (fieldBoundingBoxes.isObject() && fieldBoundingBoxes.has(fieldName)) {
+                    fieldBox = parseBoundingBox(fieldBoundingBoxes.path(fieldName));
+                }
+                
+                // Get raw and processed values if available
+                String rawValue = form.has(fieldName) ? form.path(fieldName).asText(null) : null;
+                
                 fieldProvenances.add(new FieldProvenance(
-                        entry.getKey(),
+                        fieldName,
                         pageNumber,
-                        null, // Bounding box not available in current API response
-                        null, // Raw value
-                        null, // Processed value
-                        entry.getValue().asDouble(0.8)
+                        fieldBox,
+                        rawValue,
+                        rawValue, // Processed value same as raw for now
+                        fieldConf
                 ));
             });
         }
@@ -388,11 +405,32 @@ public class RealGeminiService {
         return new FormProvenance(
                 formType,
                 pageNumber,
-                null, // Bounding box for entire form
+                formBoundingBox,
                 reason,
                 confidence,
                 fieldProvenances
         );
+    }
+    
+    /**
+     * Parse a bounding box from JSON node with normalized coordinates
+     */
+    private BoundingBox parseBoundingBox(JsonNode boxNode) {
+        if (boxNode == null || boxNode.isMissingNode() || !boxNode.isObject()) {
+            return null;
+        }
+        
+        double x = boxNode.path("x").asDouble(-1);
+        double y = boxNode.path("y").asDouble(-1);
+        double width = boxNode.path("width").asDouble(-1);
+        double height = boxNode.path("height").asDouble(-1);
+        
+        // Validate coordinates are in expected range
+        if (x < 0 || x > 1 || y < 0 || y > 1 || width <= 0 || height <= 0) {
+            return null;
+        }
+        
+        return new BoundingBox(x, y, width, height);
     }
 
     private Map<String, FieldConfidence> buildFieldConfidences(JsonNode extractedData) {
@@ -626,74 +664,180 @@ public class RealGeminiService {
                 2. Identify ALL distinct tax forms present
                 3. Extract ALL relevant fields with maximum precision
                 4. Provide confidence scores (0.0-1.0) for each field
-                5. Track document provenance (page number, location)
-                6. Skip instruction pages and blank pages
+                5. Track document provenance (page number, bounding box location)
+                6. Skip instruction pages and blank pages with clear reasons
                 
                 CRITICAL EXTRACTION RULES:
                 ═══════════════════════════════════════════════════════════════════════════════
-                W-2 FORM - Extract from specific boxes:
+                W-2 FORM - Extract ALL boxes (1-20):
+                • Box a: Employee SSN (masked as ***-**-XXXX)
                 • Box b: Employer Identification Number (EIN) - 9 digits, format XX-XXXXXXX
                 • Box c: Employer Name, Address, City, State, ZIP
+                • Box d: Control number (if present)
+                • Box e: Employee Name
+                • Box f: Employee Address
                 • Box 1: Wages, tips, other compensation (federalWages)
+                • Box 2: Federal income tax withheld (federalWithheld)
+                • Box 3: Social Security wages (socialSecurityWages)
+                • Box 4: Social Security tax withheld (socialSecurityTaxWithheld)
                 • Box 5: Medicare wages and tips (medicareWages)
+                • Box 6: Medicare tax withheld (medicareTaxWithheld)
+                • Box 7: Social Security tips
+                • Box 8: Allocated tips
+                • Box 10: Dependent care benefits
+                • Box 11: Nonqualified plans
+                • Box 12a-d: Codes and amounts (e.g., DD, D, E, etc.)
+                • Box 13: Checkboxes (statutory, retirement, third-party sick pay)
+                • Box 14: Other (employer-specific info)
+                • Box 15: State/Employer's state ID
+                • Box 16: State wages (stateWages)
+                • Box 17: State income tax (stateIncomeTax)
                 • Box 18: Local wages, tips, etc. (localWages)
                 • Box 19: Local income tax (localWithheld)
                 • Box 20: Locality name (locality)
                 
                 1099-NEC/MISC - Extract:
-                • Payer name and TIN
+                • Payer name, address, and TIN
+                • Recipient name, address, and TIN (masked)
                 • Box 1: Nonemployee compensation (1099-NEC) OR
                 • Box 3: Other income (1099-MISC)
+                • Box 4: Federal income tax withheld
+                • State/Local tax information if present
                 
                 W-2G (Gambling) - Extract:
-                • Box 1: Gross winnings
-                • Box 2: Federal income tax withheld
-                • Box 4: Date won (MM/DD/YYYY)
-                • Box 7: Type of wager
+                • Box 1: Gross winnings (grossWinnings)
+                • Box 2: Date won (dateWon)
+                • Box 3: Type of wager (typeOfWager)
+                • Box 4: Federal income tax withheld (federalWithheld)
+                • Box 5: Transaction
+                • Box 6: Race
+                • Box 7: Winnings from identical wagers
+                • Box 14: State winnings
+                • Box 15: State income tax withheld
+                • Box 16: Local winnings
+                • Box 17: Local income tax withheld
+                • Payer info (name, TIN, address)
                 
                 SCHEDULE C - Extract:
-                • Business name and principal business
+                • Business name and principal business/product
                 • EIN (if separate from SSN)
-                • Line 1: Gross receipts
+                • Business address
+                • Accounting method (cash/accrual)
+                • Line 1: Gross receipts or sales
+                • Line 2: Returns and allowances
+                • Line 3: Subtract line 2 from line 1
+                • Line 4: Cost of goods sold
+                • Line 5: Gross profit
+                • Line 6: Other income
+                • Line 7: Gross income
+                • Lines 8-27: Individual expense categories
                 • Line 28: Total expenses
-                • Line 31: Net profit or loss
+                • Line 29: Tentative profit/loss
+                • Line 30: Expenses for business use of home
+                • Line 31: Net profit or loss (netProfit)
                 
                 SCHEDULE E Part I (Rentals) - For EACH property:
                 • Property address (street, city, state, zip)
-                • Property type (Single Family, Multi-Family, etc.)
-                • Line 21: Total income OR Fair rental days
-                • Line 22: Deductible rental loss
+                • Property type (Single Family, Multi-Family, Vacation/Short-term, Commercial, Land, Royalties, Self-Rental)
+                • Fair rental days (line 1)
+                • Personal use days (line 2)
+                • Rents received (line 3)
+                • Royalties received (line 4)
+                • Lines 5-19: Individual expense categories
+                • Line 20: Total expenses
+                • Line 21: Net income or loss for property
+                • Line 22: Deductible rental real estate loss
                 
                 SCHEDULE E Part II (Partnerships/S-Corps) - For EACH entity:
                 • Entity name
+                • Entity type (P for Partnership, S for S-Corp)
+                • Check if foreign partnership
                 • EIN
-                • Box 1 (passive) or Box 2 (nonpassive) income
+                • Line 28j (passive): Passive income/loss
+                • Line 28k (nonpassive): Nonpassive income/loss
                 
-                FEDERAL 1040 - Extract:
-                • Filing Status: Single, MFJ, MFS, HOH, QW
+                FEDERAL 1040 - Extract ALL key lines:
+                • Filing Status: Single, MFJ, MFS, HOH, QW (checkboxes)
+                • Taxpayer name, SSN
                 • Spouse name and SSN (if joint)
-                • Line 1z: Total wages from W-2s
+                • Home address
+                • Digital assets question (Yes/No)
+                • Line 1a: Total amount from W-2s
+                • Line 1b: Household employee wages
+                • Line 1c: Tip income
+                • Line 1d: Medicaid waiver payments
+                • Line 1e: Taxable dependent care benefits
+                • Line 1f: Employer-provided adoption benefits
+                • Line 1g: Wages from Form 8919
+                • Line 1h: Other earned income
+                • Line 1i: Nontaxable combat pay
+                • Line 1z: Total wages (sum of 1a-1i)
+                • Line 2a: Tax-exempt interest
+                • Line 2b: Taxable interest
                 • Line 3a: Qualified dividends
+                • Line 3b: Ordinary dividends
+                • Line 4a: IRA distributions
+                • Line 4b: Taxable IRA
+                • Line 5a: Pensions and annuities
                 • Line 5b: Taxable pensions
+                • Line 6a: Social Security benefits
                 • Line 6b: Taxable Social Security
-                • Line 7: Capital gains
-                • Line 8: Other income from Schedule 1
+                • Line 7: Capital gain or loss
+                • Line 8: Other income (from Schedule 1)
                 • Line 9: Total income
+                • Line 10: Adjustments (from Schedule 1)
                 • Line 11: Adjusted gross income
+                • Line 12: Standard or itemized deduction
+                • Line 13: Qualified business income deduction
+                • Line 14: Total deductions
+                • Line 15: Taxable income
+                • Line 16: Tax
+                • Line 17: Schedule 2 tax
+                • Line 18: Total tax before credits
+                • Line 19-21: Credits
+                • Line 22: Total tax after credits
+                • Line 23: Other taxes
                 • Line 24: Total tax
+                • Line 25a: Federal income tax withheld from W-2
+                • Line 25b: Federal income tax withheld from 1099
+                • Line 25c: Other withholding
+                • Line 25d: Total withholding
+                • Line 26: Estimated tax payments
+                • Line 27-32: Other payments and credits
+                • Line 33: Total payments
+                • Line 34: Overpayment
+                • Line 35a: Refund amount
+                • Line 37: Amount owed
                 
                 BUSINESS FORMS (1120/1065/Form 27):
                 • Business name and EIN
+                • Fiscal year dates
+                • Total income (from appropriate line)
+                • Total deductions
                 • Taxable income (Line 30 for 1120, Line 22 for 1065)
                 • Schedule X reconciliation items (add-backs and deductions)
-                • Schedule Y allocation factors (Property, Payroll, Sales)
+                • Schedule Y allocation factors (Property, Payroll, Sales - each with inside/everywhere)
                 ═══════════════════════════════════════════════════════════════════════════════
+                
+                BOUNDING BOX COORDINATES:
+                For each extracted field, provide approximate bounding box as normalized coordinates (0-1):
+                • x: left position (0 = left edge, 1 = right edge)
+                • y: top position (0 = top edge, 1 = bottom edge)
+                • width: width of the field area
+                • height: height of the field area
                 
                 CONFIDENCE SCORING:
                 • 0.95-1.0: Clear OCR, exact match to expected format
                 • 0.85-0.94: Minor uncertainty, slightly blurry but readable
                 • 0.70-0.84: Some ambiguity, may need human verification
                 • Below 0.70: Low confidence, flag for manual review
+                
+                SKIPPED PAGES - Provide detailed reasons:
+                • "Blank page detected"
+                • "Instruction page - no data to extract"
+                • "Image quality too low for accurate extraction"
+                • "Unrecognized form type - [describe what was detected]"
+                • "Partially obscured - [specify which parts]"
                 
                 OUTPUT FORMAT (JSON only, no markdown):
                 {
@@ -721,18 +865,26 @@ public class RealGeminiService {
                       "pageNumber": number,
                       "extractionReason": string,
                       "owner": "PRIMARY" | "SPOUSE",
+                      "boundingBox": { "x": number, "y": number, "width": number, "height": number },
                       "fieldConfidence": { [fieldName]: number },
+                      "fieldBoundingBoxes": { 
+                        [fieldName]: { "x": number, "y": number, "width": number, "height": number } 
+                      },
                       
                       // Form-specific fields as detailed above
                       // Include ALL applicable fields for the form type
                     }
                   ],
                   "skippedPages": [
-                    { "pageNumber": number, "reason": string }
+                    { 
+                      "pageNumber": number, 
+                      "reason": string,
+                      "suggestion": string,
+                      "detectedContent": string | null
+                    }
                   ]
                 }
                 
                 IMPORTANT: Return ONLY valid JSON. No markdown code blocks. No explanatory text.
                 """;
-    }
 }
