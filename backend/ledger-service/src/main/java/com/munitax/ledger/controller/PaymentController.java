@@ -3,7 +3,9 @@ package com.munitax.ledger.controller;
 import com.munitax.ledger.dto.PaymentReceipt;
 import com.munitax.ledger.dto.PaymentRequest;
 import com.munitax.ledger.dto.PaymentResponse;
+import com.munitax.ledger.dto.TestPaymentMethodsResponse;
 import com.munitax.ledger.model.PaymentTransaction;
+import com.munitax.ledger.service.MockPaymentProviderService;
 import com.munitax.ledger.service.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public class PaymentController {
     
     private final PaymentService paymentService;
+    private final MockPaymentProviderService mockPaymentProviderService;
     
     @PostMapping("/process")
     @Operation(
@@ -129,5 +132,40 @@ public class PaymentController {
     )
     public ResponseEntity<String> getTestModeIndicator() {
         return ResponseEntity.ok("TEST MODE: No real charges will be processed");
+    }
+    
+    /**
+     * Returns available test payment methods for the mock payment gateway.
+     * In TEST mode: Returns populated lists of test credit cards and ACH accounts.
+     * In PRODUCTION mode: Returns empty lists (frontend should hide test helpers panel).
+     */
+    @GetMapping("/test-methods")
+    @Operation(
+        summary = "Get available test payment methods",
+        description = """
+            Returns test credit cards and ACH accounts that can be used in TEST mode.
+            
+            **Test Cards Behavior:**
+            - Cards ending in specific patterns produce deterministic results
+            - Some cards always approve, some always decline, some always error
+            - Useful for testing different payment scenarios
+            
+            **Production Behavior:**
+            - Returns empty arrays (no test methods available)
+            - Frontend should hide test helpers panel
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Test payment methods retrieved successfully",
+            content = @Content(schema = @Schema(implementation = TestPaymentMethodsResponse.class))
+        ),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<TestPaymentMethodsResponse> getTestPaymentMethods() {
+        log.info("Fetching test payment methods");
+        TestPaymentMethodsResponse response = mockPaymentProviderService.getTestPaymentMethods();
+        return ResponseEntity.ok(response);
     }
 }
