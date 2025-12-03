@@ -46,14 +46,14 @@ interface RuleManagementDashboardProps {
 }
 
 const CATEGORIES: RuleCategory[] = [
-  'TaxRates',
-  'IncomeInclusion',
-  'Deductions',
-  'Penalties',
-  'Filing',
-  'Allocation',
-  'Withholding',
-  'Validation'
+  'TAX_RATES',
+  'INCOME_INCLUSION',
+  'DEDUCTIONS',
+  'PENALTIES',
+  'FILING',
+  'ALLOCATION',
+  'WITHHOLDING',
+  'VALIDATION'
 ];
 
 const VALUE_TYPES: RuleValueType[] = [
@@ -201,14 +201,25 @@ const ruleApi = {
 
 // Transform backend RuleResponse to frontend TaxRule format
 function transformRuleResponse(response: any): TaxRule {
+  // Parse the value field if it's a JSON string
+  let parsedValue = response.value;
+  if (typeof response.value === 'string') {
+    try {
+      parsedValue = JSON.parse(response.value);
+    } catch (e) {
+      console.error('Failed to parse rule value:', response.value, e);
+      parsedValue = { scalar: 0, unit: 'percent' };
+    }
+  }
+  
   return {
     ruleId: response.ruleId?.toString() || response.id?.toString() || '',
     ruleCode: response.ruleCode || '',
     ruleName: response.ruleName || '',
     description: response.description || getRuleDescription(response.ruleCode),
-    category: response.category || 'TaxRates',
+    category: response.category || 'TAX_RATES',
     valueType: response.valueType || 'PERCENTAGE',
-    value: response.value || { scalar: 0, unit: 'percent' },
+    value: parsedValue || { scalar: 0, unit: 'percent' },
     effectiveDate: response.effectiveDate || '',
     endDate: response.endDate,
     tenantId: response.tenantId || '',
@@ -275,7 +286,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '1',
       ruleCode: 'MUNICIPAL_TAX_RATE',
       ruleName: 'Dublin Municipal Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -295,7 +306,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '2',
       ruleCode: 'MUNICIPAL_CREDIT_LIMIT_RATE',
       ruleName: 'Municipal Credit Limit Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -315,7 +326,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '3',
       ruleCode: 'BUSINESS_MUNICIPAL_TAX_RATE',
       ruleName: 'Dublin Business Municipal Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -333,7 +344,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '4',
       ruleCode: 'MINIMUM_TAX',
       ruleName: 'Minimum Business Tax',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'NUMBER',
       value: { scalar: 0 } as NumberValue,
       effectiveDate: '2024-01-01',
@@ -352,7 +363,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '5',
       ruleCode: 'W2_QUALIFYING_WAGES_RULE',
       ruleName: 'W2 Qualifying Wages Selection Rule',
-      category: 'IncomeInclusion',
+      category: 'INCOME_INCLUSION',
       valueType: 'ENUM',
       value: { option: 'HIGHEST_OF_ALL', allowedValues: ['HIGHEST_OF_ALL', 'BOX_5_MEDICARE', 'BOX_18_LOCAL', 'BOX_1_FEDERAL'] } as EnumValue,
       effectiveDate: '2024-01-01',
@@ -372,7 +383,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '6',
       ruleCode: 'INCLUDE_SCHEDULE_C',
       ruleName: 'Include Schedule C Income',
-      category: 'IncomeInclusion',
+      category: 'INCOME_INCLUSION',
       valueType: 'BOOLEAN',
       value: { flag: true } as BooleanValue,
       effectiveDate: '2024-01-01',
@@ -391,7 +402,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '7',
       ruleCode: 'INCLUDE_SCHEDULE_E',
       ruleName: 'Include Schedule E Income',
-      category: 'IncomeInclusion',
+      category: 'INCOME_INCLUSION',
       valueType: 'BOOLEAN',
       value: { flag: true } as BooleanValue,
       effectiveDate: '2024-01-01',
@@ -410,7 +421,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '8',
       ruleCode: 'INCLUDE_SCHEDULE_F',
       ruleName: 'Include Schedule F Income',
-      category: 'IncomeInclusion',
+      category: 'INCOME_INCLUSION',
       valueType: 'BOOLEAN',
       value: { flag: true } as BooleanValue,
       effectiveDate: '2024-01-01',
@@ -429,7 +440,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '9',
       ruleCode: 'INCLUDE_W2G',
       ruleName: 'Include W-2G Gambling Income',
-      category: 'IncomeInclusion',
+      category: 'INCOME_INCLUSION',
       valueType: 'BOOLEAN',
       value: { flag: true } as BooleanValue,
       effectiveDate: '2024-01-01',
@@ -448,7 +459,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '10',
       ruleCode: 'INCLUDE_1099',
       ruleName: 'Include 1099 Income',
-      category: 'IncomeInclusion',
+      category: 'INCOME_INCLUSION',
       valueType: 'BOOLEAN',
       value: { flag: true } as BooleanValue,
       effectiveDate: '2024-01-01',
@@ -468,7 +479,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '11',
       ruleCode: 'PENALTY_RATE_LATE_FILING',
       ruleName: 'Late Filing Penalty Rate',
-      category: 'Penalties',
+      category: 'PENALTIES',
       valueType: 'NUMBER',
       value: { scalar: 25.00, unit: 'dollars' } as NumberValue,
       effectiveDate: '2024-01-01',
@@ -487,7 +498,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '12',
       ruleCode: 'PENALTY_RATE_UNDERPAYMENT',
       ruleName: 'Underpayment Penalty Rate',
-      category: 'Penalties',
+      category: 'PENALTIES',
       valueType: 'PERCENTAGE',
       value: { scalar: 15.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -506,7 +517,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '13',
       ruleCode: 'INTEREST_RATE_ANNUAL',
       ruleName: 'Annual Interest Rate',
-      category: 'Penalties',
+      category: 'PENALTIES',
       valueType: 'PERCENTAGE',
       value: { scalar: 7.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -525,7 +536,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '14',
       ruleCode: 'SAFE_HARBOR_PERCENT',
       ruleName: 'Safe Harbor Percentage',
-      category: 'Penalties',
+      category: 'PENALTIES',
       valueType: 'PERCENTAGE',
       value: { scalar: 90.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -545,7 +556,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '15',
       ruleCode: 'ALLOCATION_METHOD',
       ruleName: 'Business Allocation Method',
-      category: 'Allocation',
+      category: 'ALLOCATION',
       valueType: 'ENUM',
       value: { option: '3_FACTOR', allowedValues: ['3_FACTOR', 'SINGLE_SALES', 'DOUBLE_WEIGHTED_SALES'] } as EnumValue,
       effectiveDate: '2024-01-01',
@@ -564,7 +575,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '16',
       ruleCode: 'ALLOCATION_SALES_FACTOR_WEIGHT',
       ruleName: 'Sales Factor Weight',
-      category: 'Allocation',
+      category: 'ALLOCATION',
       valueType: 'NUMBER',
       value: { scalar: 1 } as NumberValue,
       effectiveDate: '2024-01-01',
@@ -584,7 +595,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '17',
       ruleCode: 'ENABLE_NOL',
       ruleName: 'Enable NOL Carryforward',
-      category: 'Deductions',
+      category: 'DEDUCTIONS',
       valueType: 'BOOLEAN',
       value: { flag: true } as BooleanValue,
       effectiveDate: '2024-01-01',
@@ -603,7 +614,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '18',
       ruleCode: 'NOL_OFFSET_CAP_PERCENT',
       ruleName: 'NOL Offset Cap Percentage',
-      category: 'Deductions',
+      category: 'DEDUCTIONS',
       valueType: 'PERCENTAGE',
       value: { scalar: 50.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -622,7 +633,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '19',
       ruleCode: 'INTANGIBLE_EXPENSE_RATE',
       ruleName: 'Intangible Expense Deduction Rate',
-      category: 'Deductions',
+      category: 'DEDUCTIONS',
       valueType: 'PERCENTAGE',
       value: { scalar: 5.0, unit: 'percent' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -642,7 +653,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '20',
       ruleCode: 'ENABLE_ROUNDING',
       ruleName: 'Enable Tax Rounding',
-      category: 'Validation',
+      category: 'VALIDATION',
       valueType: 'BOOLEAN',
       value: { flag: true } as BooleanValue,
       effectiveDate: '2024-01-01',
@@ -662,7 +673,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '21',
       ruleCode: 'FILING_THRESHOLD',
       ruleName: 'Filing Threshold Amount',
-      category: 'Filing',
+      category: 'FILING',
       valueType: 'NUMBER',
       value: { scalar: 0, unit: 'dollars' } as NumberValue,
       effectiveDate: '2024-01-01',
@@ -681,7 +692,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '22',
       ruleCode: 'EXTENSION_DAYS',
       ruleName: 'Extension Period Days',
-      category: 'Filing',
+      category: 'FILING',
       valueType: 'NUMBER',
       value: { scalar: 180, unit: 'days' } as NumberValue,
       effectiveDate: '2024-01-01',
@@ -700,7 +711,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '23',
       ruleCode: 'QUARTERLY_ESTIMATE_THRESHOLD',
       ruleName: 'Quarterly Estimate Threshold',
-      category: 'Filing',
+      category: 'FILING',
       valueType: 'NUMBER',
       value: { scalar: 200, unit: 'dollars' } as NumberValue,
       effectiveDate: '2024-01-01',
@@ -720,7 +731,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '24',
       ruleCode: 'LOCALITY_RATE_COLUMBUS',
       ruleName: 'Columbus Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'COLUMBUS', municipalityName: 'Columbus', county: 'Franklin', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -738,7 +749,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '25',
       ruleCode: 'LOCALITY_RATE_CLEVELAND',
       ruleName: 'Cleveland Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'CLEVELAND', municipalityName: 'Cleveland', county: 'Cuyahoga', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -756,7 +767,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '26',
       ruleCode: 'LOCALITY_RATE_CINCINNATI',
       ruleName: 'Cincinnati Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.1, unit: 'percent', municipalityCode: 'CINCINNATI', municipalityName: 'Cincinnati', county: 'Hamilton', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -774,7 +785,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '27',
       ruleCode: 'LOCALITY_RATE_WESTERVILLE',
       ruleName: 'Westerville Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.0, unit: 'percent', municipalityCode: 'WESTERVILLE', municipalityName: 'Westerville', county: 'Franklin', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -792,7 +803,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '28',
       ruleCode: 'LOCALITY_RATE_HILLIARD',
       ruleName: 'Hilliard Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'HILLIARD', municipalityName: 'Hilliard', county: 'Franklin', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -810,7 +821,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '29',
       ruleCode: 'LOCALITY_RATE_UPPER_ARLINGTON',
       ruleName: 'Upper Arlington Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'UPPER_ARLINGTON', municipalityName: 'Upper Arlington', county: 'Franklin', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -828,7 +839,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '30',
       ruleCode: 'LOCALITY_RATE_GRANDVIEW_HEIGHTS',
       ruleName: 'Grandview Heights Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'GRANDVIEW_HEIGHTS', municipalityName: 'Grandview Heights', county: 'Franklin', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -846,7 +857,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '31',
       ruleCode: 'LOCALITY_RATE_BEXLEY',
       ruleName: 'Bexley Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'BEXLEY', municipalityName: 'Bexley', county: 'Franklin', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -864,7 +875,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '32',
       ruleCode: 'LOCALITY_RATE_WORTHINGTON',
       ruleName: 'Worthington Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'WORTHINGTON', municipalityName: 'Worthington', county: 'Franklin', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -882,7 +893,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '33',
       ruleCode: 'LOCALITY_RATE_TOLEDO',
       ruleName: 'Toledo Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.25, unit: 'percent', municipalityCode: 'TOLEDO', municipalityName: 'Toledo', county: 'Lucas', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -900,7 +911,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '34',
       ruleCode: 'LOCALITY_RATE_AKRON',
       ruleName: 'Akron Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'AKRON', municipalityName: 'Akron', county: 'Summit', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -918,7 +929,7 @@ function getMockRules(tenantId: string): TaxRule[] {
       ruleId: '35',
       ruleCode: 'LOCALITY_RATE_DAYTON',
       ruleName: 'Dayton Tax Rate',
-      category: 'TaxRates',
+      category: 'TAX_RATES',
       valueType: 'PERCENTAGE',
       value: { scalar: 2.5, unit: 'percent', municipalityCode: 'DAYTON', municipalityName: 'Dayton', county: 'Montgomery', state: 'OH' } as PercentageValue,
       effectiveDate: '2024-01-01',
@@ -1557,7 +1568,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                 <h4 className="text-lg font-semibold text-slate-800 mb-3">Rule Categories</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h5 className="font-semibold text-blue-800">TaxRates</h5>
+                    <h5 className="font-semibold text-blue-800">TAX_RATES</h5>
                     <p className="text-sm text-blue-700 mt-1">Municipal tax rates, credit limits, and locality rates for reciprocity calculations</p>
                     <ul className="text-sm text-blue-600 mt-2 space-y-1">
                       <li>• MUNICIPAL_TAX_RATE - Primary tax rate (typically 1-3%)</li>
@@ -1566,7 +1577,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                     </ul>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h5 className="font-semibold text-green-800">IncomeInclusion</h5>
+                    <h5 className="font-semibold text-green-800">INCOME_INCLUSION</h5>
                     <p className="text-sm text-green-700 mt-1">Which types of income are subject to municipal tax</p>
                     <ul className="text-sm text-green-600 mt-2 space-y-1">
                       <li>• W2_QUALIFYING_WAGES_RULE - Which W-2 box to use</li>
@@ -1576,7 +1587,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                     </ul>
                   </div>
                   <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-                    <h5 className="font-semibold text-orange-800">Penalties</h5>
+                    <h5 className="font-semibold text-orange-800">PENALTIES</h5>
                     <p className="text-sm text-orange-700 mt-1">Late filing, underpayment, and interest rate rules</p>
                     <ul className="text-sm text-orange-600 mt-2 space-y-1">
                       <li>• PENALTY_RATE_LATE_FILING - Fixed or percentage penalty</li>
@@ -1586,7 +1597,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                     </ul>
                   </div>
                   <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                    <h5 className="font-semibold text-purple-800">Deductions</h5>
+                    <h5 className="font-semibold text-purple-800">DEDUCTIONS</h5>
                     <p className="text-sm text-purple-700 mt-1">Business deductions and Net Operating Loss rules</p>
                     <ul className="text-sm text-purple-600 mt-2 space-y-1">
                       <li>• ENABLE_NOL - Allow NOL carryforward</li>
@@ -1595,7 +1606,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                     </ul>
                   </div>
                   <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                    <h5 className="font-semibold text-indigo-800">Allocation</h5>
+                    <h5 className="font-semibold text-indigo-800">ALLOCATION</h5>
                     <p className="text-sm text-indigo-700 mt-1">Business income allocation/apportionment methods</p>
                     <ul className="text-sm text-indigo-600 mt-2 space-y-1">
                       <li>• ALLOCATION_METHOD - 3-factor, single-sales, etc.</li>
@@ -1603,7 +1614,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                     </ul>
                   </div>
                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                    <h5 className="font-semibold text-slate-800">Filing</h5>
+                    <h5 className="font-semibold text-slate-800">FILING</h5>
                     <p className="text-sm text-slate-700 mt-1">Filing thresholds, deadlines, and extensions</p>
                     <ul className="text-sm text-slate-600 mt-2 space-y-1">
                       <li>• FILING_THRESHOLD - Minimum income requiring return</li>
@@ -1809,7 +1820,7 @@ const RuleFormModal: React.FC<{
   const [formData, setFormData] = useState({
     ruleCode: rule?.ruleCode || '',
     ruleName: rule?.ruleName || '',
-    category: rule?.category || 'TaxRates' as RuleCategory,
+    category: rule?.category || 'TAX_RATES' as RuleCategory,
     valueType: rule?.valueType || 'PERCENTAGE' as RuleValueType,
     value: '',
     effectiveDate: rule?.effectiveDate || new Date().toISOString().split('T')[0],

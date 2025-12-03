@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiscrepancyDetail {
-    private UUID filerId;
+    private String filerId;
     private String filerName;
     private String transactionType;
     private LocalDate transactionDate;

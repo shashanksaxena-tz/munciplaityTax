@@ -20,8 +20,8 @@ public class JournalEntryRequest {
     private String description;
     private SourceType sourceType;
     private UUID sourceId;
-    private UUID tenantId;
-    private UUID entityId;
+    private String tenantId;
+    private String entityId;
     private UUID createdBy;
     @Builder.Default
     private List<JournalEntryLineRequest> lines = new ArrayList<>();

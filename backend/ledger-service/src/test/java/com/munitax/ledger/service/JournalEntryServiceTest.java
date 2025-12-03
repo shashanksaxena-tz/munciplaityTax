@@ -78,8 +78,8 @@ class JournalEntryServiceTest {
                 .description("Payment")
                 .sourceType(SourceType.PAYMENT)
                 .sourceId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
-                .entityId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
+                .entityId(UUID.randomUUID().toString())
                 .createdBy(UUID.randomUUID())
                 .lines(lines)
                 .build();
@@ -125,8 +125,8 @@ class JournalEntryServiceTest {
                 .entryDate(LocalDate.now())
                 .description("Unbalanced entry")
                 .sourceType(SourceType.PAYMENT)
-                .tenantId(UUID.randomUUID())
-                .entityId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
+                .entityId(UUID.randomUUID().toString())
                 .createdBy(UUID.randomUUID())
                 .lines(lines)
                 .build();

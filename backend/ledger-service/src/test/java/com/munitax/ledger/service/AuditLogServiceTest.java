@@ -32,13 +32,13 @@ class AuditLogServiceTest {
 
     private UUID entityId;
     private UUID userId;
-    private UUID tenantId;
+    private String tenantId;
 
     @BeforeEach
     void setUp() {
         entityId = UUID.randomUUID();
         userId = UUID.randomUUID();
-        tenantId = UUID.randomUUID();
+        tenantId = UUID.randomUUID().toString();
     }
 
     @Test

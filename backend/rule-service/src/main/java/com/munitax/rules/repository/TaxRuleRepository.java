@@ -95,7 +95,7 @@ public interface TaxRuleRepository extends JpaRepository<TaxRule, UUID> {
         AND r.tenantId = :tenantId
         AND r.approvalStatus = 'APPROVED'
         AND r.ruleId != :excludeRuleId
-        AND ( :endDate IS NULL OR r.effectiveDate <= :endDate )
+        AND ( CAST(:endDate AS date) IS NULL OR r.effectiveDate <= :endDate )
         AND ( r.endDate IS NULL OR r.endDate >= :effectiveDate )
     """)
     List<TaxRule> findOverlappingRules(

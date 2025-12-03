@@ -44,7 +44,6 @@ CREATE TABLE IF NOT EXISTS audit_queue (
     risk_score INTEGER NOT NULL DEFAULT 0,
     flagged_issues_count INTEGER NOT NULL DEFAULT 0,
     tenant_id VARCHAR(50),
-    CONSTRAINT fk_return FOREIGN KEY (return_id) REFERENCES submissions(id),
     CONSTRAINT chk_priority CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH')),
     CONSTRAINT chk_status CHECK (status IN ('PENDING', 'IN_REVIEW', 'AWAITING_DOCUMENTATION', 'APPROVED', 'REJECTED', 'AMENDED')),
     CONSTRAINT chk_risk_score CHECK (risk_score >= 0 AND risk_score <= 100)
@@ -68,7 +67,6 @@ CREATE TABLE IF NOT EXISTS audit_actions (
     ip_address VARCHAR(45),
     user_agent VARCHAR(255),
     tenant_id VARCHAR(50),
-    CONSTRAINT fk_action_return FOREIGN KEY (return_id) REFERENCES submissions(id),
     CONSTRAINT chk_action_type CHECK (action_type IN ('ASSIGNED', 'REVIEW_STARTED', 'REVIEW_COMPLETED', 'APPROVED', 'REJECTED', 'DOCS_REQUESTED', 'ANNOTATED', 'ESCALATED', 'PRIORITY_CHANGED', 'REASSIGNED'))
 );
 
@@ -87,7 +85,6 @@ CREATE TABLE IF NOT EXISTS audit_trail (
     digital_signature VARCHAR(512),
     immutable BOOLEAN NOT NULL DEFAULT true,
     tenant_id VARCHAR(50),
-    CONSTRAINT fk_trail_return FOREIGN KEY (return_id) REFERENCES submissions(id),
     CONSTRAINT chk_event_type CHECK (event_type IN ('SUBMISSION', 'ASSIGNMENT', 'REVIEW_STARTED', 'REVIEW_COMPLETED', 'APPROVAL', 'REJECTION', 'AMENDMENT', 'PAYMENT', 'COMMUNICATION', 'ESCALATION', 'DOCUMENT_REQUEST', 'DOCUMENT_RECEIVED', 'PRIORITY_CHANGE', 'STATUS_CHANGE', 'ANNOTATION_ADDED'))
 );
 
@@ -111,7 +108,6 @@ CREATE TABLE IF NOT EXISTS audit_reports (
     auditor_override BOOLEAN NOT NULL DEFAULT false,
     override_reason TEXT,
     tenant_id VARCHAR(50),
-    CONSTRAINT fk_report_return FOREIGN KEY (return_id) REFERENCES submissions(id),
     CONSTRAINT chk_report_risk_score CHECK (risk_score >= 0 AND risk_score <= 100),
     CONSTRAINT chk_risk_level CHECK (risk_level IN ('LOW', 'MEDIUM', 'HIGH'))
 );
@@ -147,7 +143,6 @@ CREATE TABLE IF NOT EXISTS document_requests (
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     received_date TIMESTAMP,
     tenant_id VARCHAR(50),
-    CONSTRAINT fk_doc_request_return FOREIGN KEY (return_id) REFERENCES submissions(id),
     CONSTRAINT chk_doc_type CHECK (document_type IN ('GENERAL_LEDGER', 'BANK_STATEMENTS', 'DEPRECIATION_SCHEDULE', 'CONTRACTS', 'INVOICES', 'RECEIPTS', 'PAYROLL_RECORDS', 'TAX_RETURNS_PRIOR_YEAR', 'OTHER')),
     CONSTRAINT chk_doc_status CHECK (status IN ('PENDING', 'RECEIVED', 'OVERDUE', 'WAIVED'))
 );

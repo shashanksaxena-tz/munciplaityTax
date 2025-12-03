@@ -4,14 +4,14 @@ server:
 spring:
   application:
     name: tax-engine-service
-  
+
   # Database Configuration
   datasource:
     url: jdbc:postgresql://postgres:5432/munitax_db
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
-  
+
   # JPA Configuration
   jpa:
     hibernate:
@@ -25,7 +25,7 @@ spring:
           lob:
             non_contextual_creation: true
     show-sql: true
-  
+
   # Flyway Configuration
   flyway:
     enabled: true
@@ -33,6 +33,7 @@ spring:
     locations: classpath:db/migration
     schemas: dublin
     default-schema: dublin
+    table: flyway_schema_history_tax_engine
 
 eureka:
   client:

@@ -41,7 +41,7 @@ class AccountStatementServiceTest {
     @Autowired
     private TestDataInitializer testDataInitializer;
 
-    private UUID tenantId;
+    private String tenantId;
     private UUID municipalityId;
     private UUID filerId;
 
@@ -95,7 +95,7 @@ class AccountStatementServiceTest {
 
         // Act: Generate statement
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, null, null);
+                tenantId, filerId.toString(), null, null);
 
         // Assert: Verify all transactions appear
         assertThat(statement).isNotNull();
@@ -144,7 +144,7 @@ class AccountStatementServiceTest {
 
         // Act: Generate statement
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, null, null);
+                tenantId, filerId.toString(), null, null);
 
         // Assert: Verify final balance is zero
         assertThat(statement).isNotNull();
@@ -178,7 +178,7 @@ class AccountStatementServiceTest {
 
         // Act: Generate statement
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, null, null);
+                tenantId, filerId.toString(), null, null);
 
         // Assert: Current balance should be $5,700 (total $10,700 - payment $5,000)
         assertThat(statement).isNotNull();
@@ -221,7 +221,7 @@ class AccountStatementServiceTest {
         LocalDate endDate = LocalDate.of(2024, 9, 30);
         
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, startDate, endDate);
+                tenantId, filerId.toString(), startDate, endDate);
 
         // Assert: Should only include Q2 transactions
         assertThat(statement).isNotNull();
@@ -245,7 +245,7 @@ class AccountStatementServiceTest {
         LocalDate futureEnd = futureStart.plusMonths(3);
         
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, futureStart, futureEnd);
+                tenantId, filerId.toString(), futureStart, futureEnd);
 
         // Assert: Should return empty or zero balance statement
         assertThat(statement).isNotNull();
@@ -275,7 +275,7 @@ class AccountStatementServiceTest {
         LocalDate startDate = LocalDate.now().minusDays(30);
         
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, startDate, null);
+                tenantId, filerId.toString(), startDate, null);
 
         // Assert: Should include recent transactions
         assertThat(statement).isNotNull();
@@ -296,7 +296,7 @@ class AccountStatementServiceTest {
         LocalDate endDate = LocalDate.now().plusDays(30);
         
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, null, endDate);
+                tenantId, filerId.toString(), null, endDate);
 
         // Assert: Should include transactions up to end date
         assertThat(statement).isNotNull();
@@ -315,7 +315,7 @@ class AccountStatementServiceTest {
 
         // Act: Generate statement
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, null, null);
+                tenantId, filerId.toString(), null, null);
 
         // Assert: Verify metadata fields
         assertThat(statement).isNotNull();
@@ -330,7 +330,7 @@ class AccountStatementServiceTest {
     void testGenerateStatement_NoTransactions() {
         // Act: Generate statement for filer with no transactions
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, null, null);
+                tenantId, filerId.toString(), null, null);
 
         // Assert: Should return valid but empty statement
         assertThat(statement).isNotNull();
@@ -363,7 +363,7 @@ class AccountStatementServiceTest {
 
         // Act: Generate statement
         AccountStatementResponse statement = accountStatementService.generateFilerStatement(
-                tenantId, filerId, null, null);
+                tenantId, filerId.toString(), null, null);
 
         // Assert: Verify totals
         assertThat(statement).isNotNull();

@@ -24,7 +24,7 @@ public class TaxAssessmentService {
     private final AuditLogService auditLogService;
     
     @Transactional
-    public JournalEntry recordTaxAssessment(UUID tenantId, UUID filerId, UUID returnId,
+    public JournalEntry recordTaxAssessment(String tenantId, UUID filerId, UUID returnId,
                                            BigDecimal taxAmount, BigDecimal penaltyAmount,
                                            BigDecimal interestAmount, String taxYear,
                                            String taxPeriod) {
@@ -34,8 +34,8 @@ public class TaxAssessmentService {
         BigDecimal totalAmount = taxAmount.add(penaltyAmount).add(interestAmount);
         
         // Use a fixed municipality entity ID (deterministic based on tenant ID)
-        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
-                ("MUNICIPALITY-" + tenantId.toString()).getBytes(StandardCharsets.UTF_8));
+        String municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + tenantId).getBytes(StandardCharsets.UTF_8)).toString();
         
         // Create filer journal entry for tax assessment
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
@@ -44,7 +44,7 @@ public class TaxAssessmentService {
                 .sourceType(SourceType.TAX_ASSESSMENT)
                 .sourceId(returnId)
                 .tenantId(tenantId)
-                .entityId(filerId)
+                .entityId(filerId.toString())
                 .createdBy(filerId)
                 .lines(new ArrayList<>())
                 .build();

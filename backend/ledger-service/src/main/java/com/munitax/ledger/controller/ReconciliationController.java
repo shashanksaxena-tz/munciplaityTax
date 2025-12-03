@@ -19,8 +19,8 @@ public class ReconciliationController {
     
     @GetMapping("/report/{tenantId}/{municipalityId}")
     public ResponseEntity<ReconciliationResponse> getReconciliationReport(
-            @PathVariable UUID tenantId,
-            @PathVariable UUID municipalityId) {
+            @PathVariable String tenantId,
+            @PathVariable String municipalityId) {
         
         log.info("Generating reconciliation report for tenant {}", tenantId);
         ReconciliationResponse report = reconciliationService.generateReconciliationReport(
@@ -38,9 +38,9 @@ public class ReconciliationController {
      */
     @GetMapping("/{tenantId}/{municipalityId}/filer/{filerId}")
     public ResponseEntity<ReconciliationResponse> getFilerReconciliation(
-            @PathVariable UUID tenantId,
-            @PathVariable UUID municipalityId,
-            @PathVariable UUID filerId) {
+            @PathVariable String tenantId,
+            @PathVariable String municipalityId,
+            @PathVariable String filerId) {
         
         log.info("Generating filer reconciliation for filer {} in tenant {}", filerId, tenantId);
         ReconciliationResponse report = reconciliationService.generateFilerReconciliation(

@@ -5,6 +5,7 @@ import com.munitax.taxengine.domain.withholding.W1Filing;
 import com.munitax.taxengine.domain.withholding.W1FilingStatus;
 import com.munitax.taxengine.dto.W1FilingRequest;
 import com.munitax.taxengine.dto.W1FilingResponse;
+import com.munitax.taxengine.integration.service.TaxRateResolverService;
 import com.munitax.taxengine.repository.W1FilingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ import java.util.UUID;
  * - FR-013: Support multiple filing frequencies
  * 
  * Business Rules:
- * - Municipal tax rate: Configurable per municipality (default 2.0% for Dublin)
+ * - Municipal tax rate: DYNAMICALLY FETCHED from rule-service (fallback 2.0% for Dublin)
  * - Late filing penalty: 5% per month, max 25%, min $50 if tax > $200 (Research R4)
  * - Due dates: Varies by filing frequency (Research R5)
  * 
@@ -43,14 +44,21 @@ import java.util.UUID;
 public class W1FilingService {
     
     private final W1FilingRepository w1FilingRepository;
+    private final TaxRateResolverService taxRateResolver;
     
     /**
-     * Municipal tax rate (configurable per municipality).
+     * Fallback municipal tax rate if rule-service is unavailable.
      * Default: 2.0% for Dublin.
-     * Override in application.yml: tax.municipal.rate=0.0225
+     * Override in application.yml: tax.municipal.rate.fallback=0.0225
      */
-    @Value("${tax.municipal.rate:0.0200}")
-    private BigDecimal municipalTaxRate;
+    @Value("${tax.municipal.rate.fallback:0.0200}")
+    private BigDecimal fallbackMunicipalTaxRate;
+    
+    /**
+     * Default tenant ID for single-tenant deployments.
+     */
+    @Value("${tax.default.tenant:dublin}")
+    private String defaultTenant;
     
     /**
      * File a new W-1 withholding return.
@@ -94,6 +102,14 @@ public class W1FilingService {
         
         // Calculate due date
         LocalDate dueDate = calculateDueDate(request.getFilingFrequency(), request.getPeriodEndDate());
+        
+        // **DYNAMICALLY FETCH TAX RATE FROM RULE-SERVICE**
+        BigDecimal municipalTaxRate = taxRateResolver.getMunicipalTaxRate(
+            defaultTenant, 
+            request.getTaxYear(), 
+            fallbackMunicipalTaxRate
+        );
+        log.info("Using tax rate {} for tax year {}", municipalTaxRate, request.getTaxYear());
         
         // Calculate tax due
         BigDecimal taxDue = taxableWages.multiply(municipalTaxRate).setScale(2, RoundingMode.HALF_UP);

@@ -11,6 +11,6 @@ import java.util.UUID;
 @Repository
 public interface ChartOfAccountsRepository extends JpaRepository<ChartOfAccounts, UUID> {
     Optional<ChartOfAccounts> findByAccountNumber(String accountNumber);
-    List<ChartOfAccounts> findByTenantIdAndActiveTrue(UUID tenantId);
-    List<ChartOfAccounts> findByTenantId(UUID tenantId);
+    List<ChartOfAccounts> findByTenantIdAndActiveTrue(String tenantId);
+    List<ChartOfAccounts> findByTenantId(String tenantId);
 }

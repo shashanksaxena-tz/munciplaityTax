@@ -39,7 +39,7 @@ public class ReconciliationService {
      * @param municipalityId The municipality identifier
      * @return ReconciliationResponse with reconciliation results
      */
-    public ReconciliationResponse generateReconciliationReport(UUID tenantId, UUID municipalityId) {
+    public ReconciliationResponse generateReconciliationReport(String tenantId, String municipalityId) {
         log.info("Generating production reconciliation report for tenant {}", tenantId);
         
         // Calculate municipality AR (account 1201)
@@ -52,7 +52,7 @@ public class ReconciliationService {
         
         // PRODUCTION IMPLEMENTATION: Aggregate all filer balances
         // T022: Query all filer entities
-        Set<UUID> allFilerIds = queryAllFilerEntities(tenantId);
+        Set<String> allFilerIds = queryAllFilerEntities(tenantId);
         log.debug("Found {} filers for tenant {}", allFilerIds.size(), tenantId);
         
         // T023: Sum all filer tax liability accounts
@@ -101,7 +101,7 @@ public class ReconciliationService {
      * @param municipalityId The municipality identifier
      * @return ReconciliationResponse for the specific filer
      */
-    public ReconciliationResponse generateFilerReconciliation(UUID tenantId, UUID filerId, UUID municipalityId) {
+    public ReconciliationResponse generateFilerReconciliation(String tenantId, String filerId, String municipalityId) {
         log.info("Generating filer reconciliation for filer {} in tenant {}", filerId, tenantId);
         
         // Calculate filer's tax liabilities
@@ -127,7 +127,7 @@ public class ReconciliationService {
         if (status == ReconciliationStatus.DISCREPANCY) {
             discrepancies.add(DiscrepancyDetail.builder()
                     .filerId(filerId)
-                    .filerName("Filer " + filerId.toString().substring(0, 8))
+                    .filerName("Filer " + filerId.substring(0, Math.min(8, filerId.length())))
                     .transactionType("Reconciliation")
                     .transactionDate(LocalDate.now())
                     .filerAmount(filerLiabilities.add(filerPayments))
@@ -156,16 +156,16 @@ public class ReconciliationService {
      * @param tenantId The tenant identifier
      * @return Set of filer IDs
      */
-    private Set<UUID> queryAllFilerEntities(UUID tenantId) {
+    private Set<String> queryAllFilerEntities(String tenantId) {
         // Get all journal entries for the tenant
         List<JournalEntry> allEntries = journalEntryRepository.findByTenantId(tenantId);
         
         // Extract unique entity IDs (excluding municipality)
         // A filer is identified by having liability accounts (2xxx accounts)
-        Set<UUID> filerIds = new HashSet<>();
+        Set<String> filerIds = new HashSet<>();
         
         for (JournalEntry entry : allEntries) {
-            UUID entityId = entry.getEntityId();
+            String entityId = entry.getEntityId();
             
             // Check if this entry has any filer liability accounts
             boolean hasFilerAccounts = entry.getLines().stream()
@@ -174,7 +174,7 @@ public class ReconciliationService {
                         return accountNum.startsWith("2"); // Liability accounts
                     });
             
-            if (hasFilerAccounts) {
+            if (hasFilerAccounts && entityId != null) {
                 filerIds.add(entityId);
             }
         }
@@ -190,10 +190,10 @@ public class ReconciliationService {
      * @param filerIds Set of filer IDs to aggregate
      * @return Total filer liabilities
      */
-    private BigDecimal sumFilerTaxLiabilities(UUID tenantId, Set<UUID> filerIds) {
+    private BigDecimal sumFilerTaxLiabilities(String tenantId, Set<String> filerIds) {
         BigDecimal totalLiabilities = BigDecimal.ZERO;
         
-        for (UUID filerId : filerIds) {
+        for (String filerId : filerIds) {
             for (String accountNumber : FILER_LIABILITY_ACCOUNTS) {
                 BigDecimal balance = calculateAccountBalance(tenantId, filerId, accountNumber);
                 totalLiabilities = totalLiabilities.add(balance);
@@ -211,10 +211,10 @@ public class ReconciliationService {
      * @param filerIds Set of filer IDs to aggregate
      * @return Total filer payments
      */
-    private BigDecimal sumFilerPayments(UUID tenantId, Set<UUID> filerIds) {
+    private BigDecimal sumFilerPayments(String tenantId, Set<String> filerIds) {
         BigDecimal totalPayments = BigDecimal.ZERO;
         
-        for (UUID filerId : filerIds) {
+        for (String filerId : filerIds) {
             // Payments are recorded as credits to liability accounts or debits to cash
             // We'll calculate by looking at cash account debits for filers
             BigDecimal filerCashDebits = calculateAccountDebits(tenantId, filerId, CASH_ACCOUNT);
@@ -233,7 +233,7 @@ public class ReconciliationService {
      * @param accountNumber The account number
      * @return Account balance
      */
-    private BigDecimal calculateAccountBalance(UUID tenantId, UUID entityId, String accountNumber) {
+    private BigDecimal calculateAccountBalance(String tenantId, String entityId, String accountNumber) {
         List<JournalEntry> entries = journalEntryService.getEntriesForEntity(tenantId, entityId);
         
         BigDecimal balance = BigDecimal.ZERO;
@@ -265,7 +265,7 @@ public class ReconciliationService {
      * @param accountNumber The account number
      * @return Total debits
      */
-    private BigDecimal calculateAccountDebits(UUID tenantId, UUID entityId, String accountNumber) {
+    private BigDecimal calculateAccountDebits(String tenantId, String entityId, String accountNumber) {
         List<JournalEntry> entries = journalEntryService.getEntriesForEntity(tenantId, entityId);
         
         BigDecimal totalDebits = BigDecimal.ZERO;
@@ -288,7 +288,7 @@ public class ReconciliationService {
      */
     private List<DiscrepancyDetail> buildDiscrepanciesList(
             BigDecimal arVariance, BigDecimal cashVariance,
-            Set<UUID> allFilerIds, UUID tenantId, UUID municipalityId,
+            Set<String> allFilerIds, String tenantId, String municipalityId,
             BigDecimal municipalityAR, BigDecimal filerLiabilities,
             BigDecimal municipalityCash, BigDecimal filerPayments) {
         

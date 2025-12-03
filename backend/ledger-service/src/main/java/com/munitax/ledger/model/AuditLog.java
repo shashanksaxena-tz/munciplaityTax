@@ -46,5 +46,5 @@ public class AuditLog {
     private String reason;
     
     @Column(nullable = false)
-    private UUID tenantId;
+    private String tenantId;
 }

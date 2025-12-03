@@ -59,3 +59,22 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: tax-engine-service
+        url: /tax-engine-service/v3/api-docs
+      - name: rule-service
+        url: /rule-service/v3/api-docs
+      - name: ledger-service
+        url: /ledger-service/v3/api-docs
+      - name: submission-service
+        url: /submission-service/v3/api-docs
+      - name: auth-service
+        url: /auth-service/v3/api-docs
+      - name: tenant-service
+        url: /tenant-service/v3/api-docs
+    path: /swagger-ui.html
+  api-docs:
+    enabled: true

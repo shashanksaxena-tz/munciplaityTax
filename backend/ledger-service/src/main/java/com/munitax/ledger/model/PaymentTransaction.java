@@ -31,7 +31,7 @@ public class PaymentTransaction {
     private UUID filerId;
     
     @Column(nullable = false)
-    private UUID tenantId;
+    private String tenantId;
     
     private String providerTransactionId;
     

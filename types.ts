@@ -579,14 +579,14 @@ export interface DocumentRequestPayload {
 // ============================================================================
 
 export type RuleCategory = 
-  | 'TaxRates' 
-  | 'IncomeInclusion' 
-  | 'Deductions' 
-  | 'Penalties' 
-  | 'Filing' 
-  | 'Allocation' 
-  | 'Withholding' 
-  | 'Validation';
+  | 'TAX_RATES' 
+  | 'INCOME_INCLUSION' 
+  | 'DEDUCTIONS' 
+  | 'PENALTIES' 
+  | 'FILING' 
+  | 'ALLOCATION' 
+  | 'WITHHOLDING' 
+  | 'VALIDATION';
 
 export type RuleValueType = 
   | 'NUMBER' 

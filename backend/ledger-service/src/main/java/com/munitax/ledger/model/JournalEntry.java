@@ -47,9 +47,9 @@ public class JournalEntry {
     private EntryStatus status;
     
     @Column(nullable = false)
-    private UUID tenantId;
+    private String tenantId;
     
-    private UUID entityId; // Filer or Municipality ID
+    private String entityId; // Filer or Municipality ID
     
     @Column(nullable = false)
     private UUID createdBy;

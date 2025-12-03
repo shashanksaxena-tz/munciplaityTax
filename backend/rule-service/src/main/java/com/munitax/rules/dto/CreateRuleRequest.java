@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -35,7 +36,7 @@ public class CreateRuleRequest {
     private RuleValueType valueType;
     
     @NotNull(message = "Value is required")
-    private Object value;
+    private Map<String, Object> value;
     
     @NotNull(message = "Effective date is required")
     private LocalDate effectiveDate;

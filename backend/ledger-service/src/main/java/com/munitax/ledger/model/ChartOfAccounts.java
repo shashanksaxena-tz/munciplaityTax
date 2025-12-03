@@ -39,7 +39,7 @@ public class ChartOfAccounts {
     private UUID parentAccountId;
     
     @Column(nullable = false)
-    private UUID tenantId;
+    private String tenantId;
     
     private String description;
     
