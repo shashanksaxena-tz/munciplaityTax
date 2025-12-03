@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -27,7 +28,7 @@ public class UpdateRuleRequest {
     
     private RuleValueType valueType;
     
-    private Object value;
+    private Map<String, Object> value;
     
     private LocalDate effectiveDate;
     

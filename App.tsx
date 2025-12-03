@@ -80,7 +80,7 @@ const RuleManagementWrapper = () => {
         <div className="min-h-screen bg-slate-50 p-6">
             <RuleManagementDashboard
                 userId={user?.id || ''}
-                tenantId={user?.tenantId || 'tenant-1'}
+                tenantId={user?.tenantId || 'dublin'}
                 onBack={() => navigate('/')}
             />
         </div>
@@ -116,7 +116,7 @@ const LedgerDashboardWrapper = () => {
                 </div>
                 <LedgerDashboard
                     userRole={getLedgerRole()}
-                    tenantId={user?.tenantId || 'tenant-1'}
+                    tenantId={user?.tenantId || 'dublin'}
                     filerId={user?.id}
                     municipalityId={user?.tenantId} // Use tenantId as municipalityId for now
                 />

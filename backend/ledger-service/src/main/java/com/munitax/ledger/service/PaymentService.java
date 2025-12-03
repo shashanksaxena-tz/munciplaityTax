@@ -97,8 +97,8 @@ public class PaymentService {
         // PRODUCTION NOTE: In production, municipality entity ID should be stored in tenant
         // configuration and retrieved from the tenant service. This deterministic approach
         // ensures consistency during development and testing.
-        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
-                ("MUNICIPALITY-" + request.getTenantId().toString()).getBytes(StandardCharsets.UTF_8));
+        String municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + request.getTenantId()).getBytes(StandardCharsets.UTF_8)).toString();
         
         // Create filer journal entry (payment reduces liability)
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
@@ -108,7 +108,7 @@ public class PaymentService {
                 .sourceType(SourceType.PAYMENT)
                 .sourceId(transaction.getPaymentId())
                 .tenantId(request.getTenantId())
-                .entityId(request.getFilerId())
+                .entityId(request.getFilerId().toString())
                 .createdBy(request.getFilerId())
                 .lines(new ArrayList<>())
                 .build();

@@ -29,7 +29,7 @@ public class AuditController {
     public ResponseEntity<List<AuditLog>> getAuditTrail(
             @PathVariable UUID entityId,
             @RequestParam(required = false) UUID userId,
-            @RequestParam(required = false) UUID tenantId) {
+            @RequestParam(required = false) String tenantId) {
         
         log.info("Getting audit trail for entity {}", entityId);
         
@@ -46,7 +46,7 @@ public class AuditController {
      * Get all audit logs for a tenant
      */
     @GetMapping("/tenant/{tenantId}")
-    public ResponseEntity<List<AuditLog>> getTenantAuditLogs(@PathVariable UUID tenantId) {
+    public ResponseEntity<List<AuditLog>> getTenantAuditLogs(@PathVariable String tenantId) {
         log.info("Getting audit logs for tenant {}", tenantId);
         List<AuditLog> auditLogs = auditLogService.getTenantAuditLogs(tenantId);
         return ResponseEntity.ok(auditLogs);
@@ -65,7 +65,7 @@ public class AuditController {
     public ResponseEntity<List<AuditLog>> getJournalEntryAuditTrail(
             @PathVariable UUID entryId,
             @RequestParam(required = false) UUID userId,
-            @RequestParam(required = false) UUID tenantId) {
+            @RequestParam(required = false) String tenantId) {
         
         log.info("Getting audit trail for journal entry {}", entryId);
         
@@ -93,7 +93,7 @@ public class AuditController {
      */
     @GetMapping("/filtered")
     public ResponseEntity<List<AuditLog>> getFilteredAuditTrail(
-            @RequestParam UUID tenantId,
+            @RequestParam String tenantId,
             @RequestParam(required = false) String entityType,
             @RequestParam(required = false) String action,
             @RequestParam(required = false) UUID userId) {

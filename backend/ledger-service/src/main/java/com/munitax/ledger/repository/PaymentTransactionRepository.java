@@ -11,6 +11,6 @@ import java.util.UUID;
 @Repository
 public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, UUID> {
     List<PaymentTransaction> findByFilerIdOrderByTimestampDesc(UUID filerId);
-    List<PaymentTransaction> findByTenantIdOrderByTimestampDesc(UUID tenantId);
+    List<PaymentTransaction> findByTenantIdOrderByTimestampDesc(String tenantId);
     Optional<PaymentTransaction> findByPaymentId(UUID paymentId);
 }

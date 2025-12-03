@@ -22,11 +22,11 @@ public class TestDataInitializer {
     
     private final ChartOfAccountsRepository chartOfAccountsRepository;
     
-    public UUID getTestTenantId() {
+    public String getTestTenantId() {
         return TestConstants.TEST_TENANT_ID;
     }
     
-    public UUID getTenantId() {
+    public String getTenantId() {
         return TestConstants.TEST_TENANT_ID;
     }
     

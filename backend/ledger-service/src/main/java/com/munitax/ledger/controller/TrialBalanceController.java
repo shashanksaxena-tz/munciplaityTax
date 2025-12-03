@@ -33,7 +33,7 @@ public class TrialBalanceController {
      */
     @GetMapping
     public ResponseEntity<TrialBalanceResponse> getTrialBalance(
-            @RequestParam UUID tenantId,
+            @RequestParam String tenantId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOfDate) {
         
         log.info("Trial balance requested for tenant {} as of {}", tenantId, asOfDate);
@@ -52,7 +52,7 @@ public class TrialBalanceController {
      */
     @GetMapping("/period")
     public ResponseEntity<TrialBalanceResponse> getTrialBalanceForPeriod(
-            @RequestParam UUID tenantId,
+            @RequestParam String tenantId,
             @RequestParam int year,
             @RequestParam String period) {
         

@@ -40,13 +40,13 @@ class TaxAssessmentServiceTest {
     @InjectMocks
     private TaxAssessmentService taxAssessmentService;
 
-    private UUID tenantId;
+    private String tenantId;
     private UUID filerId;
     private UUID returnId;
 
     @BeforeEach
     void setUp() {
-        tenantId = UUID.randomUUID();
+        tenantId = UUID.randomUUID().toString();
         filerId = UUID.randomUUID();
         returnId = UUID.randomUUID();
     }
@@ -303,7 +303,7 @@ class TaxAssessmentServiceTest {
     private JournalEntry createMockJournalEntry(UUID entityId, UUID sourceId, BigDecimal amount) {
         JournalEntry entry = new JournalEntry();
         entry.setEntryId(UUID.randomUUID());
-        entry.setEntityId(entityId);
+        entry.setEntityId(entityId.toString());
         entry.setSourceType(SourceType.TAX_ASSESSMENT);
         entry.setSourceId(sourceId);
         entry.setEntryDate(LocalDate.now());

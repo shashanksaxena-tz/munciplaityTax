@@ -37,14 +37,14 @@ class RefundControllerTest {
     @MockBean
     private RefundService refundService;
     
-    private UUID tenantId;
+    private String tenantId;
     private UUID filerId;
     private UUID userId;
     private UUID refundRequestId;
     
     @BeforeEach
     void setUp() {
-        tenantId = UUID.randomUUID();
+        tenantId = UUID.randomUUID().toString();
         filerId = UUID.randomUUID();
         userId = UUID.randomUUID();
         refundRequestId = UUID.randomUUID();
@@ -62,7 +62,7 @@ class RefundControllerTest {
         
         JournalEntry mockEntry = new JournalEntry();
         mockEntry.setEntryId(UUID.randomUUID());
-        mockEntry.setEntityId(filerId);
+        mockEntry.setEntityId(filerId.toString());
         mockEntry.setTenantId(tenantId);
         mockEntry.setEntryDate(LocalDate.now());
         mockEntry.setDescription("Refund Request - " + reason);
@@ -99,7 +99,7 @@ class RefundControllerTest {
         String reason = "Test refund";
         
         when(refundService.processRefundRequest(
-                any(UUID.class), any(UUID.class), eq(negativeAmount), any(String.class), any(UUID.class)))
+                any(String.class), any(UUID.class), eq(negativeAmount), any(String.class), any(UUID.class)))
                 .thenThrow(new IllegalArgumentException("Refund amount must be positive"));
         
         // When & Then
@@ -151,7 +151,7 @@ class RefundControllerTest {
         
         JournalEntry mockEntry = new JournalEntry();
         mockEntry.setEntryId(UUID.randomUUID());
-        mockEntry.setEntityId(filerId);
+        mockEntry.setEntityId(filerId.toString());
         mockEntry.setTenantId(tenantId);
         mockEntry.setSourceId(refundRequestId);
         

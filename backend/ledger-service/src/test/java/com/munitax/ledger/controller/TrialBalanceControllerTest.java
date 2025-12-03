@@ -37,11 +37,11 @@ class TrialBalanceControllerTest {
     @MockBean
     private TrialBalanceService trialBalanceService;
     
-    private UUID tenantId;
+    private String tenantId;
     
     @BeforeEach
     void setUp() {
-        tenantId = UUID.randomUUID();
+        tenantId = UUID.randomUUID().toString();
     }
     
     /**

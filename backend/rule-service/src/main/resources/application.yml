@@ -1,7 +1,7 @@
 spring:
   application:
     name: rule-service
-  
+
   datasource:
     url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:munitax_db}
     username: ${DB_USERNAME:postgres}
@@ -11,10 +11,10 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 5
       connection-timeout: 30000
-  
+
   jpa:
     hibernate:
-      ddl-auto: none  # Use Flyway for migrations
+      ddl-auto: none # Use Flyway for migrations
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -23,7 +23,7 @@ spring:
           time_zone: UTC
     show-sql: false
     open-in-view: false
-  
+
   flyway:
     enabled: true
     baseline-on-migrate: true
@@ -33,7 +33,8 @@ spring:
     validate-on-migrate: false
     # Allow out-of-order migrations for development flexibility
     out-of-order: true
-  
+    table: flyway_schema_history_rules
+
   redis:
     host: ${REDIS_HOST:localhost}
     port: ${REDIS_PORT:6379}
@@ -53,7 +54,7 @@ spring:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:8081}
 
 server:
-  port: ${SERVER_PORT:8084}
+  port: ${SERVER_PORT:8089}
   error:
     include-message: always
     include-binding-errors: always
@@ -95,9 +96,9 @@ logging:
 # Custom application properties
 app:
   cache:
-    rule-ttl: ${RULE_CACHE_TTL:86400}  # 24 hours in seconds
+    rule-ttl: ${RULE_CACHE_TTL:86400} # 24 hours in seconds
     tenant-cache-prefix: "rules:tenant:"
   security:
     jwt:
       secret: ${JWT_SECRET:changeme}
-      expiration: 86400000  # 24 hours in milliseconds
+      expiration: 86400000 # 24 hours in milliseconds

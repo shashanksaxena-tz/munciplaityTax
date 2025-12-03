@@ -36,12 +36,12 @@ class PaymentServiceTest {
     @Autowired
     private JournalEntryRepository journalEntryRepository;
     
-    private UUID tenantId;
+    private String tenantId;
     private UUID filerId;
     
     @BeforeEach
     void setUp() {
-        tenantId = UUID.randomUUID();
+        tenantId = UUID.randomUUID().toString();
         filerId = UUID.randomUUID();
     }
     

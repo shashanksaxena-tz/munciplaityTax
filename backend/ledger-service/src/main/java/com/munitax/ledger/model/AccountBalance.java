@@ -30,7 +30,7 @@ public class AccountBalance {
     private UUID entityId; // Filer or Municipality ID
     
     @Column(nullable = false)
-    private UUID tenantId;
+    private String tenantId;
     
     @Column(nullable = false)
     private LocalDate periodStartDate;

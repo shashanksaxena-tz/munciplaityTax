@@ -212,7 +212,7 @@ public class JournalEntryService {
         log.info("Deleted draft journal entry {}", entry.getEntryNumber());
     }
     
-    public List<JournalEntry> getEntriesForEntity(UUID tenantId, UUID entityId) {
+    public List<JournalEntry> getEntriesForEntity(String tenantId, String entityId) {
         return journalEntryRepository.findByTenantIdAndEntityIdOrderByEntryDateDesc(tenantId, entityId);
     }
     
@@ -221,7 +221,7 @@ public class JournalEntryService {
                 .orElseThrow(() -> new IllegalArgumentException("Journal entry not found"));
     }
     
-    private String generateEntryNumber(UUID tenantId, java.time.LocalDate entryDate) {
+    private String generateEntryNumber(String tenantId, java.time.LocalDate entryDate) {
         String prefix = "JE-" + entryDate.format(DateTimeFormatter.ofPattern("yyyy"));
         String maxNumber = journalEntryRepository.findMaxEntryNumberByPrefix(tenantId, prefix);
         

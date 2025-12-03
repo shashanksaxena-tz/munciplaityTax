@@ -40,7 +40,7 @@ const DEMO_USER: User = {
     firstName: 'Demo',
     lastName: 'Admin',
     roles: ['ROLE_ADMIN', 'ROLE_TAX_ADMINISTRATOR', 'ROLE_MANAGER', 'ROLE_AUDITOR', 'ROLE_SUPERVISOR'],
-    tenantId: 'tenant-1'
+    tenantId: 'dublin'
 };
 
 // Auditor demo user  
@@ -50,7 +50,7 @@ const AUDITOR_USER: User = {
     firstName: 'Demo',
     lastName: 'Auditor',
     roles: ['ROLE_AUDITOR', 'ROLE_SENIOR_AUDITOR'],
-    tenantId: 'tenant-1'
+    tenantId: 'dublin'
 };
 
 // Filer demo user
@@ -60,7 +60,7 @@ const FILER_USER: User = {
     firstName: 'Test',
     lastName: 'Filer',
     roles: ['ROLE_INDIVIDUAL'],
-    tenantId: 'tenant-1'
+    tenantId: 'dublin'
 };
 
 // Business demo user
@@ -70,7 +70,7 @@ const BUSINESS_USER: User = {
     firstName: 'Business',
     lastName: 'Owner',
     roles: ['ROLE_BUSINESS'],
-    tenantId: 'tenant-1'
+    tenantId: 'dublin'
 };
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {

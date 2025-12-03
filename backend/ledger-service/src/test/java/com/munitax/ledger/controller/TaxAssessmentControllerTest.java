@@ -35,7 +35,7 @@ class TaxAssessmentControllerTest {
     @DisplayName("T013 - POST /api/v1/tax-assessments/record should create tax assessment with journal entries")
     void shouldRecordTaxAssessment() throws Exception {
         // Given
-        UUID tenantId = UUID.randomUUID();
+        String tenantId = UUID.randomUUID().toString();
         UUID filerId = UUID.randomUUID();
         UUID returnId = UUID.randomUUID();
         BigDecimal taxAmount = new BigDecimal("10000.00");
@@ -73,7 +73,7 @@ class TaxAssessmentControllerTest {
     @DisplayName("T013 - POST /api/v1/tax-assessments/record with default penalty and interest")
     void shouldRecordTaxAssessmentWithDefaults() throws Exception {
         // Given
-        UUID tenantId = UUID.randomUUID();
+        String tenantId = UUID.randomUUID().toString();
         UUID filerId = UUID.randomUUID();
         UUID returnId = UUID.randomUUID();
         BigDecimal taxAmount = new BigDecimal("5000.00");
@@ -105,7 +105,7 @@ class TaxAssessmentControllerTest {
     @DisplayName("T013 - POST /api/v1/tax-assessments/record with compound assessment")
     void shouldRecordCompoundTaxAssessment() throws Exception {
         // Given
-        UUID tenantId = UUID.randomUUID();
+        String tenantId = UUID.randomUUID().toString();
         UUID filerId = UUID.randomUUID();
         UUID returnId = UUID.randomUUID();
         BigDecimal taxAmount = new BigDecimal("15000.00");
@@ -117,7 +117,7 @@ class TaxAssessmentControllerTest {
         JournalEntry mockEntry = createMockJournalEntry(filerId, returnId);
 
         when(taxAssessmentService.recordTaxAssessment(
-                any(UUID.class), any(UUID.class), any(UUID.class),
+                any(String.class), any(UUID.class), any(UUID.class),
                 any(BigDecimal.class), any(BigDecimal.class), any(BigDecimal.class),
                 any(String.class), any(String.class)
         )).thenReturn(mockEntry);
@@ -140,7 +140,7 @@ class TaxAssessmentControllerTest {
     private JournalEntry createMockJournalEntry(UUID filerId, UUID returnId) {
         JournalEntry entry = new JournalEntry();
         entry.setEntryId(UUID.randomUUID());
-        entry.setEntityId(filerId);
+        entry.setEntityId(filerId.toString());
         entry.setSourceType(SourceType.TAX_ASSESSMENT);
         entry.setSourceId(returnId);
         entry.setEntryDate(LocalDate.now());

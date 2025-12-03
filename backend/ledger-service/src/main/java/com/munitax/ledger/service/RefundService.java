@@ -40,7 +40,7 @@ public class RefundService {
      * @param filerId The filer ID
      * @return The overpayment amount (positive if overpaid, zero if balanced or underpaid)
      */
-    public BigDecimal detectOverpayment(UUID tenantId, UUID filerId) {
+    public BigDecimal detectOverpayment(String tenantId, String filerId) {
         log.info("Detecting overpayment for filer {}", filerId);
         
         // Get all journal entries for the filer
@@ -91,7 +91,7 @@ public class RefundService {
         }
         
         // T057: Detect overpayment and validate refund amount
-        BigDecimal overpayment = detectOverpayment(request.getTenantId(), request.getFilerId());
+        BigDecimal overpayment = detectOverpayment(request.getTenantId(), request.getFilerId().toString());
         
         if (request.getAmount().compareTo(overpayment) > 0) {
             throw new IllegalArgumentException(
@@ -140,7 +140,7 @@ public class RefundService {
      * FR-039: System MUST support refund approval workflow
      */
     @Transactional
-    public RefundResponse approveRefund(UUID tenantId, UUID refundRequestId, UUID approvedBy) {
+    public RefundResponse approveRefund(String tenantId, UUID refundRequestId, UUID approvedBy) {
         log.info("Approving refund request {}", refundRequestId);
         
         // In a real system, we would fetch the refund record from database
@@ -169,7 +169,7 @@ public class RefundService {
      * FR-039: System MUST support refund approval workflow
      */
     @Transactional
-    public RefundResponse rejectRefund(UUID tenantId, UUID refundRequestId, 
+    public RefundResponse rejectRefund(String tenantId, UUID refundRequestId, 
                                       UUID rejectedBy, String rejectionReason) {
         log.info("Rejecting refund request {}: reason={}", refundRequestId, rejectionReason);
         
@@ -195,7 +195,7 @@ public class RefundService {
      * FR-041: System MUST support refund methods (ACH, Check, Wire)
      */
     @Transactional
-    public RefundResponse issueRefundWithMethod(UUID tenantId, UUID filerId, 
+    public RefundResponse issueRefundWithMethod(String tenantId, UUID filerId, 
                                                UUID refundRequestId, BigDecimal refundAmount,
                                                RefundMethod refundMethod, UUID issuedBy) {
         log.info("Issuing refund for filer {} via {}: amount={}", 
@@ -251,7 +251,7 @@ public class RefundService {
      */
     
     @Transactional
-    public JournalEntry processRefundRequest(UUID tenantId, UUID filerId, BigDecimal refundAmount, 
+    public JournalEntry processRefundRequest(String tenantId, UUID filerId, BigDecimal refundAmount, 
                                             String reason, UUID requestedBy) {
         log.info("Processing refund request for filer {}: amount={}", filerId, refundAmount);
         
@@ -260,8 +260,8 @@ public class RefundService {
         }
         
         // Use a fixed municipality entity ID (deterministic based on tenant ID)
-        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
-                ("MUNICIPALITY-" + tenantId.toString()).getBytes(StandardCharsets.UTF_8));
+        String municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + tenantId).getBytes(StandardCharsets.UTF_8)).toString();
         
         // Create filer journal entry for refund request
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
@@ -270,7 +270,7 @@ public class RefundService {
                 .sourceType(SourceType.REFUND)
                 .sourceId(UUID.randomUUID()) // Refund request ID
                 .tenantId(tenantId)
-                .entityId(filerId)
+                .entityId(filerId.toString())
                 .createdBy(requestedBy)
                 .lines(new ArrayList<>())
                 .build();
@@ -336,13 +336,13 @@ public class RefundService {
     }
     
     @Transactional
-    public void issueRefund(UUID tenantId, UUID filerId, UUID refundRequestId, 
+    public void issueRefund(String tenantId, UUID filerId, UUID refundRequestId, 
                            BigDecimal refundAmount, UUID issuedBy) {
         log.info("Issuing refund for filer {}: amount={}", filerId, refundAmount);
         
         // Use a fixed municipality entity ID (deterministic based on tenant ID)
-        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
-                ("MUNICIPALITY-" + tenantId.toString()).getBytes(StandardCharsets.UTF_8));
+        String municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + tenantId).getBytes(StandardCharsets.UTF_8)).toString();
         
         // Create filer journal entry for refund issuance
         JournalEntryRequest filerEntry = JournalEntryRequest.builder()
@@ -351,7 +351,7 @@ public class RefundService {
                 .sourceType(SourceType.REFUND)
                 .sourceId(refundRequestId)
                 .tenantId(tenantId)
-                .entityId(filerId)
+                .entityId(filerId.toString())
                 .createdBy(issuedBy)
                 .lines(new ArrayList<>())
                 .build();

@@ -48,7 +48,7 @@ class ReconciliationControllerTest {
     @Autowired
     private TestDataInitializer testDataInitializer;
 
-    private UUID tenantId;
+    private String tenantId;
     private UUID municipalityId;
     private String baseUrl;
 

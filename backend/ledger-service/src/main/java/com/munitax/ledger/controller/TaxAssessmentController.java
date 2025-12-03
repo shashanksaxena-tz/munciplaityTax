@@ -94,7 +94,7 @@ public class TaxAssessmentController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<JournalEntry> recordTaxAssessment(
-            @RequestParam @Parameter(description = "Tenant UUID") UUID tenantId,
+            @RequestParam @Parameter(description = "Tenant UUID") String tenantId,
             @RequestParam @Parameter(description = "Filer UUID") UUID filerId,
             @RequestParam @Parameter(description = "Tax Return UUID") UUID returnId,
             @RequestParam @Parameter(description = "Base tax amount") BigDecimal taxAmount,

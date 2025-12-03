@@ -48,7 +48,7 @@ class AccountStatementControllerTest {
     @Autowired
     private TestDataInitializer testDataInitializer;
 
-    private UUID tenantId;
+    private String tenantId;
     private UUID municipalityId;
     private UUID filerId;
     private String baseUrl;
