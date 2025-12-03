@@ -7,6 +7,8 @@ Auto-generated from all feature plans. Last updated: 2025-11-28
 - Java 21 LTS (Backend) + Spring Boot 3.2.3, Spring Cloud (5-schedule-y-sourcing)
 - PostgreSQL 16+ with multi-tenant schemas (5-schedule-y-sourcing)
 - Jest + React Testing Library (Frontend), JUnit 5 + Mockito (Backend) (5-schedule-y-sourcing)
+- Java 21 (backend), TypeScript/React 18+ (frontend) + Spring Boot 3.2.3, React 18, Vite, Tailwind CSS (copilot/add-mock-payment-gateway)
+- PostgreSQL 16+ (multi-tenant schemas), Redis 7+ (caching) (copilot/add-mock-payment-gateway)
 
 ## Project Structure
 
@@ -73,6 +75,7 @@ npm run build             # Production build
 - Immutable audit logs (no updates/deletes)
 
 ## Recent Changes
+- copilot/add-mock-payment-gateway: Added Java 21 (backend), TypeScript/React 18+ (frontend) + Spring Boot 3.2.3, React 18, Vite, Tailwind CSS
 - 5-schedule-y-sourcing: Added multi-state apportionment (Schedule Y) with Joyce/Finnigan elections, throwback/throwout rules, market-based service sourcing
 
 <!-- MANUAL ADDITIONS START -->
