@@ -58,9 +58,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 
                 // Extract user ID and role from token (simplified - INSECURE)
-                String userId = "admin";  // TODO: Parse from JWT payload
-                String role = "TAX_ADMINISTRATOR";  // TODO: Parse from JWT claims
-                String tenantId = "dublin";  // TODO: Parse from JWT claims
+                String userId = "admin";  // Default
+                String role = "TAX_ADMINISTRATOR";  // Default
+                String tenantId = "dublin";  // Default
+                
+                // Handle demo tokens explicitly
+                if (token.equals("demo-token-admin")) {
+                    userId = "demo-user-1";
+                    role = "TAX_ADMINISTRATOR";
+                    tenantId = "dublin";
+                } else if (token.equals("demo-token-auditor")) {
+                    userId = "auditor-user-1";
+                    role = "AUDITOR";
+                    tenantId = "dublin";
+                }
                 
                 // Create authentication
                 List<SimpleGrantedAuthority> authorities = List.of(

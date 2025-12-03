@@ -21,7 +21,7 @@ public class TaxAssessmentRequest {
     /**
      * Tenant identifier (municipality ID)
      */
-    private UUID tenantId;
+    private String tenantId;
     
     /**
      * Filer entity identifier (business or individual)

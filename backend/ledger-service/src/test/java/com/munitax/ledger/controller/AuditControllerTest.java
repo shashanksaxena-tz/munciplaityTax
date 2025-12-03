@@ -35,7 +35,7 @@ class AuditControllerTest {
         // Given
         UUID entityId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        UUID tenantId = UUID.randomUUID();
+        String tenantId = UUID.randomUUID().toString();
 
         AuditLog log1 = createAuditLog(entityId, userId, tenantId, "CREATE", LocalDateTime.now().minusHours(2));
         AuditLog log2 = createAuditLog(entityId, userId, tenantId, "UPDATE", LocalDateTime.now().minusHours(1));
@@ -73,7 +73,7 @@ class AuditControllerTest {
     @DisplayName("T068 - GET /api/v1/audit/tenant/{tenantId} should return all tenant audit logs")
     void shouldGetTenantAuditLogs() throws Exception {
         // Given
-        UUID tenantId = UUID.randomUUID();
+        String tenantId = UUID.randomUUID().toString();
         UUID entity1 = UUID.randomUUID();
         UUID entity2 = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
@@ -91,9 +91,9 @@ class AuditControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(3))
-                .andExpect(jsonPath("$[0].tenantId").value(tenantId.toString()))
-                .andExpect(jsonPath("$[1].tenantId").value(tenantId.toString()))
-                .andExpect(jsonPath("$[2].tenantId").value(tenantId.toString()));
+                .andExpect(jsonPath("$[0].tenantId").value(tenantId))
+                .andExpect(jsonPath("$[1].tenantId").value(tenantId))
+                .andExpect(jsonPath("$[2].tenantId").value(tenantId));
     }
 
     @Test
@@ -102,7 +102,7 @@ class AuditControllerTest {
         // Given
         UUID entityId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
-        UUID tenantId = UUID.randomUUID();
+        String tenantId = UUID.randomUUID().toString();
 
         AuditLog createLog = createAuditLog(entityId, userId, tenantId, "CREATE", LocalDateTime.now().minusHours(2));
         
@@ -138,7 +138,7 @@ class AuditControllerTest {
                 .andExpect(status().isOk());
     }
 
-    private AuditLog createAuditLog(UUID entityId, UUID userId, UUID tenantId, 
+    private AuditLog createAuditLog(UUID entityId, UUID userId, String tenantId, 
                                    String action, LocalDateTime timestamp) {
         return AuditLog.builder()
                 .logId(UUID.randomUUID())

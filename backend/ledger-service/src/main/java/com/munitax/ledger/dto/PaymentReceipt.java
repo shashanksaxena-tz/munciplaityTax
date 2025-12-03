@@ -27,7 +27,7 @@ public class PaymentReceipt {
     private PaymentStatus status;
     private LocalDateTime paymentDate;
     private UUID filerId;
-    private UUID tenantId;
+    private String tenantId;
     private String description;
     private UUID journalEntryId;
     private String journalEntryNumber;

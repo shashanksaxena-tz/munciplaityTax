@@ -20,6 +20,11 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    table: flyway_schema_history_auth
+
 eureka:
   client:
     service-url:

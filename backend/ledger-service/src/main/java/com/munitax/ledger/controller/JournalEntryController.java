@@ -38,8 +38,8 @@ public class JournalEntryController {
     
     @GetMapping("/entity/{tenantId}/{entityId}")
     public ResponseEntity<List<JournalEntry>> getEntriesForEntity(
-            @PathVariable UUID tenantId,
-            @PathVariable UUID entityId) {
+            @PathVariable String tenantId,
+            @PathVariable String entityId) {
         List<JournalEntry> entries = journalEntryService.getEntriesForEntity(tenantId, entityId);
         return ResponseEntity.ok(entries);
     }

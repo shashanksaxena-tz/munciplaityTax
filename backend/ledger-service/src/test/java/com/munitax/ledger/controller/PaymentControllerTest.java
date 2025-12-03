@@ -35,7 +35,7 @@ class PaymentControllerTest {
     void testProcessPayment_CreditCardApproved_Returns200() throws Exception {
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("5000.00"))
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .cardNumber("4111-1111-1111-1111")
@@ -60,7 +60,7 @@ class PaymentControllerTest {
     void testProcessPayment_CreditCardDeclined_Returns200WithDeclinedStatus() throws Exception {
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("5000.00"))
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .cardNumber("4000-0000-0000-0002")
@@ -80,7 +80,7 @@ class PaymentControllerTest {
     void testProcessPayment_ACHApproved_Returns200() throws Exception {
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("3000.00"))
                 .paymentMethod(PaymentMethod.ACH)
                 .achRouting("110000000")
@@ -101,7 +101,7 @@ class PaymentControllerTest {
     void testProcessPayment_CheckPayment_Returns200() throws Exception {
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("7500.00"))
                 .paymentMethod(PaymentMethod.CHECK)
                 .checkNumber("12345")
@@ -120,7 +120,7 @@ class PaymentControllerTest {
     void testProcessPayment_WireTransfer_Returns200() throws Exception {
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("15000.00"))
                 .paymentMethod(PaymentMethod.WIRE)
                 .wireConfirmation("WIRE-123456")
@@ -141,7 +141,7 @@ class PaymentControllerTest {
         UUID filerId = UUID.randomUUID();
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(filerId)
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("5000.00"))
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .cardNumber("4111-1111-1111-1111")
@@ -166,7 +166,7 @@ class PaymentControllerTest {
         // First create a payment
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("3000.00"))
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .cardNumber("4111-1111-1111-1111")
@@ -198,7 +198,7 @@ class PaymentControllerTest {
     void testProcessPayment_ErrorCard_ReturnsError() throws Exception {
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("5000.00"))
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .cardNumber("4000-0000-0000-0119")
@@ -217,7 +217,7 @@ class PaymentControllerTest {
     void testProcessPayment_AllApprovedPaymentsMustCreateJournalEntries() throws Exception {
         PaymentRequest request = PaymentRequest.builder()
                 .filerId(UUID.randomUUID())
-                .tenantId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
                 .amount(new BigDecimal("10000.00"))
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .cardNumber("4111-1111-1111-1111")

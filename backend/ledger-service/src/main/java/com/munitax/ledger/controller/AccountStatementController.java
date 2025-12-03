@@ -21,8 +21,8 @@ public class AccountStatementController {
     
     @GetMapping("/filer/{tenantId}/{filerId}")
     public ResponseEntity<AccountStatementResponse> getFilerStatement(
-            @PathVariable UUID tenantId,
-            @PathVariable UUID filerId,
+            @PathVariable String tenantId,
+            @PathVariable String filerId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         
@@ -41,8 +41,8 @@ public class AccountStatementController {
      */
     @GetMapping("/filer/{tenantId}/{filerId}/pdf")
     public ResponseEntity<byte[]> exportStatementToPdf(
-            @PathVariable UUID tenantId,
-            @PathVariable UUID filerId) {
+            @PathVariable String tenantId,
+            @PathVariable String filerId) {
         
         log.info("Exporting statement to PDF for filer {}", filerId);
         byte[] pdfContent = accountStatementService.exportStatementToPdf(tenantId, filerId);
@@ -62,8 +62,8 @@ public class AccountStatementController {
      */
     @GetMapping("/filer/{tenantId}/{filerId}/csv")
     public ResponseEntity<String> exportStatementToCsv(
-            @PathVariable UUID tenantId,
-            @PathVariable UUID filerId) {
+            @PathVariable String tenantId,
+            @PathVariable String filerId) {
         
         log.info("Exporting statement to CSV for filer {}", filerId);
         String csvContent = accountStatementService.exportStatementToCsv(tenantId, filerId);

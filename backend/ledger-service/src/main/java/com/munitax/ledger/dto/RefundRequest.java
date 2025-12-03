@@ -20,7 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class RefundRequest {
     private UUID filerId;
-    private UUID tenantId;
+    private String tenantId;
     private BigDecimal amount;
     private String reason;
     private RefundMethod refundMethod;  // T060: FR-041 - ACH, Check, Wire

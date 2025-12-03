@@ -38,11 +38,11 @@ class TrialBalanceServiceTest {
     @Autowired
     private JournalEntryRepository journalEntryRepository;
     
-    private UUID tenantId;
+    private String tenantId;
     
     @BeforeEach
     void setUp() {
-        tenantId = UUID.randomUUID();
+        tenantId = UUID.randomUUID().toString();
         
         // Create chart of accounts for municipality
         createMunicipalityChartOfAccounts(tenantId);
@@ -219,7 +219,7 @@ class TrialBalanceServiceTest {
     /**
      * Helper method to create chart of accounts for municipality
      */
-    private void createMunicipalityChartOfAccounts(UUID tenantId) {
+    private void createMunicipalityChartOfAccounts(String tenantId) {
         // Create municipality accounts
         createAccount(tenantId, "1000", "Cash", AccountType.ASSET, NormalBalance.DEBIT);
         createAccount(tenantId, "1001", "Cash - Operating", AccountType.ASSET, NormalBalance.DEBIT);
@@ -231,7 +231,7 @@ class TrialBalanceServiceTest {
         createAccount(tenantId, "5200", "Refund Expense", AccountType.EXPENSE, NormalBalance.DEBIT);
     }
     
-    private void createAccount(UUID tenantId, String accountNumber, String accountName, 
+    private void createAccount(String tenantId, String accountNumber, String accountName, 
                                AccountType accountType, NormalBalance normalBalance) {
         ChartOfAccounts account = new ChartOfAccounts();
         account.setAccountId(UUID.randomUUID());

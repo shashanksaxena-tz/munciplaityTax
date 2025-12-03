@@ -20,7 +20,7 @@ public class RefundController {
     
     @PostMapping("/request")
     public ResponseEntity<JournalEntry> requestRefund(
-            @RequestParam UUID tenantId,
+            @RequestParam String tenantId,
             @RequestParam UUID filerId,
             @RequestParam BigDecimal amount,
             @RequestParam String reason,
@@ -33,7 +33,7 @@ public class RefundController {
     
     @PostMapping("/issue")
     public ResponseEntity<String> issueRefund(
-            @RequestParam UUID tenantId,
+            @RequestParam String tenantId,
             @RequestParam UUID filerId,
             @RequestParam UUID refundRequestId,
             @RequestParam BigDecimal amount,

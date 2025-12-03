@@ -2,6 +2,7 @@
  * T081-T083: Ledger Dashboard Component
  * Provides overview of ledger metrics with role-based views
  * Integrates payment, statement, reconciliation, and trial balance features
+ * Connects to ledger-service backend APIs
  */
 
 import React, { useState, useEffect } from 'react';
@@ -42,55 +43,315 @@ interface LedgerDashboardProps {
   userRole: 'filer' | 'municipality' | 'admin';
   tenantId: string;
   filerId?: string; // Optional: Only for filer role
+  municipalityId?: string; // Optional: For reconciliation
 }
+
+// Backend response types (matching ledger-service DTOs)
+interface PaymentTransaction {
+  id: string;
+  paymentId: string;
+  filerId: string;
+  amount: number;
+  paymentMethod: string;
+  status: string;
+  transactionDate: string;
+  confirmationNumber?: string;
+}
+
+interface AccountStatementResponse {
+  accountName: string;
+  statementDate: string;
+  beginningBalance: number;
+  endingBalance: number;
+  totalDebits: number;
+  totalCredits: number;
+  transactions: StatementTransaction[];
+}
+
+interface StatementTransaction {
+  transactionId: string;
+  date: string;
+  description: string;
+  amount: number;
+  debitCredit: 'DEBIT' | 'CREDIT';
+  status: string;
+}
+
+interface TrialBalanceResponse {
+  asOfDate: string;
+  accounts: AccountBalance[];
+  totalDebits: number;
+  totalCredits: number;
+  difference: number;
+  isBalanced: boolean;
+  status: string;
+  accountCount: number;
+  tenantId: string;
+}
+
+interface AccountBalance {
+  accountCode: string;
+  accountName: string;
+  accountType: string;
+  balance: number;
+}
+
+interface ReconciliationResponse {
+  reportDate: string;
+  municipalityAR: number;
+  filerLiabilities: number;
+  arVariance: number;
+  municipalityCash: number;
+  filerPayments: number;
+  cashVariance: number;
+  status: string;
+  discrepancies: DiscrepancyDetail[];
+}
+
+interface DiscrepancyDetail {
+  filerId: string;
+  municipalityBalance: number;
+  filerBalance: number;
+  variance: number;
+}
+
+// Mock data for demo mode when backend is not available
+const getMockDashboardMetrics = (): DashboardMetrics => ({
+  totalRevenue: 2450000,
+  outstandingAR: 125000,
+  recentTransactionsCount: 47,
+  trialBalanceStatus: 'balanced',
+  totalFilers: 3240,
+  paymentsToday: 12,
+  pendingRefunds: 3,
+  lastReconciliationDate: '2024-11-28T10:00:00Z'
+});
+
+const getMockTransactions = (): RecentTransaction[] => [
+  { id: '1', date: '2024-11-30', description: 'Q4 Tax Payment - Smith, John', amount: 1250.00, type: 'payment', status: 'completed' },
+  { id: '2', date: '2024-11-29', description: '2024 Tax Assessment - Johnson LLC', amount: 5420.00, type: 'assessment', status: 'posted' },
+  { id: '3', date: '2024-11-29', description: 'Overpayment Refund - Davis, Mary', amount: -250.00, type: 'refund', status: 'approved' },
+  { id: '4', date: '2024-11-28', description: 'Monthly Withholding - ABC Corp', amount: 3200.00, type: 'payment', status: 'completed' },
+  { id: '5', date: '2024-11-27', description: 'Penalty Assessment - Late Filing', amount: 125.00, type: 'assessment', status: 'pending' },
+];
+
+// API service for ledger operations - connects to ledger-service backend
+const ledgerApi = {
+  getAuthHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+    };
+  },
+
+  // Get payments for a specific filer
+  async getFilerPayments(filerId: string): Promise<PaymentTransaction[]> {
+    const response = await fetch(`/api/v1/payments/filer/${filerId}`, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch payments: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get account statement for a filer
+  async getAccountStatement(tenantId: string, filerId: string, startDate?: string, endDate?: string): Promise<AccountStatementResponse> {
+    let url = `/api/v1/statements/filer/${tenantId}/${filerId}`;
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (params.toString()) url += `?${params.toString()}`;
+    
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch statement: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get trial balance
+  async getTrialBalance(tenantId: string, asOfDate?: string): Promise<TrialBalanceResponse> {
+    let url = `/api/v1/trial-balance?tenantId=${tenantId}`;
+    if (asOfDate) url += `&asOfDate=${asOfDate}`;
+    
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch trial balance: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get reconciliation report
+  async getReconciliationReport(tenantId: string, municipalityId: string): Promise<ReconciliationResponse> {
+    const response = await fetch(`/api/v1/reconciliation/report/${tenantId}/${municipalityId}`, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch reconciliation: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  // Get journal entries for an entity
+  async getJournalEntries(tenantId: string, entityId: string): Promise<Record<string, unknown>[]> {
+    const response = await fetch(`/api/v1/journal-entries/entity/${tenantId}/${entityId}`, {
+      headers: this.getAuthHeaders()
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch journal entries: ${response.status}`);
+    }
+    return response.json();
+  }
+};
 
 const LedgerDashboard: React.FC<LedgerDashboardProps> = ({ 
   userRole, 
   tenantId,
-  filerId 
+  filerId,
+  municipalityId 
 }) => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [recentTransactions, setRecentTransactions] = useState<RecentTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [useMockData, setUseMockData] = useState<boolean>(() => {
+    const saved = localStorage.getItem('ledger_dashboard_use_mock');
+    return saved === 'true';
+  });
+  const [dataSource, setDataSource] = useState<'backend' | 'mock'>('backend');
 
   useEffect(() => {
     fetchDashboardData();
     // Refresh every 5 minutes
     const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [userRole, tenantId, filerId]);
+  }, [userRole, tenantId, filerId, municipalityId, useMockData]);
+
+  const toggleDataSource = () => {
+    const newValue = !useMockData;
+    setUseMockData(newValue);
+    localStorage.setItem('ledger_dashboard_use_mock', String(newValue));
+  };
 
   const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    // If mock mode is explicitly enabled, use mock data
+    if (useMockData) {
+      setMetrics(getMockDashboardMetrics());
+      setRecentTransactions(getMockTransactions());
+      setDataSource('mock');
+      setLoading(false);
+      return;
+    }
+    
     try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch metrics based on role
-      const metricsEndpoint = userRole === 'filer'
-        ? `/api/v1/ledger/dashboard/filer/${filerId}`
-        : `/api/v1/ledger/dashboard/municipality/${tenantId}`;
-
-      const metricsResponse = await fetch(metricsEndpoint);
-      if (!metricsResponse.ok) throw new Error('Failed to fetch metrics');
-      const metricsData = await metricsResponse.json();
-      setMetrics(metricsData);
-
-      // Fetch recent transactions
-      const transactionsEndpoint = userRole === 'filer'
-        ? `/api/v1/account-statements/${filerId}/recent?limit=10`
-        : `/api/v1/ledger/transactions/recent?tenantId=${tenantId}&limit=10`;
-
-      const transactionsResponse = await fetch(transactionsEndpoint);
-      if (!transactionsResponse.ok) throw new Error('Failed to fetch transactions');
-      const transactionsData = await transactionsResponse.json();
-      setRecentTransactions(transactionsData.transactions || transactionsData);
+      if (userRole === 'filer' && filerId) {
+        // Fetch filer-specific data
+        await fetchFilerData(filerId);
+        setDataSource('backend');
+      } else {
+        // Fetch municipality/admin data
+        await fetchMunicipalityData();
+        setDataSource('backend');
+      }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      // Fall back to mock data when backend is not available
+      console.warn('Backend not available, using mock data:', err);
+      setMetrics(getMockDashboardMetrics());
+      setRecentTransactions(getMockTransactions());
+      setDataSource('mock');
+      setError(null); // Clear error since we have fallback data
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchFilerData = async (fId: string) => {
+    // Get account statement for filer
+    const statement = await ledgerApi.getAccountStatement(tenantId, fId);
+    
+    // Get filer payments
+    const payments = await ledgerApi.getFilerPayments(fId);
+    
+    // Transform data for dashboard
+    const transformedMetrics: DashboardMetrics = {
+      totalRevenue: 0, // Not applicable for filer
+      outstandingAR: Math.abs(Number(statement.endingBalance) || 0),
+      recentTransactionsCount: statement.transactions?.length || 0,
+      trialBalanceStatus: 'balanced',
+      totalFilers: 0,
+      paymentsToday: payments.filter((p: any) => 
+        new Date(p.transactionDate).toDateString() === new Date().toDateString()
+      ).length,
+      pendingRefunds: 0,
+      lastReconciliationDate: ''
+    };
+    
+    setMetrics(transformedMetrics);
+    
+    // Transform transactions
+    const txns: RecentTransaction[] = (statement.transactions || []).slice(0, 10).map((t: any) => ({
+      id: t.transactionId || t.id,
+      date: t.transactionDate || t.date,
+      description: t.description,
+      amount: Number(t.amount),
+      type: t.debitCredit === 'CREDIT' ? 'payment' : 'assessment',
+      status: t.status || 'posted'
+    }));
+    
+    setRecentTransactions(txns);
+  };
+
+  const fetchMunicipalityData = async () => {
+    // Fetch trial balance for municipality overview
+    const trialBalance = await ledgerApi.getTrialBalance(tenantId);
+    
+    // Fetch reconciliation if municipalityId is provided
+    let reconciliation = null;
+    let lastReconDate = '';
+    if (municipalityId) {
+      try {
+        reconciliation = await ledgerApi.getReconciliationReport(tenantId, municipalityId);
+        lastReconDate = reconciliation.reportDate || '';
+      } catch {
+        // Reconciliation may not exist yet
+      }
+    }
+    
+    // Transform data for dashboard
+    const transformedMetrics: DashboardMetrics = {
+      totalRevenue: Number(trialBalance.totalCredits) || 0,
+      outstandingAR: Number(trialBalance.totalDebits) - Number(trialBalance.totalCredits) || 0,
+      recentTransactionsCount: trialBalance.accountCount || 0,
+      trialBalanceStatus: trialBalance.isBalanced ? 'balanced' : 'unbalanced',
+      totalFilers: trialBalance.accountCount || 0,
+      paymentsToday: 0, // Would need separate endpoint
+      pendingRefunds: reconciliation?.discrepancies?.length || 0,
+      lastReconciliationDate: lastReconDate
+    };
+    
+    setMetrics(transformedMetrics);
+    
+    // For municipality, show account balances as "transactions"
+    const accounts = trialBalance.accounts || [];
+    const txns: RecentTransaction[] = accounts.slice(0, 10).map((acc: any) => ({
+      id: acc.accountCode || acc.id,
+      date: trialBalance.asOfDate || new Date().toISOString(),
+      description: acc.accountName,
+      amount: Number(acc.balance) || 0,
+      type: acc.balance >= 0 ? 'assessment' : 'payment',
+      status: 'posted'
+    }));
+    
+    setRecentTransactions(txns);
   };
 
   const handleNavigation = (path: string) => {
@@ -132,14 +393,35 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
                 : 'Monitor revenue, receivables, and financial reconciliation'}
             </p>
           </div>
-          <button
-            onClick={fetchDashboardData}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Data Source Toggle */}
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+              <span className={`text-xs font-medium ${dataSource === 'backend' ? 'text-green-600' : 'text-orange-600'}`}>
+                {dataSource === 'backend' ? '● Backend' : '● Mock'}
+              </span>
+              <button
+                onClick={toggleDataSource}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  useMockData ? 'bg-orange-500' : 'bg-green-500'
+                }`}
+                title={useMockData ? 'Switch to Backend Data' : 'Switch to Mock Data'}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                    useMockData ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            <button
+              onClick={fetchDashboardData}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
 

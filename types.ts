@@ -645,14 +645,14 @@ export interface DocumentRequestPayload {
 // ============================================================================
 
 export type RuleCategory = 
-  | 'TaxRates' 
-  | 'IncomeInclusion' 
-  | 'Deductions' 
-  | 'Penalties' 
-  | 'Filing' 
-  | 'Allocation' 
-  | 'Withholding' 
-  | 'Validation';
+  | 'TAX_RATES' 
+  | 'INCOME_INCLUSION' 
+  | 'DEDUCTIONS' 
+  | 'PENALTIES' 
+  | 'FILING' 
+  | 'ALLOCATION' 
+  | 'WITHHOLDING' 
+  | 'VALIDATION';
 
 export type RuleValueType = 
   | 'NUMBER' 
@@ -720,6 +720,7 @@ export interface TaxRule {
   ruleId: string;
   ruleCode: string;
   ruleName: string;
+  description?: string;    // Human-readable description of what this rule does
   category: RuleCategory;
   valueType: RuleValueType;
   value: RuleValue;
@@ -740,6 +741,8 @@ export interface TaxRule {
   modifiedDate?: string;  // ISO 8601 timestamp
   changeReason: string;
   ordinanceReference?: string;
+  isSystem?: boolean;     // Indicates if this is a default/system rule
+  isMock?: boolean;       // Indicates if this is a mock/demo rule (not from backend)
 }
 
 export interface CreateRuleRequest {

@@ -51,9 +51,13 @@ public class RuleFacadeService {
      * Approve a pending tax rule.
      */
     public RuleResponse approveRule(String ruleId, String approverId) {
-        UUID uuid = UUID.fromString(ruleId);
-        TaxRule rule = ruleManagementService.approveRule(uuid, approverId, "Approved");
-        return ruleMapper.toResponse(rule);
+        try {
+            UUID uuid = UUID.fromString(ruleId);
+            TaxRule rule = ruleManagementService.approveRule(uuid, approverId, "Approved");
+            return ruleMapper.toResponse(rule);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid rule ID format: " + ruleId + ". Expected valid UUID format.", e);
+        }
     }
     
     /**

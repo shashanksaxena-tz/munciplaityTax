@@ -46,7 +46,7 @@ public class TrialBalanceService {
      * @param asOfDate The date to generate trial balance as of (null = current date)
      * @return TrialBalanceResponse with all accounts and balances
      */
-    public TrialBalanceResponse generateTrialBalance(UUID tenantId, LocalDate asOfDate) {
+    public TrialBalanceResponse generateTrialBalance(String tenantId, LocalDate asOfDate) {
         log.info("Generating trial balance for tenant {} as of {}", tenantId, asOfDate);
         
         // Default to current date if not specified
@@ -55,8 +55,8 @@ public class TrialBalanceService {
         }
         
         // Get municipality entity ID (deterministic based on tenant ID)
-        UUID municipalityEntityId = UUID.nameUUIDFromBytes(
-                ("MUNICIPALITY-" + tenantId.toString()).getBytes(StandardCharsets.UTF_8));
+        String municipalityEntityId = UUID.nameUUIDFromBytes(
+                ("MUNICIPALITY-" + tenantId.toString()).getBytes(StandardCharsets.UTF_8)).toString();
         
         // T047: Calculate account balances from journal entries
         Map<String, AccountBalanceSummary> accountBalances = calculateAccountBalances(
@@ -97,7 +97,7 @@ public class TrialBalanceService {
                 .totalsByType(totalsByType)
                 .accountCount(accounts.size())
                 .tenantId(tenantId.toString())
-                .entityId(municipalityEntityId.toString())
+                .entityId(municipalityEntityId)
                 .generatedAt(LocalDateTime.now().toString())
                 .build();
     }
@@ -112,7 +112,7 @@ public class TrialBalanceService {
      * @return Map of account number to AccountBalanceSummary
      */
     private Map<String, AccountBalanceSummary> calculateAccountBalances(
-            UUID tenantId, UUID entityId, LocalDate asOfDate) {
+            String tenantId, String entityId, LocalDate asOfDate) {
         
         // Get all chart of accounts for municipality
         List<ChartOfAccounts> accounts = chartOfAccountsRepository.findByTenantId(tenantId);
@@ -210,7 +210,7 @@ public class TrialBalanceService {
      * @param period The period: "Q1", "Q2", "Q3", "Q4", "M1"-"M12", "YEAR"
      * @return TrialBalanceResponse for the specified period
      */
-    public TrialBalanceResponse generateTrialBalanceForPeriod(UUID tenantId, int year, String period) {
+    public TrialBalanceResponse generateTrialBalanceForPeriod(String tenantId, int year, String period) {
         log.info("Generating trial balance for tenant {} for period {} {}", tenantId, period, year);
         
         LocalDate asOfDate;

@@ -37,7 +37,7 @@ public class AccountStatementService {
      * @param endDate Optional end date for filtering
      * @return AccountStatementResponse with full transaction history
      */
-    public AccountStatementResponse generateFilerStatement(UUID tenantId, UUID filerId, 
+    public AccountStatementResponse generateFilerStatement(String tenantId, String filerId, 
                                                            LocalDate startDate, LocalDate endDate) {
         return generateFilerStatement(tenantId, filerId, startDate, endDate, null, null);
     }
@@ -53,7 +53,7 @@ public class AccountStatementService {
      * @param taxYear Optional tax year filter (e.g., "2024")
      * @return Filtered AccountStatementResponse
      */
-    public AccountStatementResponse generateFilerStatement(UUID tenantId, UUID filerId, 
+    public AccountStatementResponse generateFilerStatement(String tenantId, String filerId, 
                                                            LocalDate startDate, LocalDate endDate,
                                                            SourceType transactionType, String taxYear) {
         // Get tax liability account
@@ -141,7 +141,7 @@ public class AccountStatementService {
      * @param filerId The filer identifier
      * @return AgingAnalysis with breakdown by age buckets
      */
-    public AgingAnalysis calculateAgingAnalysis(UUID tenantId, UUID filerId) {
+    public AgingAnalysis calculateAgingAnalysis(String tenantId, String filerId) {
         // Get all journal entries for filer
         List<JournalEntry> entries = journalEntryService.getEntriesForEntity(tenantId, filerId);
         
@@ -199,7 +199,7 @@ public class AccountStatementService {
      * @param filerId The filer identifier
      * @return byte[] PDF content
      */
-    public byte[] exportStatementToPdf(UUID tenantId, UUID filerId) {
+    public byte[] exportStatementToPdf(String tenantId, String filerId) {
         AccountStatementResponse statement = generateFilerStatement(tenantId, filerId, null, null);
         
         // TODO: Implement PDF generation
@@ -216,7 +216,7 @@ public class AccountStatementService {
      * @param filerId The filer identifier
      * @return String CSV content
      */
-    public String exportStatementToCsv(UUID tenantId, UUID filerId) {
+    public String exportStatementToCsv(String tenantId, String filerId) {
         AccountStatementResponse statement = generateFilerStatement(tenantId, filerId, null, null);
         
         StringBuilder csv = new StringBuilder();

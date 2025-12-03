@@ -1,5 +1,6 @@
 package com.munitax.rules.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.munitax.rules.dto.CreateRuleRequest;
 import com.munitax.rules.dto.UpdateRuleRequest;
 import com.munitax.rules.model.*;
@@ -29,6 +30,7 @@ public class RuleManagementService {
     private final RuleChangeLogRepository changeLogRepository;
     private final RuleValidationService validationService;
     private final RuleCacheService cacheService;
+    private final ObjectMapper objectMapper;
     
     /**
      * Create a new tax rule (status = PENDING).
@@ -85,7 +87,7 @@ public class RuleManagementService {
         TaxRule savedRule = ruleRepository.save(rule);
         
         // Log creation in audit trail
-        logRuleChange(savedRule, ChangeType.CREATE, null, savedRule);
+        logRuleChange(savedRule, ChangeType.CREATE, null, captureRuleState(savedRule));
         
         log.info("Created rule: {} with ID: {}", savedRule.getRuleCode(), savedRule.getRuleId());
         return savedRule;
@@ -105,8 +107,11 @@ public class RuleManagementService {
         TaxRule rule = ruleRepository.findById(ruleId)
             .orElseThrow(() -> new RuleNotFoundException("Rule not found: " + ruleId));
         
-        // Validate rule can be modified (not retroactive)
-        validationService.validateNotRetroactive(rule);
+        // Only validate retroactive changes if the effective date is being changed to the past
+        if (request.getEffectiveDate() != null && 
+            request.getEffectiveDate().isBefore(LocalDate.now())) {
+            validationService.validateNotRetroactive(rule);
+        }
         
         // Validate no overlap if dates are changing
         if (request.getEffectiveDate() != null || request.getEndDate() != null) {
@@ -346,18 +351,23 @@ public class RuleManagementService {
     }
     
     private Object captureRuleState(TaxRule rule) {
-        // Capture complete rule state for audit trail
-        return java.util.Map.of(
-            "ruleCode", rule.getRuleCode(),
-            "ruleName", rule.getRuleName(),
-            "category", rule.getCategory().toString(),
-            "valueType", rule.getValueType().toString(),
-            "value", rule.getValue(),
-            "effectiveDate", rule.getEffectiveDate().toString(),
-            "endDate", rule.getEndDate() != null ? rule.getEndDate().toString() : null,
-            "approvalStatus", rule.getApprovalStatus().toString(),
-            "version", rule.getVersion()
-        );
+        // Capture complete rule state for audit trail as JSON string
+        try {
+            java.util.Map<String, Object> state = new java.util.HashMap<>();
+            state.put("ruleCode", rule.getRuleCode());
+            state.put("ruleName", rule.getRuleName());
+            state.put("category", rule.getCategory().toString());
+            state.put("valueType", rule.getValueType().toString());
+            state.put("value", rule.getValue());
+            state.put("effectiveDate", rule.getEffectiveDate().toString());
+            state.put("endDate", rule.getEndDate() != null ? rule.getEndDate().toString() : null);
+            state.put("approvalStatus", rule.getApprovalStatus().toString());
+            state.put("version", rule.getVersion());
+            return objectMapper.writeValueAsString(state);
+        } catch (Exception e) {
+            log.error("Failed to serialize rule state", e);
+            return "{}";
+        }
     }
     
     /**

@@ -394,7 +394,7 @@ export default function TaxFilingApp() {
               if (currentSession && user) {
                 try {
                   await api.submission.submitReturn({
-                    tenantId: user.tenantId || 'tenant-1',
+                    tenantId: user.tenantId || 'dublin',
                     userId: user.id,
                     taxYear: currentSession.settings.taxYear.toString(),
                     refundChoice: submissionData?.refundChoice,

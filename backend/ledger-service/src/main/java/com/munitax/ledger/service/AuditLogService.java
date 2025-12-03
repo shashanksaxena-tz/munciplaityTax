@@ -20,7 +20,7 @@ public class AuditLogService {
     
     @Transactional
     public void logAction(UUID entityId, String entityType, String action, 
-                         UUID userId, UUID tenantId, String details) {
+                         UUID userId, String tenantId, String details) {
         AuditLog auditLog = AuditLog.builder()
                 .entityId(entityId)
                 .entityType(entityType)
@@ -37,7 +37,7 @@ public class AuditLogService {
     
     @Transactional
     public void logModification(UUID entityId, String entityType, String action, 
-                               UUID userId, UUID tenantId, String oldValue, 
+                               UUID userId, String tenantId, String oldValue, 
                                String newValue, String reason) {
         AuditLog auditLog = AuditLog.builder()
                 .entityId(entityId)
@@ -59,7 +59,7 @@ public class AuditLogService {
         return auditLogRepository.findByEntityIdOrderByTimestampDesc(entityId);
     }
     
-    public List<AuditLog> getTenantAuditLogs(UUID tenantId) {
+    public List<AuditLog> getTenantAuditLogs(String tenantId) {
         return auditLogRepository.findByTenantIdOrderByTimestampDesc(tenantId);
     }
     
@@ -68,7 +68,7 @@ public class AuditLogService {
      * Logs when audit trails are accessed for compliance
      */
     @Transactional
-    public void logAuditAccess(UUID entityId, String entityType, UUID userId, UUID tenantId) {
+    public void logAuditAccess(UUID entityId, String entityType, UUID userId, String tenantId) {
         AuditLog accessLog = AuditLog.builder()
                 .entityId(entityId)
                 .entityType(entityType)
@@ -95,7 +95,7 @@ public class AuditLogService {
      * T072 - Query audit trail with filters
      * Supports filtering by action type, date range, and user
      */
-    public List<AuditLog> getFilteredAuditTrail(UUID tenantId, String entityType, 
+    public List<AuditLog> getFilteredAuditTrail(String tenantId, String entityType, 
                                                 String action, UUID userId) {
         // For now, return all tenant logs - repository method can be enhanced for filtering
         List<AuditLog> allLogs = auditLogRepository.findByTenantIdOrderByTimestampDesc(tenantId);
