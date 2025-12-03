@@ -889,3 +889,4 @@ public class RealGeminiService {
                 IMPORTANT: Return ONLY valid JSON. No markdown code blocks. No explanatory text.
                 """;
 }
+}
