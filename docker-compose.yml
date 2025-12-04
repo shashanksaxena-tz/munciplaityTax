@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # --- Infrastructure ---
   postgres:
@@ -28,6 +26,11 @@ services:
       - "6379:6379"
     networks:
       - munitax-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   zipkin:
     image: openzipkin/zipkin
@@ -36,6 +39,11 @@ services:
       - "9411:9411"
     networks:
       - munitax-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:9411/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # --- Microservices ---
   discovery-service:
@@ -50,7 +58,14 @@ services:
     networks:
       - munitax-network
     depends_on:
-      - zipkin
+      zipkin:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   gateway-service:
     build:
@@ -64,10 +79,18 @@ services:
     networks:
       - munitax-network
     depends_on:
-      - discovery-service
-      - zipkin
+      discovery-service:
+        condition: service_healthy
+      zipkin:
+        condition: service_healthy
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   auth-service:
     build:
@@ -82,13 +105,19 @@ services:
       postgres:
         condition: service_healthy
       discovery-service:
-        condition: service_started
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       JWT_SECRET: munitax-secret-key-for-jwt-tokens-must-be-at-least-256-bits-long
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   tenant-service:
     build:
@@ -103,10 +132,16 @@ services:
       postgres:
         condition: service_healthy
       discovery-service:
-        condition: service_started
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   tax-engine-service:
     build:
@@ -118,9 +153,16 @@ services:
     networks:
       - munitax-network
     depends_on:
-      - discovery-service
+      discovery-service:
+        condition: service_healthy
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8085/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   extraction-service:
     build:
@@ -134,11 +176,18 @@ services:
     networks:
       - munitax-network
     depends_on:
-      - discovery-service
+      discovery-service:
+        condition: service_healthy
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       GEMINI_API_KEY: xxxxx
       GEMINI_API_MODEL: gemini-2.0-flash
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8083/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   submission-service:
     build:
@@ -153,10 +202,16 @@ services:
       postgres:
         condition: service_healthy
       discovery-service:
-        condition: service_started
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8084/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   pdf-service:
     build:
@@ -168,9 +223,16 @@ services:
     networks:
       - munitax-network
     depends_on:
-      - discovery-service
+      discovery-service:
+        condition: service_healthy
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8086/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   rule-service:
     build:
@@ -185,9 +247,9 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       discovery-service:
-        condition: service_started
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
       SPRING_DATASOURCE_USERNAME: postgres
@@ -196,6 +258,12 @@ services:
       SPRING_REDIS_PORT: 6379
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       JWT_SECRET: munitax-secret-key-for-jwt-tokens-must-be-at-least-256-bits-long
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8089/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   ledger-service:
     build:
@@ -210,13 +278,19 @@ services:
       postgres:
         condition: service_healthy
       discovery-service:
-        condition: service_started
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       JWT_SECRET: munitax-secret-key-for-jwt-tokens-must-be-at-least-256-bits-long
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8087/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
 
   # --- Frontend ---
   frontend:
@@ -229,7 +303,14 @@ services:
     networks:
       - munitax-network
     depends_on:
-      - gateway-service
+      gateway-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
 networks:
   munitax-network:
