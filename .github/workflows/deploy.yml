@@ -578,12 +578,12 @@ jobs:
         id: e2e-tests
         continue-on-error: true
         run: |
-          echo "🧪 Running E2E smoke tests..."
+          echo "🧪 Running deployment verification tests..."
           
-          # Run basic Playwright tests
-          npm run test:e2e -- --reporter=json --output-file=test-results/e2e-results.json || true
+          # Run deployment-specific Playwright tests
+          npm run test:deployment -- --reporter=json --output-file=test-results/e2e-results.json || true
           
-          echo "E2E tests completed"
+          echo "Deployment verification tests completed"
 
       - name: Generate Test Report
         if: always()
