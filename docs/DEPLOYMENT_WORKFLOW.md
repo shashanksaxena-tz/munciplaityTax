@@ -344,10 +344,11 @@ Edit the workflow dispatch inputs or modify the `MAX_RETRIES` environment variab
 
 ## Security Considerations
 
-1. **Secrets**: Database passwords should use GitHub Secrets in production
-2. **JWT Secrets**: Use strong, unique secrets via environment variables
-3. **Network**: Services communicate over internal Docker network
-4. **Access**: External access limited to specific ports
+1. **Workflow Permissions**: The workflow uses explicit minimal permissions (`contents: read`, `actions: read`) following security best practices
+2. **Secrets**: Database passwords should use GitHub Secrets in production
+3. **JWT Secrets**: Use strong, unique secrets via environment variables
+4. **Network**: Services communicate over internal Docker network
+5. **Access**: External access limited to specific ports
 
 ## Future Enhancements
 

@@ -20,6 +20,11 @@ on:
         default: '3'
         type: string
 
+# Explicit permissions for security best practices
+permissions:
+  contents: read
+  actions: read
+
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository }}
@@ -251,27 +256,67 @@ jobs:
           FAILED_SERVICES=""
           HEALTH_REPORT="{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"services\":{"
           
-          # Define services and their health endpoints
-          declare -A SERVICES=(
-            ["postgres"]="docker compose exec -T postgres pg_isready -U postgres"
-            ["redis"]="docker compose exec -T redis redis-cli ping"
-            ["eureka"]="curl -sf http://localhost:8761/actuator/health"
-            ["gateway"]="curl -sf http://localhost:8080/actuator/health"
-            ["frontend"]="curl -sf http://localhost:3000"
-            ["zipkin"]="curl -sf http://localhost:9411/health"
-          )
-          
-          for service in "${!SERVICES[@]}"; do
-            echo "Checking $service..."
-            if eval "${SERVICES[$service]}" > /dev/null 2>&1; then
-              echo "  ✅ $service is healthy"
-              HEALTH_REPORT+="\"$service\":{\"status\":\"healthy\"},"
+          # Health check function for consistency
+          check_service() {
+            local name=$1
+            local check_cmd=$2
+            echo "Checking $name..."
+            if eval "$check_cmd" > /dev/null 2>&1; then
+              echo "  ✅ $name is healthy"
+              return 0
             else
-              echo "  ❌ $service is unhealthy"
-              HEALTH_REPORT+="\"$service\":{\"status\":\"unhealthy\"},"
-              FAILED_SERVICES+="$service "
+              echo "  ❌ $name is unhealthy"
+              return 1
             fi
-          done
+          }
+          
+          # Check each service
+          services_checked=0
+          
+          # Infrastructure services using docker exec for container-specific checks
+          if check_service "postgres" "docker compose exec -T postgres pg_isready -U postgres"; then
+            HEALTH_REPORT+="\"postgres\":{\"status\":\"healthy\"},"
+          else
+            HEALTH_REPORT+="\"postgres\":{\"status\":\"unhealthy\"},"
+            FAILED_SERVICES+="postgres "
+          fi
+          
+          if check_service "redis" "docker compose exec -T redis redis-cli ping"; then
+            HEALTH_REPORT+="\"redis\":{\"status\":\"healthy\"},"
+          else
+            HEALTH_REPORT+="\"redis\":{\"status\":\"unhealthy\"},"
+            FAILED_SERVICES+="redis "
+          fi
+          
+          # HTTP-based services using curl
+          if check_service "eureka" "curl -sf http://localhost:8761/actuator/health"; then
+            HEALTH_REPORT+="\"eureka\":{\"status\":\"healthy\"},"
+          else
+            HEALTH_REPORT+="\"eureka\":{\"status\":\"unhealthy\"},"
+            FAILED_SERVICES+="eureka "
+          fi
+          
+          if check_service "gateway" "curl -sf http://localhost:8080/actuator/health"; then
+            HEALTH_REPORT+="\"gateway\":{\"status\":\"healthy\"},"
+          else
+            HEALTH_REPORT+="\"gateway\":{\"status\":\"unhealthy\"},"
+            FAILED_SERVICES+="gateway "
+          fi
+          
+          if check_service "frontend" "curl -sf http://localhost:3000"; then
+            HEALTH_REPORT+="\"frontend\":{\"status\":\"healthy\"},"
+          else
+            HEALTH_REPORT+="\"frontend\":{\"status\":\"unhealthy\"},"
+            FAILED_SERVICES+="frontend "
+          fi
+          
+          # Zipkin uses root endpoint (no /health endpoint)
+          if check_service "zipkin" "curl -sf http://localhost:9411/"; then
+            HEALTH_REPORT+="\"zipkin\":{\"status\":\"healthy\"},"
+          else
+            HEALTH_REPORT+="\"zipkin\":{\"status\":\"unhealthy\"},"
+            FAILED_SERVICES+="zipkin "
+          fi
           
           HEALTH_REPORT="${HEALTH_REPORT%,}}}"
           echo "$HEALTH_REPORT" > deployment-results/health-check.json
@@ -290,6 +335,34 @@ jobs:
         run: |
           echo "🔄 Initiating self-healing for failed services..."
           
+          # Health check function for consistency
+          check_healed() {
+            local service=$1
+            case $service in
+              "postgres")
+                docker compose exec -T postgres pg_isready -U postgres > /dev/null 2>&1
+                ;;
+              "redis")
+                docker compose exec -T redis redis-cli ping > /dev/null 2>&1
+                ;;
+              "eureka"|"discovery-service")
+                curl -sf http://localhost:8761/actuator/health > /dev/null 2>&1
+                ;;
+              "gateway"|"gateway-service")
+                curl -sf http://localhost:8080/actuator/health > /dev/null 2>&1
+                ;;
+              "frontend")
+                curl -sf http://localhost:3000 > /dev/null 2>&1
+                ;;
+              "zipkin")
+                curl -sf http://localhost:9411/ > /dev/null 2>&1
+                ;;
+              *)
+                return 0
+                ;;
+            esac
+          }
+          
           FAILED="${{ steps.health-check.outputs.failed_services }}"
           MAX_RETRIES=${{ env.MAX_RETRIES }}
           HEALED_SERVICES=""
@@ -297,6 +370,7 @@ jobs:
           
           for service in $FAILED; do
             echo "Attempting to heal $service..."
+            HEALED=false
             
             for attempt in $(seq 1 $MAX_RETRIES); do
               echo "  Attempt $attempt/$MAX_RETRIES for $service"
@@ -309,30 +383,10 @@ jobs:
               sleep 15
               
               # Check if healed
-              case $service in
-                "postgres")
-                  docker compose exec -T postgres pg_isready -U postgres && HEALED=true || HEALED=false
-                  ;;
-                "redis")
-                  docker compose exec -T redis redis-cli ping && HEALED=true || HEALED=false
-                  ;;
-                "eureka"|"discovery-service")
-                  curl -sf http://localhost:8761/actuator/health && HEALED=true || HEALED=false
-                  ;;
-                "gateway"|"gateway-service")
-                  curl -sf http://localhost:8080/actuator/health && HEALED=true || HEALED=false
-                  ;;
-                "frontend")
-                  curl -sf http://localhost:3000 && HEALED=true || HEALED=false
-                  ;;
-                *)
-                  HEALED=true
-                  ;;
-              esac
-              
-              if [ "$HEALED" = "true" ]; then
+              if check_healed "$service"; then
                 echo "  ✅ $service healed on attempt $attempt"
                 HEALED_SERVICES+="$service "
+                HEALED=true
                 break
               fi
             done
@@ -478,9 +532,9 @@ jobs:
           curl -s http://localhost:8080/actuator/health | tee test-results/api-responses/gateway-health.json
           echo ""
           
-          # Test Zipkin
+          # Test Zipkin (uses root endpoint, not /health)
           echo "Testing Zipkin..."
-          curl -s http://localhost:9411/health | tee test-results/api-responses/zipkin-health.json 2>/dev/null || echo '{"status":"unavailable"}' > test-results/api-responses/zipkin-health.json
+          curl -s http://localhost:9411/ -o /dev/null -w '{"status":"available","http_code":%{http_code}}' | tee test-results/api-responses/zipkin-health.json 2>/dev/null || echo '{"status":"unavailable"}' > test-results/api-responses/zipkin-health.json
           echo ""
           
           # Test Frontend
@@ -509,7 +563,7 @@ jobs:
               "eureka": "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8761/actuator/health || echo 'failed')",
               "gateway": "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health || echo 'failed')",
               "frontend": "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000 || echo 'failed')",
-              "zipkin": "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9411/health || echo 'failed')"
+              "zipkin": "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9411/ || echo 'failed')"
             }
           }
           EOF

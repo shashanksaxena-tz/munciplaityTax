@@ -75,7 +75,8 @@ test.describe('Deployment Verification Suite', () => {
     
     test('Zipkin Tracing is available', async ({ request }) => {
       try {
-        const response = await request.get(`${DEPLOYMENT_CONFIG.zipkin}/health`, {
+        // Use root endpoint as Zipkin may not have /health endpoint
+        const response = await request.get(`${DEPLOYMENT_CONFIG.zipkin}/`, {
           timeout: 30000,
         });
         
@@ -84,12 +85,12 @@ test.describe('Deployment Verification Suite', () => {
         // Save API response
         fs.writeFileSync(
           path.join(apiResponsesDir, 'zipkin-health.json'),
-          JSON.stringify({ status: response.status(), body }, null, 2)
+          JSON.stringify({ status: response.status(), available: response.ok() }, null, 2)
         );
         
         expect(response.status()).toBeLessThan(500);
       } catch (error) {
-        // Zipkin might not have a health endpoint
+        // Zipkin might not be available
         fs.writeFileSync(
           path.join(apiResponsesDir, 'zipkin-health.json'),
           JSON.stringify({ status: 'unavailable', error: String(error) }, null, 2)
