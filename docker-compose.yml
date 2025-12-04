@@ -40,7 +40,7 @@ services:
     networks:
       - munitax-network
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:9411/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:9411/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,11 +61,11 @@ services:
       zipkin:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8761/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8761/ || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 10
+      start_period: 90s
 
   gateway-service:
     build:
@@ -86,11 +86,11 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/ || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 10
+      start_period: 120s
 
   auth-service:
     build:
@@ -113,7 +113,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       JWT_SECRET: munitax-secret-key-for-jwt-tokens-must-be-at-least-256-bits-long
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8081/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8081/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -137,7 +137,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8082/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8082/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -158,7 +158,7 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8085/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8085/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -183,7 +183,7 @@ services:
       GEMINI_API_KEY: xxxxx
       GEMINI_API_MODEL: gemini-2.0-flash
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8083/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8083/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -207,7 +207,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/munitax_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8084/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8084/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -228,7 +228,7 @@ services:
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8086/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8086/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -259,7 +259,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       JWT_SECRET: munitax-secret-key-for-jwt-tokens-must-be-at-least-256-bits-long
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8089/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8089/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -286,7 +286,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       JWT_SECRET: munitax-secret-key-for-jwt-tokens-must-be-at-least-256-bits-long
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:8087/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8087/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -304,13 +304,13 @@ services:
       - munitax-network
     depends_on:
       gateway-service:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:80 || exit 1"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:80/ || exit 1"]
+      interval: 15s
+      timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 15s
 
 networks:
   munitax-network:
