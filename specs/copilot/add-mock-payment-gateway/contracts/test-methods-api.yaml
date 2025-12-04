@@ -1,0 +1,197 @@
+openapi: 3.0.3
+info:
+  title: MuniTax Payment Test Methods API
+  description: |
+    API endpoint for retrieving test payment methods in TEST mode.
+    Returns test credit cards and ACH accounts for payment gateway testing.
+    
+    **Security Note**: This endpoint does not require authentication.
+    It is protected by the system's payment mode configuration:
+    - In TEST mode: Returns available test payment methods
+    - In PRODUCTION mode: Returns empty arrays
+  version: 1.0.0
+  contact:
+    name: MuniTax Development Team
+
+servers:
+  - url: /api/v1
+    description: API v1 base path
+
+paths:
+  /payments/test-methods:
+    get:
+      summary: Get available test payment methods
+      description: |
+        Returns test credit cards and ACH accounts that can be used in TEST mode.
+        
+        **Test Cards Behavior:**
+        - Cards ending in specific patterns produce deterministic results
+        - Some cards always approve, some always decline, some always error
+        - Useful for testing different payment scenarios
+        
+        **Production Behavior:**
+        - Returns empty arrays (no test methods available)
+        - Frontend should hide test helpers panel
+      operationId: getTestPaymentMethods
+      tags:
+        - Payments
+      responses:
+        '200':
+          description: Test payment methods retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestPaymentMethodsResponse'
+              examples:
+                testMode:
+                  summary: TEST mode response
+                  value:
+                    creditCards:
+                      - cardNumber: "4111-1111-1111-1111"
+                        cardType: "VISA"
+                        expectedResult: "APPROVED"
+                        description: "Standard Visa test card - always approved"
+                      - cardNumber: "5555-5555-5555-4444"
+                        cardType: "MASTERCARD"
+                        expectedResult: "APPROVED"
+                        description: "Standard Mastercard test card - always approved"
+                      - cardNumber: "378282246310005"
+                        cardType: "AMEX"
+                        expectedResult: "APPROVED"
+                        description: "American Express test card - always approved"
+                      - cardNumber: "4000-0000-0000-0002"
+                        cardType: "VISA"
+                        expectedResult: "DECLINED"
+                        description: "Declined test card - insufficient funds"
+                      - cardNumber: "4000-0000-0000-0119"
+                        cardType: "VISA"
+                        expectedResult: "ERROR"
+                        description: "Error test card - processing error"
+                    achAccounts:
+                      - routingNumber: "110000000"
+                        accountNumber: "000123456789"
+                        expectedResult: "APPROVED"
+                        description: "Standard ACH test account - always approved"
+                      - routingNumber: "110000000"
+                        accountNumber: "000111111113"
+                        expectedResult: "DECLINED"
+                        description: "Declined ACH test account - insufficient funds"
+                    testMode: true
+                productionMode:
+                  summary: PRODUCTION mode response (empty)
+                  value:
+                    creditCards: []
+                    achAccounts: []
+                    testMode: false
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    TestPaymentMethodsResponse:
+      type: object
+      description: Response containing available test payment methods
+      required:
+        - creditCards
+        - achAccounts
+        - testMode
+      properties:
+        creditCards:
+          type: array
+          description: List of test credit cards
+          items:
+            $ref: '#/components/schemas/TestCreditCard'
+        achAccounts:
+          type: array
+          description: List of test ACH accounts
+          items:
+            $ref: '#/components/schemas/TestACHAccount'
+        testMode:
+          type: boolean
+          description: Indicates whether system is in test mode
+
+    TestCreditCard:
+      type: object
+      description: A test credit card with expected outcome
+      required:
+        - cardNumber
+        - cardType
+        - expectedResult
+        - description
+      properties:
+        cardNumber:
+          type: string
+          description: Test card number (may be formatted with dashes)
+          example: "4111-1111-1111-1111"
+        cardType:
+          type: string
+          description: Card network type
+          enum:
+            - VISA
+            - MASTERCARD
+            - AMEX
+          example: "VISA"
+        expectedResult:
+          type: string
+          description: Expected outcome when this card is used
+          enum:
+            - APPROVED
+            - DECLINED
+            - ERROR
+          example: "APPROVED"
+        description:
+          type: string
+          description: Human-readable description of this test card
+          example: "Standard Visa test card - always approved"
+
+    TestACHAccount:
+      type: object
+      description: A test ACH account with expected outcome
+      required:
+        - routingNumber
+        - accountNumber
+        - expectedResult
+        - description
+      properties:
+        routingNumber:
+          type: string
+          description: 9-digit ABA routing number
+          pattern: '^\d{9}$'
+          example: "110000000"
+        accountNumber:
+          type: string
+          description: Test account number
+          example: "000123456789"
+        expectedResult:
+          type: string
+          description: Expected outcome when this account is used
+          enum:
+            - APPROVED
+            - DECLINED
+          example: "APPROVED"
+        description:
+          type: string
+          description: Human-readable description of this test account
+          example: "Standard ACH test account - always approved"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+        timestamp:
+          type: string
+          format: date-time
+          description: When the error occurred
+        path:
+          type: string
+          description: Request path that caused the error
+
+tags:
+  - name: Payments
+    description: Payment processing and test methods

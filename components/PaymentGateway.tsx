@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CreditCard, Lock, Building, CheckCircle, Loader2, AlertCircle, Info } from 'lucide-react';
 import { PaymentRecord } from '../types';
 
@@ -25,18 +25,40 @@ interface PaymentResponse {
   timestamp: string;
 }
 
-const TEST_CARDS = [
-  { number: '4111-1111-1111-1111', type: 'Visa', result: 'Approved ✓', color: 'text-green-600' },
-  { number: '5555-5555-5555-4444', type: 'Mastercard', result: 'Approved ✓', color: 'text-green-600' },
-  { number: '378282246310005', type: 'Amex', result: 'Approved ✓', color: 'text-green-600' },
-  { number: '4000-0000-0000-0002', type: 'Visa', result: 'Declined (Insufficient Funds)', color: 'text-red-600' },
-  { number: '4000-0000-0000-0119', type: 'Visa', result: 'Error (Processing)', color: 'text-orange-600' },
-];
+// TypeScript interfaces for test payment methods API response
+interface TestCreditCard {
+  cardNumber: string;
+  cardType: 'VISA' | 'MASTERCARD' | 'AMEX';
+  expectedResult: 'APPROVED' | 'DECLINED' | 'ERROR';
+  description: string;
+}
 
-const TEST_ACH_ACCOUNTS = [
-  { routing: '110000000', account: '000123456789', result: 'Approved ✓', color: 'text-green-600' },
-  { routing: '110000000', account: '000111111113', result: 'Declined (Insufficient Funds)', color: 'text-red-600' },
-];
+interface TestACHAccount {
+  routingNumber: string;
+  accountNumber: string;
+  expectedResult: 'APPROVED' | 'DECLINED';
+  description: string;
+}
+
+interface TestPaymentMethods {
+  creditCards: TestCreditCard[];
+  achAccounts: TestACHAccount[];
+  testMode: boolean;
+}
+
+// Helper function to map expected result to display text and color
+const getResultDisplay = (result: string): { text: string; color: string } => {
+  switch (result) {
+    case 'APPROVED':
+      return { text: 'Approved ✓', color: 'text-green-600' };
+    case 'DECLINED':
+      return { text: 'Declined (Insufficient Funds)', color: 'text-red-600' };
+    case 'ERROR':
+      return { text: 'Error (Processing)', color: 'text-orange-600' };
+    default:
+      return { text: result, color: 'text-slate-600' };
+  }
+};
 
 export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ 
   amount, 
@@ -54,12 +76,62 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
   const [showTestACH, setShowTestACH] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   
+  // Test methods state (fetched from API)
+  const [testMethods, setTestMethods] = useState<TestPaymentMethods | null>(null);
+  const [testMethodsLoading, setTestMethodsLoading] = useState(true);
+  const [testMethodsError, setTestMethodsError] = useState<string | null>(null);
+  
   // Form fields
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [achRouting, setAchRouting] = useState('');
   const [achAccount, setAchAccount] = useState('');
+  
+  // Refs for auto-focus after auto-fill
+  const expiryInputRef = useRef<HTMLInputElement>(null);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Fetch test methods from API on component mount
+  useEffect(() => {
+    const fetchTestMethods = async () => {
+      try {
+        setTestMethodsLoading(true);
+        setTestMethodsError(null);
+        const response = await fetch('/api/v1/payments/test-methods');
+        if (!response.ok) {
+          throw new Error('Failed to fetch test methods');
+        }
+        const data: TestPaymentMethods = await response.json();
+        setTestMethods(data);
+      } catch (error) {
+        console.error('Error fetching test methods:', error);
+        setTestMethodsError('Failed to load test methods. You can still enter card/account details manually.');
+      } finally {
+        setTestMethodsLoading(false);
+      }
+    };
+    
+    fetchTestMethods();
+  }, []);
+
+  // Auto-fill handlers for test cards and ACH accounts
+  const handleSelectTestCard = (card: TestCreditCard) => {
+    setCardNumber(card.cardNumber);
+    // Auto-focus expiry field after card auto-fill
+    setTimeout(() => {
+      expiryInputRef.current?.focus();
+    }, 50);
+  };
+
+  const handleSelectTestACH = (account: TestACHAccount) => {
+    setAchRouting(account.routingNumber);
+    setAchAccount(account.accountNumber);
+    // Auto-focus submit button after ACH auto-fill (both fields filled)
+    setTimeout(() => {
+      submitButtonRef.current?.focus();
+    }, 50);
+  };
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,24 +273,28 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
   return (
     <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md w-full animate-slideUp">
-         {/* Header with TEST MODE indicator */}
+         {/* Header with TEST MODE indicator - conditional on testMode */}
          <div className="bg-slate-900 text-white p-6 relative">
             <div className="flex items-center justify-between mb-1">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <Lock className="w-4 h-4 text-green-400" /> Secure Payment
               </h3>
-              <div className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                TEST MODE
-              </div>
+              {testMethods?.testMode && (
+                <div className="bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  TEST MODE
+                </div>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <p className="text-slate-400 text-sm">Pay to: {recipient}</p>
               <div className="font-mono text-2xl font-bold">${amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
             </div>
-            <div className="mt-2 text-xs text-orange-300 flex items-center gap-1">
-              <Info className="w-3 h-3" />
-              No real charges will be processed
-            </div>
+            {testMethods?.testMode && (
+              <div className="mt-2 text-xs text-orange-300 flex items-center gap-1">
+                <Info className="w-3 h-3" />
+                No real charges will be processed
+              </div>
+            )}
          </div>
 
          {step === 'PROCESSING' ? (
@@ -249,27 +325,43 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
 
               {method === 'CARD' ? (
                 <div className="space-y-4">
-                   {/* Test Cards Helper */}
-                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                     <button 
-                       type="button"
-                       onClick={() => setShowTestCards(!showTestCards)}
-                       className="w-full flex items-center justify-between text-sm font-medium text-blue-800"
-                     >
-                       <span>📋 Test Card Numbers</span>
-                       <span className="text-xs">{showTestCards ? '▲' : '▼'}</span>
-                     </button>
-                     {showTestCards && (
-                       <div className="mt-3 space-y-2 text-xs">
-                         {TEST_CARDS.map((card, idx) => (
-                           <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
-                             <span className="font-mono">{card.number}</span>
-                             <span className={`font-medium ${card.color}`}>{card.result}</span>
-                           </div>
-                         ))}
-                       </div>
-                     )}
-                   </div>
+                   {/* Test Cards Helper - only show if testMode is true */}
+                   {testMethods?.testMode && (
+                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                       <button 
+                         type="button"
+                         onClick={() => setShowTestCards(!showTestCards)}
+                         className="w-full flex items-center justify-between text-sm font-medium text-blue-800"
+                       >
+                         <span>📋 Test Card Numbers (click to auto-fill)</span>
+                         <span className="text-xs">{showTestCards ? '▲' : '▼'}</span>
+                       </button>
+                       {showTestCards && (
+                         <div className="mt-3 space-y-2 text-xs">
+                           {testMethodsLoading && (
+                             <div className="text-slate-500 py-2">Loading test cards...</div>
+                           )}
+                           {testMethodsError && (
+                             <div className="text-red-600 py-2">{testMethodsError}</div>
+                           )}
+                           {testMethods?.creditCards.map((card, idx) => {
+                             const result = getResultDisplay(card.expectedResult);
+                             return (
+                               <div 
+                                 key={idx} 
+                                 onClick={() => handleSelectTestCard(card)}
+                                 className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0 cursor-pointer hover:bg-blue-100 rounded px-1 transition-colors"
+                                 title={`Click to auto-fill: ${card.description}`}
+                               >
+                                 <span className="font-mono">{card.cardNumber}</span>
+                                 <span className={`font-medium ${result.color}`}>{result.text}</span>
+                               </div>
+                             );
+                           })}
+                         </div>
+                       )}
+                     </div>
+                   )}
 
                    <div>
                      <label className="text-xs font-bold text-slate-500 uppercase">Card Number</label>
@@ -289,6 +381,7 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
                       <div>
                         <label className="text-xs font-bold text-slate-500 uppercase">Expiry</label>
                         <input 
+                          ref={expiryInputRef}
                           type="text" 
                           placeholder="MM/YY" 
                           value={cardExpiry}
@@ -312,29 +405,45 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
                 </div>
               ) : (
                 <div className="space-y-4">
-                   {/* Test ACH Helper */}
-                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                     <button 
-                       type="button"
-                       onClick={() => setShowTestACH(!showTestACH)}
-                       className="w-full flex items-center justify-between text-sm font-medium text-blue-800"
-                     >
-                       <span>📋 Test ACH Accounts</span>
-                       <span className="text-xs">{showTestACH ? '▲' : '▼'}</span>
-                     </button>
-                     {showTestACH && (
-                       <div className="mt-3 space-y-2 text-xs">
-                         {TEST_ACH_ACCOUNTS.map((account, idx) => (
-                           <div key={idx} className="py-1 border-b border-blue-100 last:border-0">
-                             <div className="flex justify-between items-center">
-                               <span className="font-mono">{account.routing} / {account.account}</span>
-                               <span className={`font-medium ${account.color}`}>{account.result}</span>
-                             </div>
-                           </div>
-                         ))}
-                       </div>
-                     )}
-                   </div>
+                   {/* Test ACH Helper - only show if testMode is true */}
+                   {testMethods?.testMode && (
+                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                       <button 
+                         type="button"
+                         onClick={() => setShowTestACH(!showTestACH)}
+                         className="w-full flex items-center justify-between text-sm font-medium text-blue-800"
+                       >
+                         <span>📋 Test ACH Accounts (click to auto-fill)</span>
+                         <span className="text-xs">{showTestACH ? '▲' : '▼'}</span>
+                       </button>
+                       {showTestACH && (
+                         <div className="mt-3 space-y-2 text-xs">
+                           {testMethodsLoading && (
+                             <div className="text-slate-500 py-2">Loading test accounts...</div>
+                           )}
+                           {testMethodsError && (
+                             <div className="text-red-600 py-2">{testMethodsError}</div>
+                           )}
+                           {testMethods?.achAccounts.map((account, idx) => {
+                             const result = getResultDisplay(account.expectedResult);
+                             return (
+                               <div 
+                                 key={idx} 
+                                 onClick={() => handleSelectTestACH(account)}
+                                 className="py-1 border-b border-blue-100 last:border-0 cursor-pointer hover:bg-blue-100 rounded px-1 transition-colors"
+                                 title={`Click to auto-fill: ${account.description}`}
+                               >
+                                 <div className="flex justify-between items-center">
+                                   <span className="font-mono">{account.routingNumber} / {account.accountNumber}</span>
+                                   <span className={`font-medium ${result.color}`}>{result.text}</span>
+                                 </div>
+                               </div>
+                             );
+                           })}
+                         </div>
+                       )}
+                     </div>
+                   )}
 
                    <div>
                      <label className="text-xs font-bold text-slate-500 uppercase">Routing Number</label>
@@ -366,7 +475,7 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
 
               <div className="flex gap-3 pt-2">
                  <button type="button" onClick={onCancel} className="flex-1 py-3 border border-slate-300 rounded-xl font-medium text-slate-600 hover:bg-slate-50">Cancel</button>
-                 <button type="submit" disabled={isProcessing} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 disabled:opacity-50">
+                 <button ref={submitButtonRef} type="submit" disabled={isProcessing} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 disabled:opacity-50">
                     Pay Now
                  </button>
               </div>
