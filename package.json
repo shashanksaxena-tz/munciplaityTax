@@ -10,14 +10,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "copy-schemas": "mkdir -p public/config/form-schemas && cp config/form-schemas/*.json public/config/form-schemas/",
+    "prebuild": "npm run copy-schemas"
   },
   "dependencies": {
     "@google/genai": "^1.30.0",
     "jspdf": "2.5.1",
     "lucide-react": "^0.554.0",
+    "pdfjs-dist": "^5.4.449",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-pdf": "^10.2.0",
     "react-router-dom": "^7.9.6"
   },
   "devDependencies": {

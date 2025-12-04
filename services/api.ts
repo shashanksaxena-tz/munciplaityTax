@@ -1,4 +1,5 @@
 import { TaxFormData, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCalculationResult, NetProfitReturnData, BusinessFederalForm, BusinessTaxRulesConfig, RealTimeExtractionUpdate } from '../types';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 const API_BASE_URL = '/api/v1';
 
@@ -40,15 +41,22 @@ export const api = {
             settings: TaxReturnSettings,
             rules: TaxRulesConfig
         ): Promise<TaxCalculationResult> => {
+            const payload = { forms, profile, settings, rules };
+            console.log('Calculating Individual Tax with payload:', JSON.stringify(payload, null, 2));
+            
             const response = await fetch(`${API_BASE_URL}/tax-engine/calculate/individual`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
                 },
-                body: JSON.stringify({ forms, profile, settings, rules })
+                body: JSON.stringify(payload)
             });
-            if (!response.ok) throw new Error('Calculation failed');
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Calculation failed:', response.status, errorText);
+                throw new Error(`Calculation failed: ${response.status} ${errorText}`);
+            }
             return response.json();
         },
 
@@ -65,7 +73,7 @@ export const api = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
                 },
                 body: JSON.stringify({
                     year, estimates, priorCredit, schX, schY, nolCarryforward, rules
@@ -96,7 +104,7 @@ export const api = {
             formData.append('file', file);
 
             const headers: Record<string, string> = {
-                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
             };
 
             // Add user-provided API key if available
@@ -165,7 +173,7 @@ export const api = {
             files.forEach(file => formData.append('files', file));
 
             const headers: Record<string, string> = {
-                'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
             };
 
             if (options?.geminiApiKey) {
@@ -232,7 +240,7 @@ export const api = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
                 },
                 body: JSON.stringify(result)
             });
@@ -247,7 +255,7 @@ export const api = {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
                 },
                 body: JSON.stringify(submission)
             });

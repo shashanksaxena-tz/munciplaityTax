@@ -32,6 +32,11 @@ export default function TaxFilingApp() {
   const [pendingForms, setPendingForms] = useState<TaxFormData[]>([]);
   const [pendingProfile, setPendingProfile] = useState<TaxPayerProfile | undefined>();
   const [pendingSettings, setPendingSettings] = useState<any | undefined>();
+  const [pendingPdfData, setPendingPdfData] = useState<string | undefined>(undefined);
+  const [pendingFormProvenances, setPendingFormProvenances] = useState<any[] | undefined>(undefined);
+  const [pendingSummary, setPendingSummary] = useState<any | undefined>(undefined);
+  const [sessionPdfData, setSessionPdfData] = useState<string | undefined>(undefined);
+  const [sessionFormProvenances, setSessionFormProvenances] = useState<any[] | undefined>(undefined);
   const [calculationResult, setCalculationResult] = useState<TaxCalculationResult | null>(null);
   const [taxPayerProfile, setTaxPayerProfile] = useState<TaxPayerProfile>({ name: '', address: { street: '', city: '', state: '', zip: '' } });
   const [returnSettings, setReturnSettings] = useState<TaxReturnSettings>({ taxYear: new Date().getFullYear() - 1, isAmendment: false });
@@ -93,10 +98,16 @@ export default function TaxFilingApp() {
     // Result can be array or object with extractedProfile
     if (Array.isArray(result)) {
       setPendingForms(result);
+      setPendingPdfData(undefined);
+      setPendingFormProvenances(undefined);
+      setPendingSummary(undefined);
     } else {
       setPendingForms(result.forms || []);
       setPendingProfile(result.extractedProfile);
       setPendingSettings(result.extractedSettings);
+      setPendingPdfData(result.pdfData);
+      setPendingFormProvenances(result.formProvenances);
+      setPendingSummary(result.summary);
     }
     setStep(AppStep.SUMMARY);
   };
@@ -113,6 +124,14 @@ export default function TaxFilingApp() {
     } else {
       const updatedForms = [...individualForms, ...pendingForms];
       setIndividualForms(updatedForms);
+
+      // Store PDF data and provenances for this session
+      if (pendingPdfData) {
+        setSessionPdfData(pendingPdfData);
+      }
+      if (pendingFormProvenances) {
+        setSessionFormProvenances(pendingFormProvenances);
+      }
 
       let newProfile = { ...taxPayerProfile };
 
@@ -146,6 +165,9 @@ export default function TaxFilingApp() {
     }
     setPendingForms([]);
     setPendingProfile(undefined);
+    setPendingPdfData(undefined);
+    setPendingFormProvenances(undefined);
+    setPendingSummary(undefined);
   };
 
   const handleAddManualForm = (type: TaxFormType) => {
@@ -359,8 +381,17 @@ export default function TaxFilingApp() {
         {step === AppStep.SUMMARY && (
           <ExtractionSummary
             forms={pendingForms}
+            summary={pendingSummary}
+            formProvenances={pendingFormProvenances}
+            pdfData={pendingPdfData}
             onConfirm={handleConfirmExtraction}
-            onCancel={() => { setPendingForms([]); setStep(AppStep.UPLOAD); }}
+            onCancel={() => { 
+              setPendingForms([]); 
+              setPendingPdfData(undefined);
+              setPendingFormProvenances(undefined);
+              setPendingSummary(undefined);
+              setStep(AppStep.UPLOAD); 
+            }}
           />
         )}
 

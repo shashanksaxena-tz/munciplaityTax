@@ -1,11 +1,12 @@
 
 import { TaxReturnSession, TaxReturnStatus, TaxPayerProfile, TaxReturnSettings, BusinessProfile, FilingFrequency } from "../types";
+import { safeLocalStorage } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'munitax_sessions';
 
 export const getSessions = (): TaxReturnSession[] => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = safeLocalStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch (e) {
     console.error("Failed to load sessions", e);
@@ -25,7 +26,7 @@ export const saveSession = (session: TaxReturnSession) => {
     sessions.push(updatedSession);
   }
   
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
   return updatedSession;
 };
 
@@ -70,5 +71,5 @@ export const createNewSession = (
 
 export const deleteSession = (id: string) => {
   const sessions = getSessions().filter(s => s.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
 };

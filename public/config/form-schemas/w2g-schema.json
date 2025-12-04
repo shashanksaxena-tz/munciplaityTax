@@ -1,0 +1,65 @@
+{
+  "formType": "W-2G",
+  "version": "2024",
+  "description": "Certain Gambling Winnings",
+  "fields": [
+    {
+      "id": "payer",
+      "label": "Payer",
+      "boxNumber": "Payer",
+      "type": "text",
+      "required": true,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 1
+    },
+    {
+      "id": "grossWinnings",
+      "label": "Gross Winnings",
+      "boxNumber": "1",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 2,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "dateWon",
+      "label": "Date Won",
+      "boxNumber": "3",
+      "type": "text",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 3
+    },
+    {
+      "id": "typeOfWager",
+      "label": "Type of Wager",
+      "boxNumber": "4",
+      "type": "text",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 4
+    },
+    {
+      "id": "federalWithheld",
+      "label": "Federal Withheld",
+      "boxNumber": "2",
+      "type": "currency",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 5,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    }
+  ]
+}

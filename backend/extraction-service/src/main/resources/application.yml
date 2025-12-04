@@ -1,5 +1,7 @@
 server:
   port: 8083
+  # Increase timeout for large document extraction
+  connection-timeout: 660000  # 11 minutes
 
 spring:
   application:
@@ -8,6 +10,10 @@ spring:
     multipart:
       max-file-size: 50MB
       max-request-size: 100MB
+  webflux:
+    # Increase buffer size for large responses
+    buffer:
+      max-in-memory-size: 100MB
 
 eureka:
   client:

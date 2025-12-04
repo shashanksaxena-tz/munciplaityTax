@@ -5,6 +5,7 @@
  */
 
 import type { NexusStatus } from '../types/nexus';
+import { safeLocalStorage } from '../../utils/safeStorage';
 
 const API_BASE = '/api/nexus';
 
@@ -14,7 +15,7 @@ const API_BASE = '/api/nexus';
 export async function getNexusStatus(businessId: string, tenantId: string): Promise<NexusStatus[]> {
   const response = await fetch(`${API_BASE}/${businessId}`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': tenantId
     }
   });
@@ -36,7 +37,7 @@ export async function getNexusStatusByState(
 ): Promise<NexusStatus> {
   const response = await fetch(`${API_BASE}/${businessId}/state/${state}`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': tenantId
     }
   });
@@ -69,7 +70,7 @@ export async function updateNexusStatus(params: {
   const response = await fetch(`${API_BASE}/${params.businessId}/update?${queryParams}`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': params.tenantId
     }
   });
@@ -94,7 +95,7 @@ export async function batchUpdateNexusStatus(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': tenantId
     },
     body: JSON.stringify(nexusStatuses)
@@ -127,7 +128,7 @@ export async function determineEconomicNexus(params: {
   const response = await fetch(`${API_BASE}/${params.businessId}/economic-nexus?${queryParams}`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': params.tenantId
     }
   });
@@ -150,7 +151,7 @@ export async function getEconomicNexusThresholds(state: string): Promise<{
 }> {
   const response = await fetch(`${API_BASE}/thresholds/${state}`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`
     }
   });
 
@@ -167,7 +168,7 @@ export async function getEconomicNexusThresholds(state: string): Promise<{
 export async function countNexusStates(businessId: string, tenantId: string): Promise<number> {
   const response = await fetch(`${API_BASE}/${businessId}/count`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': tenantId
     }
   });
@@ -186,7 +187,7 @@ export async function countNexusStates(businessId: string, tenantId: string): Pr
 export async function getNexusStates(businessId: string, tenantId: string): Promise<NexusStatus[]> {
   const response = await fetch(`${API_BASE}/${businessId}/nexus-states`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': tenantId
     }
   });
@@ -204,7 +205,7 @@ export async function getNexusStates(businessId: string, tenantId: string): Prom
 export async function getNonNexusStates(businessId: string, tenantId: string): Promise<NexusStatus[]> {
   const response = await fetch(`${API_BASE}/${businessId}/non-nexus-states`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`,
       'X-Tenant-Id': tenantId
     }
   });

@@ -452,8 +452,10 @@ const W2Card: React.FC<{ form: W2Form, onUpdate: any, onDelete: any }> = ({ form
   const update = (k: keyof W2Form, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
 
+  console.log('[W2Card] Rendering W2 form:', form);
+
   return (
-    <CardContainer title={`W-2: ${form.employer}`} icon={<Building className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
+    <CardContainer title={`W-2: ${form.employer || 'Unknown Employer'}`} icon={<Building className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3 p-3 bg-slate-50 rounded-lg">
           <h5 className="font-bold text-xs text-slate-500 uppercase">Employer Info</h5>

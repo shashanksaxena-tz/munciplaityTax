@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 interface Profile {
     id: string;
@@ -78,7 +79,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, toke
                 const primaryProfile = data.find((p: Profile) => p.isPrimary);
                 if (primaryProfile && !activeProfile) {
                     setActiveProfileState(primaryProfile);
-                    localStorage.setItem('active_profile_id', primaryProfile.id);
+                    safeLocalStorage.setItem('active_profile_id', primaryProfile.id);
                 }
             }
         } catch (error) {
@@ -90,7 +91,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children, toke
 
     const setActiveProfile = (profile: Profile) => {
         setActiveProfileState(profile);
-        localStorage.setItem('active_profile_id', profile.id);
+        safeLocalStorage.setItem('active_profile_id', profile.id);
     };
 
     const createProfile = async (profileData: any): Promise<Profile> => {

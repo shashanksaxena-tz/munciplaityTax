@@ -124,25 +124,8 @@ export interface WithholdingReturnData {
   confirmationNumber?: string;
 }
 
-// Business Schedule X: Reconciliation
-export interface BusinessScheduleXDetails {
-  fedTaxableIncome: number;
-  addBacks: {
-    interestAndStateTaxes: number; // Income Taxes paid to states/cities
-    wagesCredit: number; // Wages deducted for federal credits
-    losses1231: number; // Capital Losses / 1231 Losses
-    guaranteedPayments: number; // Payments to partners (Line 10 1065)
-    expensesOnIntangibleIncome: number; // 5% Rule: Expenses incurred to earn non-taxable income
-    other: number;
-  };
-  deductions: {
-    interestIncome: number;
-    dividends: number;
-    capitalGains: number; // Capital Gains / 1231 Gains
-    section179Excess: number;
-    other: number;
-  };
-}
+// Business Schedule X: Reconciliation - Import from canonical source
+export type { BusinessScheduleXDetails, AddBacks, Deductions, CalculatedFields, Metadata } from './src/types/scheduleX';
 
 // Business Schedule Y: Allocation
 export interface BusinessAllocation {
@@ -217,7 +200,32 @@ export interface BaseTaxForm {
   fieldBoundingBoxes?: Record<string, BoundingBox>; // Per-field location in PDF for highlighting
 }
 
-export interface W2Form extends BaseTaxForm { formType: TaxFormType.W2; employer: string; employerEin: string; employerAddress: Address; employerCounty?: string; totalMonthsInCity?: number; employee: string; employeeInfo?: TaxPayerProfile; federalWages: number; medicareWages: number; localWages: number; localWithheld: number; locality: string; taxDue?: number; lowConfidenceFields?: string[]; }
+export interface W2Form extends BaseTaxForm { 
+  formType: TaxFormType.W2; 
+  employer: string; 
+  employerEin: string; 
+  employerAddress: Address; 
+  employerCounty?: string; 
+  totalMonthsInCity?: number; 
+  employee: string; 
+  employeeSSN?: string;
+  employeeAddress?: Address;
+  employeeInfo?: TaxPayerProfile; 
+  federalWages: number; 
+  federalWithheld?: number;
+  socialSecurityWages?: number;
+  socialSecurityTaxWithheld?: number;
+  medicareWages: number; 
+  medicareTaxWithheld?: number;
+  stateWages?: number;
+  stateIncomeTax?: number;
+  state?: string;
+  localWages: number; 
+  localWithheld: number; 
+  locality: string; 
+  taxDue?: number; 
+  lowConfidenceFields?: string[]; 
+}
 export interface W2GForm extends BaseTaxForm { formType: TaxFormType.W2G; payer: string; payerEin: string; payerAddress: Address; recipient: string; recipientTin?: string; grossWinnings: number; dateWon: string; typeOfWager: string; federalWithheld: number; stateWithheld: number; localWinnings: number; localWithheld: number; locality: string; lowConfidenceFields?: string[]; }
 export interface Form1099 extends BaseTaxForm { formType: TaxFormType.FORM_1099_NEC | TaxFormType.FORM_1099_MISC; payer: string; payerTin?: string; payerAddress?: Address; recipient: string; incomeAmount: number; federalWithheld: number; stateWithheld: number; localWithheld: number; locality: string; lowConfidenceFields?: string[]; }
 export interface ScheduleC extends BaseTaxForm { formType: TaxFormType.SCHEDULE_C; principalBusiness: string; businessCode: string; businessName: string; businessEin: string; businessAddress: Address; grossReceipts: number; totalExpenses: number; netProfit: number; lowConfidenceFields?: string[]; }
@@ -797,4 +805,113 @@ export interface ImpactEstimate {
   maxImpact: number;
   minImpact: number;
   medianImpact: number;
+}
+
+// ===== SUBMISSION DOCUMENT TYPES (Spec 015) =====
+
+/**
+ * Links an uploaded PDF document to a tax return submission
+ */
+export interface SubmissionDocument {
+  id: string;
+  submissionId: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedAt: string;
+  base64Data?: string; // For viewing
+  thumbnailUrl?: string;
+}
+
+/**
+ * Tracks manual entries with optional supporting documents
+ */
+export interface ManualEntry {
+  id: string;
+  formType: TaxFormType;
+  fieldName: string;
+  value: string | number;
+  enteredBy: string;
+  enteredAt: string;
+  supportingDocumentId?: string;
+  note?: string;
+}
+
+/**
+ * Tracks changes to extracted values for audit trail
+ */
+export interface FieldAuditTrail {
+  fieldId: string;
+  formId: string;
+  fieldName: string;
+  originalValue: string | number;
+  correctedValue: string | number;
+  correctedBy: string;
+  correctedAt: string;
+  reason?: string;
+  sourceDocumentId?: string;
+  sourcePageNumber?: number;
+  sourceBoundingBox?: BoundingBox;
+}
+
+/**
+ * Extended W-2 form with all box fields (Spec 015 - Extended Extraction)
+ */
+export interface ExtendedW2Form extends W2Form {
+  // Additional W-2 boxes for comprehensive extraction
+  socialSecurityWages?: number;    // Box 3
+  socialSecurityTaxWithheld?: number; // Box 4
+  medicareTaxWithheld?: number;    // Box 6
+  socialSecurityTips?: number;     // Box 7
+  allocatedTips?: number;          // Box 8
+  dependentCareBenefits?: number;  // Box 10
+  nonqualifiedPlans?: number;      // Box 11
+  box12Codes?: { code: string; amount: number }[]; // Box 12a-d
+  statutoryEmployee?: boolean;     // Box 13
+  retirementPlan?: boolean;        // Box 13
+  thirdPartySickPay?: boolean;     // Box 13
+  box14Other?: string;             // Box 14
+  stateWages?: number;             // Box 16
+  stateIncomeTax?: number;         // Box 17
+}
+
+/**
+ * Extended Federal 1040 with all key lines (Spec 015 - Extended Extraction)
+ */
+export interface ExtendedFederal1040 extends FederalTaxForm {
+  // Income lines
+  taxExemptInterest?: number;       // Line 2a
+  taxableInterest?: number;         // Line 2b
+  ordinaryDividends?: number;       // Line 3b
+  iraDistributions?: number;        // Line 4a
+  taxableIra?: number;              // Line 4b
+  pensionsAnnuities?: number;       // Line 5a
+  taxablePensions?: number;         // Line 5b
+  socialSecurityBenefits?: number;  // Line 6a
+  taxableSocialSecurity?: number;   // Line 6b
+  
+  // Deductions and tax
+  standardDeduction?: number;       // Line 12
+  qualifiedBusinessIncome?: number; // Line 13
+  taxableIncome?: number;           // Line 15
+  totalTax?: number;                // Line 24
+  federalWithholding?: number;      // Line 25a
+  estimatedTaxPayments?: number;    // Line 26
+  refundAmount?: number;            // Line 35a
+  amountOwed?: number;              // Line 37
+}
+
+/**
+ * PDF Viewer state for source highlighting
+ */
+export interface PdfViewerState {
+  currentPage: number;
+  totalPages: number;
+  zoom: number;
+  highlightedField?: {
+    fieldName: string;
+    boundingBox: BoundingBox;
+    formType: string;
+  };
+  documentUrl: string;
 }

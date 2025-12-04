@@ -11,6 +11,8 @@ interface ExtractionResult {
   extractedProfile?: any;
   extractedSettings?: any;
   summary?: any;
+  pdfData?: string;
+  formProvenances?: any[];
 }
 
 interface UploadSectionProps {
@@ -48,8 +50,23 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
       let extractedProfile: any = undefined;
       let extractedSettings: any = undefined;
       let lastSummary: any = undefined;
+      let pdfDataBase64: string | undefined = undefined;
+      let allFormProvenances: any[] = [];
 
       for (const file of files) {
+        // Convert file to base64 for PDF preview
+        if (file.type === 'application/pdf') {
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve) => {
+            reader.onload = () => {
+              const base64 = (reader.result as string).split(',')[1];
+              resolve(base64);
+            };
+            reader.readAsDataURL(file);
+          });
+          pdfDataBase64 = await base64Promise;
+        }
+
         await new Promise<void>((resolve, reject) => {
           api.extraction.uploadAndExtract(
             file, 
@@ -58,7 +75,9 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
               
               if (update.status === 'COMPLETE' && update.result) {
                 try {
+                  console.log('[UploadSection] Extraction complete, raw result:', update.result);
                   const result = mapExtractionResultToForms(update.result, file.name);
+                  console.log('[UploadSection] Mapped forms:', result.forms);
                   allExtractedForms.push(...result.forms);
                   if (!extractedProfile && result.extractedProfile) {
                     extractedProfile = result.extractedProfile;
@@ -68,6 +87,9 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
                   }
                   if (update.summary) {
                     lastSummary = update.summary;
+                  }
+                  if (update.formProvenances) {
+                    allFormProvenances.push(...update.formProvenances);
                   }
                   resolve();
                 } catch (e) {
@@ -89,16 +111,15 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
         throw new Error("No recognizable tax forms were found in the document.");
       }
 
-      if (extractedProfile || extractedSettings || lastSummary) {
-        onDataExtracted({
-          forms: allExtractedForms,
-          extractedProfile,
-          extractedSettings,
-          summary: lastSummary
-        });
-      } else {
-        onDataExtracted(allExtractedForms);
-      }
+      // Always pass the complete extraction result object
+      onDataExtracted({
+        forms: allExtractedForms,
+        extractedProfile,
+        extractedSettings,
+        summary: lastSummary,
+        pdfData: pdfDataBase64,
+        formProvenances: allFormProvenances.length > 0 ? allFormProvenances : undefined
+      });
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to process documents. Please try again.");

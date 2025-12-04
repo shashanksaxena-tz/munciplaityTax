@@ -9,6 +9,7 @@ import type {
   ApportionmentBreakdown,
   ApportionmentAuditLog
 } from '../types/apportionment';
+import { safeLocalStorage } from '../../utils/safeStorage';
 
 const API_BASE = '/api/schedule-y';
 
@@ -20,7 +21,7 @@ export async function createScheduleY(request: ScheduleYRequest): Promise<Schedu
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`
     },
     body: JSON.stringify(request)
   });
@@ -39,7 +40,7 @@ export async function createScheduleY(request: ScheduleYRequest): Promise<Schedu
 export async function getScheduleY(scheduleYId: string): Promise<ScheduleY> {
   const response = await fetch(`${API_BASE}/${scheduleYId}`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`
     }
   });
 
@@ -67,7 +68,7 @@ export async function listScheduleY(params: {
 
   const response = await fetch(`${API_BASE}?${queryParams}`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`
     }
   });
 
@@ -84,7 +85,7 @@ export async function listScheduleY(params: {
 export async function getApportionmentBreakdown(scheduleYId: string): Promise<ApportionmentBreakdown> {
   const response = await fetch(`${API_BASE}/${scheduleYId}/breakdown`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`
     }
   });
 
@@ -101,7 +102,7 @@ export async function getApportionmentBreakdown(scheduleYId: string): Promise<Ap
 export async function getAuditLog(scheduleYId: string): Promise<ApportionmentAuditLog[]> {
   const response = await fetch(`${API_BASE}/${scheduleYId}/audit-log`, {
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${safeLocalStorage.getItem('token')}`
     }
   });
 

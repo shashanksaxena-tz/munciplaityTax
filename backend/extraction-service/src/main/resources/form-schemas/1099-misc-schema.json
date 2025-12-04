@@ -1,0 +1,59 @@
+{
+  "formType": "1099-MISC",
+  "version": "2024",
+  "description": "Miscellaneous Income",
+  "fields": [
+    {
+      "id": "payer",
+      "label": "Payer",
+      "boxNumber": "Payer",
+      "type": "text",
+      "required": true,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 1
+    },
+    {
+      "id": "incomeAmount",
+      "label": "Income Amount",
+      "boxNumber": "1-3",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 2,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "federalWithheld",
+      "label": "Federal Withheld",
+      "boxNumber": "4",
+      "type": "currency",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 3,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "stateWithheld",
+      "label": "State Withheld",
+      "boxNumber": "State",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 4,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    }
+  ]
+}

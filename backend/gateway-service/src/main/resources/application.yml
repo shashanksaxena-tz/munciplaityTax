@@ -23,6 +23,9 @@ spring:
           uri: lb://extraction-service
           predicates:
             - Path=/api/v1/extraction/**
+          metadata:
+            response-timeout: 660000  # 11 minutes for extraction service (slightly longer than backend)
+            connect-timeout: 10000
         - id: pdf-service
           uri: lb://pdf-service
           predicates:

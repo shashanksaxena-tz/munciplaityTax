@@ -1,0 +1,166 @@
+{
+  "formType": "W-2",
+  "version": "2024",
+  "description": "Wage and Tax Statement",
+  "fields": [
+    {
+      "id": "employer",
+      "label": "Employer",
+      "boxNumber": "c",
+      "type": "text",
+      "required": true,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 1
+    },
+    {
+      "id": "employerEin",
+      "label": "Employer EIN",
+      "boxNumber": "b",
+      "type": "text",
+      "required": true,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 2,
+      "validationRules": {
+        "pattern": "^\\d{2}-\\d{7}$"
+      }
+    },
+    {
+      "id": "federalWages",
+      "label": "Federal Wages (Box 1)",
+      "boxNumber": "1",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 3,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "medicareWages",
+      "label": "Medicare Wages (Box 5)",
+      "boxNumber": "5",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 4,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "localWages",
+      "label": "Local Wages (Box 18)",
+      "boxNumber": "18",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 5,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "localWithheld",
+      "label": "Local Tax Withheld (Box 19)",
+      "boxNumber": "19",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 6,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "locality",
+      "label": "Locality (Box 20)",
+      "boxNumber": "20",
+      "type": "text",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 7
+    },
+    {
+      "id": "federalWithheld",
+      "label": "Federal Income Tax Withheld (Box 2)",
+      "boxNumber": "2",
+      "type": "currency",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": false,
+      "displayOrder": 8
+    },
+    {
+      "id": "socialSecurityWages",
+      "label": "Social Security Wages (Box 3)",
+      "boxNumber": "3",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 9
+    },
+    {
+      "id": "socialSecurityTaxWithheld",
+      "label": "Social Security Tax Withheld (Box 4)",
+      "boxNumber": "4",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 10
+    },
+    {
+      "id": "medicareTaxWithheld",
+      "label": "Medicare Tax Withheld (Box 6)",
+      "boxNumber": "6",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 11
+    },
+    {
+      "id": "stateWages",
+      "label": "State Wages (Box 16)",
+      "boxNumber": "16",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 12
+    },
+    {
+      "id": "stateIncomeTax",
+      "label": "State Income Tax (Box 17)",
+      "boxNumber": "17",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 13
+    },
+    {
+      "id": "state",
+      "label": "State (Box 15)",
+      "boxNumber": "15",
+      "type": "text",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 14
+    }
+  ]
+}

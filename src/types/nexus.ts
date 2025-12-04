@@ -3,6 +3,9 @@
  * Defines nexus status, reasons, and related information.
  */
 
+// Re-export NexusStatus from apportionment types
+export type { NexusStatus } from './apportionment';
+
 /**
  * Nexus reason types
  */

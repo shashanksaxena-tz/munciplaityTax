@@ -1,0 +1,92 @@
+{
+  "formType": "Schedule C",
+  "version": "2024",
+  "description": "Profit or Loss From Business (Sole Proprietorship)",
+  "fields": [
+    {
+      "id": "businessName",
+      "label": "Business Name",
+      "lineNumber": "C",
+      "type": "text",
+      "required": true,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 1
+    },
+    {
+      "id": "businessEin",
+      "label": "Business EIN",
+      "lineNumber": "D",
+      "type": "text",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 2,
+      "validationRules": {
+        "pattern": "^\\d{2}-\\d{7}$"
+      }
+    },
+    {
+      "id": "grossReceipts",
+      "label": "Gross Receipts",
+      "lineNumber": "1",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 3,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "totalExpenses",
+      "label": "Total Expenses",
+      "lineNumber": "28",
+      "type": "currency",
+      "required": true,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 4,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "netProfit",
+      "label": "Net Profit",
+      "lineNumber": "31",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 5,
+      "validationRules": {
+        "min": -99999999,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "principalBusiness",
+      "label": "Principal Business or Profession",
+      "lineNumber": "B",
+      "type": "text",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 6
+    },
+    {
+      "id": "businessCode",
+      "label": "Business Code",
+      "lineNumber": "B",
+      "type": "text",
+      "required": false,
+      "weight": "LOW",
+      "displayInUI": false,
+      "displayOrder": 7
+    }
+  ]
+}
