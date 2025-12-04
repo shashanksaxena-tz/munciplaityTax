@@ -5,7 +5,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { safeLocalStorage } from '../utils/safeStorage';
 import {
   Plus,
   Edit2,
@@ -71,7 +70,7 @@ const ruleApi = {
   getAuthHeaders() {
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
     };
   },
 
@@ -971,7 +970,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
   const [actionLoading, setActionLoading] = useState(false);
   const [useMockData, setUseMockData] = useState<boolean>(() => {
     // Check localStorage for saved preference
-    const saved = safeLocalStorage.getItem('rule_dashboard_use_mock');
+    const saved = localStorage.getItem('rule_dashboard_use_mock');
     return saved === 'true';
   });
   const [dataSource, setDataSource] = useState<'backend' | 'mock'>('backend');
@@ -1015,7 +1014,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
   const toggleDataSource = () => {
     const newValue = !useMockData;
     setUseMockData(newValue);
-    safeLocalStorage.setItem('rule_dashboard_use_mock', String(newValue));
+    localStorage.setItem('rule_dashboard_use_mock', String(newValue));
   };
 
   const filteredRules = rules.filter(rule => {

@@ -6,7 +6,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { safeLocalStorage } from '../utils/safeStorage';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -141,7 +140,7 @@ const ledgerApi = {
   getAuthHeaders() {
     return {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
+      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
     };
   },
 
@@ -221,7 +220,7 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [useMockData, setUseMockData] = useState<boolean>(() => {
-    const saved = safeLocalStorage.getItem('ledger_dashboard_use_mock');
+    const saved = localStorage.getItem('ledger_dashboard_use_mock');
     return saved === 'true';
   });
   const [dataSource, setDataSource] = useState<'backend' | 'mock'>('backend');
@@ -236,7 +235,7 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
   const toggleDataSource = () => {
     const newValue = !useMockData;
     setUseMockData(newValue);
-    safeLocalStorage.setItem('ledger_dashboard_use_mock', String(newValue));
+    localStorage.setItem('ledger_dashboard_use_mock', String(newValue));
   };
 
   const fetchDashboardData = async () => {
