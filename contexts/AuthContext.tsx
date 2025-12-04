@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '../services/api';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 interface User {
     id: string;
@@ -80,10 +81,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Load token from localStorage on mount
     useEffect(() => {
-        const storedToken = localStorage.getItem('auth_token');
+        const storedToken = safeLocalStorage.getItem('auth_token');
         
         // Check for demo mode
-        if (localStorage.getItem('demo_mode') === 'true') {
+        if (safeLocalStorage.getItem('demo_mode') === 'true') {
             setUser(DEMO_USER);
             setToken('demo-token');
             setIsLoading(false);
@@ -112,7 +113,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setToken(authToken);
         } catch (error) {
             console.error('Failed to fetch user info:', error);
-            localStorage.removeItem('auth_token');
+            safeLocalStorage.removeItem('auth_token');
             setToken(null);
             setUser(null);
         } finally {
@@ -128,7 +129,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // admin@example.com with password 'admin' enables admin demo mode
             if (email === 'admin@example.com' && password === 'admin') {
                 console.log('Admin demo mode login');
-                localStorage.setItem('demo_mode', 'true');
+                safeLocalStorage.setItem('demo_mode', 'true');
                 setUser(DEMO_USER);
                 setToken('demo-token-admin');
                 setIsLoading(false);
@@ -138,7 +139,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // auditor@example.com with password 'auditor' enables auditor demo mode
             if (email === 'auditor@example.com' && password === 'auditor') {
                 console.log('Auditor demo mode login');
-                localStorage.setItem('demo_mode', 'true');
+                safeLocalStorage.setItem('demo_mode', 'true');
                 setUser(AUDITOR_USER);
                 setToken('demo-token-auditor');
                 setIsLoading(false);
@@ -148,7 +149,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // filer@example.com with password 'filer' enables filer demo mode
             if (email === 'filer@example.com' && password === 'filer') {
                 console.log('Filer demo mode login');
-                localStorage.setItem('demo_mode', 'true');
+                safeLocalStorage.setItem('demo_mode', 'true');
                 setUser(FILER_USER);
                 setToken('demo-token-filer');
                 setIsLoading(false);
@@ -158,7 +159,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // business@example.com with password 'business' enables business demo mode
             if (email === 'business@example.com' && password === 'business') {
                 console.log('Business demo mode login');
-                localStorage.setItem('demo_mode', 'true');
+                safeLocalStorage.setItem('demo_mode', 'true');
                 setUser(BUSINESS_USER);
                 setToken('demo-token-business');
                 setIsLoading(false);
@@ -166,9 +167,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
             
             // Legacy demo@example.com still works
-            if (localStorage.getItem('demo_mode') === 'true' || email === 'demo@example.com') {
+            if (safeLocalStorage.getItem('demo_mode') === 'true' || email === 'demo@example.com') {
                 console.log('Demo mode login');
-                localStorage.setItem('demo_mode', 'true');
+                safeLocalStorage.setItem('demo_mode', 'true');
                 setUser(DEMO_USER);
                 setToken('demo-token');
                 setIsLoading(false);
@@ -179,7 +180,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.log('Login response:', data);
 
             if (data.token) {
-                localStorage.setItem('auth_token', data.token);
+                safeLocalStorage.setItem('auth_token', data.token);
                 setToken(data.token);
                 
                 // Use login response data directly - no need to fetch again
@@ -205,7 +206,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     const logout = () => {
-        localStorage.removeItem('auth_token');
+        safeLocalStorage.removeItem('auth_token');
         setUser(null);
         setToken(null);
     };

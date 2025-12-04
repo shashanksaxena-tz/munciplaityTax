@@ -228,6 +228,41 @@ export interface ScheduleYListResponse {
 }
 
 /**
+ * Audit change types for apportionment tracking
+ */
+export enum AuditChangeType {
+  ELECTION_CHANGED = 'ELECTION_CHANGED',
+  FACTOR_RECALCULATED = 'FACTOR_RECALCULATED',
+  TRANSACTION_ADDED = 'TRANSACTION_ADDED',
+  TRANSACTION_MODIFIED = 'TRANSACTION_MODIFIED',
+  NEXUS_CHANGED = 'NEXUS_CHANGED',
+  SCHEDULE_FILED = 'SCHEDULE_FILED',
+  SCHEDULE_AMENDED = 'SCHEDULE_AMENDED',
+  CALCULATION_ADJUSTMENT = 'CALCULATION_ADJUSTMENT',
+}
+
+/**
+ * Apportionment audit log entry
+ * Immutable audit trail for Schedule Y changes (7-year retention)
+ */
+export interface ApportionmentAuditLog {
+  auditLogId: string;
+  scheduleYId: string;
+  tenantId: string;
+  changeType: AuditChangeType;
+  entityType: string | null;
+  entityId: string | null;
+  changedBy: string;
+  changeDate: string;
+  oldValue: string | null;
+  newValue: string | null;
+  changeReason: string | null;
+  affectedCalculation: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+}
+
+/**
  * API error response
  */
 export interface ApiError {

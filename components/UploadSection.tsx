@@ -75,7 +75,9 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
               
               if (update.status === 'COMPLETE' && update.result) {
                 try {
+                  console.log('[UploadSection] Extraction complete, raw result:', update.result);
                   const result = mapExtractionResultToForms(update.result, file.name);
+                  console.log('[UploadSection] Mapped forms:', result.forms);
                   allExtractedForms.push(...result.forms);
                   if (!extractedProfile && result.extractedProfile) {
                     extractedProfile = result.extractedProfile;

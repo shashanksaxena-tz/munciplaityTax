@@ -1,0 +1,121 @@
+{
+  "formType": "Federal 1040",
+  "version": "2024",
+  "description": "U.S. Individual Income Tax Return",
+  "fields": [
+    {
+      "id": "wages",
+      "label": "Total Wages (Line 1z)",
+      "lineNumber": "1z",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 1,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "qualifiedDividends",
+      "label": "Qualified Dividends (Line 3a)",
+      "lineNumber": "3a",
+      "type": "currency",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 2,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "capitalGains",
+      "label": "Capital Gains (Line 7)",
+      "lineNumber": "7",
+      "type": "currency",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 3,
+      "validationRules": {
+        "min": -99999999,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "totalIncome",
+      "label": "Total Income (Line 9)",
+      "lineNumber": "9",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 4,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "adjustedGrossIncome",
+      "label": "Adjusted Gross Income (Line 11)",
+      "lineNumber": "11",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 5,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "totalTax",
+      "label": "Total Tax (Line 24)",
+      "lineNumber": "24",
+      "type": "currency",
+      "required": false,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 6,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "pensions",
+      "label": "Pensions and Annuities (Line 5b)",
+      "lineNumber": "5b",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 7
+    },
+    {
+      "id": "socialSecurity",
+      "label": "Social Security Benefits (Line 6b)",
+      "lineNumber": "6b",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 8
+    },
+    {
+      "id": "otherIncome",
+      "label": "Other Income (Line 8)",
+      "lineNumber": "8",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": false,
+      "displayOrder": 9
+    }
+  ]
+}

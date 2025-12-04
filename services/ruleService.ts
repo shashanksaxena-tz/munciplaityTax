@@ -14,13 +14,14 @@ import {
   BusinessTaxRulesConfig,
   W2QualifyingWagesRule
 } from '../types';
+import { safeLocalStorage } from '../utils/safeStorage';
 
 const API_BASE = '/api/rules';
 
 function getAuthHeaders(): HeadersInit {
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`
   };
 }
 

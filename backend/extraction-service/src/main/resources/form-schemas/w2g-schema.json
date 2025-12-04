@@ -1,0 +1,116 @@
+{
+  "formType": "W-2G",
+  "version": "2024",
+  "description": "Certain Gambling Winnings",
+  "fields": [
+    {
+      "id": "payer",
+      "label": "Payer",
+      "type": "text",
+      "required": true,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 1
+    },
+    {
+      "id": "grossWinnings",
+      "label": "Gross Winnings",
+      "boxNumber": "1",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 2,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "dateWon",
+      "label": "Date Won",
+      "boxNumber": "2",
+      "type": "date",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 3
+    },
+    {
+      "id": "typeOfWager",
+      "label": "Type of Wager",
+      "boxNumber": "3",
+      "type": "text",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 4
+    },
+    {
+      "id": "federalWithheld",
+      "label": "Federal Income Tax Withheld",
+      "boxNumber": "4",
+      "type": "currency",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 5,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "stateWithheld",
+      "label": "State Income Tax Withheld",
+      "boxNumber": "15",
+      "type": "currency",
+      "required": false,
+      "weight": "HIGH",
+      "displayInUI": true,
+      "displayOrder": 6,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "localWinnings",
+      "label": "Local Winnings",
+      "boxNumber": "16",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 7,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "localWithheld",
+      "label": "Local Income Tax Withheld",
+      "boxNumber": "17",
+      "type": "currency",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 8,
+      "validationRules": {
+        "min": 0,
+        "max": 99999999
+      }
+    },
+    {
+      "id": "locality",
+      "label": "Name of Locality",
+      "boxNumber": "18",
+      "type": "text",
+      "required": false,
+      "weight": "MEDIUM",
+      "displayInUI": true,
+      "displayOrder": 9
+    }
+  ]
+}

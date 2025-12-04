@@ -1,0 +1,13 @@
+{
+  "schemas": {
+    "W-2": "/config/form-schemas/w2-schema.json",
+    "Federal 1040": "/config/form-schemas/1040-schema.json",
+    "Schedule C": "/config/form-schemas/schedule-c-schema.json",
+    "1099-NEC": "/config/form-schemas/1099-nec-schema.json",
+    "1099-MISC": "/config/form-schemas/1099-misc-schema.json",
+    "W-2G": "/config/form-schemas/w2g-schema.json",
+    "Schedule E": "/config/form-schemas/schedule-e-schema.json"
+  },
+  "version": "1.0.0",
+  "lastUpdated": "2025-12-03"
+}

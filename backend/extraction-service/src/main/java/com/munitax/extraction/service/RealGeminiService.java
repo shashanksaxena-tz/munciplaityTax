@@ -3,13 +3,21 @@ package com.munitax.extraction.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.munitax.extraction.model.ExtractionDto.*;
+import com.munitax.extraction.schema.FormFieldSchema;
+import com.munitax.extraction.schema.FormSchema;
+import com.munitax.extraction.schema.FormSchemaRepository;
+import io.netty.channel.ChannelOption;
+import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.handler.timeout.WriteTimeoutHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 import java.util.*;
@@ -48,6 +56,7 @@ public class RealGeminiService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final FormSchemaRepository formSchemaRepository;
 
     @Value("${gemini.api.key:}")
     private String defaultApiKey;
@@ -55,11 +64,28 @@ public class RealGeminiService {
     @Value("${gemini.api.model:" + DEFAULT_MODEL + "}")
     private String defaultModel;
 
-    public RealGeminiService(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {
+    public RealGeminiService(
+            WebClient.Builder webClientBuilder,
+            ObjectMapper objectMapper,
+            FormSchemaRepository formSchemaRepository) {
+        
+        // Configure HTTP client with extended timeouts for large document processing
+        HttpClient httpClient = HttpClient.create()
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 60000) // 60 seconds connect timeout
+                .responseTimeout(Duration.ofMinutes(10)) // 10 minute response timeout
+                .doOnConnected(conn -> conn
+                        .addHandlerLast(new ReadTimeoutHandler(600)) // 10 minutes read timeout
+                        .addHandlerLast(new WriteTimeoutHandler(120))); // 2 minute write timeout
+        
         this.webClient = webClientBuilder
                 .baseUrl(GEMINI_BASE_URL)
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .codecs(configurer -> configurer
+                        .defaultCodecs()
+                        .maxInMemorySize(100 * 1024 * 1024)) // 100MB buffer for large documents
                 .build();
         this.objectMapper = objectMapper;
+        this.formSchemaRepository = formSchemaRepository;
     }
 
     /**
@@ -284,7 +310,17 @@ public class RealGeminiService {
                         extractedData = objectMapper.readTree(text);
                     } catch (Exception parseEx) {
                         log.error("Failed to parse extracted data as JSON: {}", parseEx.getMessage());
-                        log.debug("Raw text that failed parsing: {}", text.substring(0, Math.min(500, text.length())));
+                        log.error("Response length: {} chars, Last 200 chars: {}", 
+                                text.length(), 
+                                text.substring(Math.max(0, text.length() - 200)));
+                        
+                        // Check if JSON was truncated
+                        if (parseEx.getMessage().contains("end-of-input") || parseEx.getMessage().contains("Unexpected end")) {
+                            log.error("JSON response appears truncated. This may indicate the document is too complex or the API response was cut off.");
+                            return createErrorResponse("Document too complex - response was truncated. Try a smaller document or simpler pages.", startTime);
+                        }
+                        
+                        log.debug("First 500 chars: {}", text.substring(0, Math.min(500, text.length())));
                         return createErrorResponse("Invalid JSON in extraction result. Please try again.", startTime);
                     }
                     
@@ -629,264 +665,130 @@ public class RealGeminiService {
         return weights;
     }
 
-    /**
-     * Production-grade extraction prompt with precise field descriptions.
-     * Optimized for Gemini 2.5 Flash model.
-     */
-    private String buildProductionExtractionPrompt() {
-        return """
-                You are an expert Tax Document Analyzer specialized in U.S. Federal, State, and Local municipality tax forms.
-                
-                SUPPORTED FORM TYPES:
-                ═══════════════════════════════════════════════════════════════════════════════
-                INDIVIDUAL FORMS:
-                • Federal 1040 - U.S. Individual Income Tax Return
-                • W-2 - Wage and Tax Statement (employee wage reporting)
-                • 1099-NEC - Nonemployee Compensation
-                • 1099-MISC - Miscellaneous Income (rents, royalties, prizes)
-                • W-2G - Certain Gambling Winnings
-                • Schedule C - Profit or Loss From Business (Sole Proprietorship)
-                • Schedule E - Supplemental Income and Loss (Rental, Partnership, S-Corp, Trust)
-                • Schedule F - Profit or Loss From Farming
-                • Dublin 1040 / Form R - Local Municipality Tax Return
-                
-                BUSINESS FORMS:
-                • Federal 1120 - U.S. Corporation Income Tax Return
-                • Federal 1065 - U.S. Return of Partnership Income
-                • Form 27 - Net Profits Tax Return (Municipality)
-                • Form W-1 - Employer's Quarterly Withholding Return
-                • Form W-3 - Annual Reconciliation of Withholding Tax
-                • Schedule X - Book-to-Tax Reconciliation
-                • Schedule Y - Business Allocation Factor
-                ═══════════════════════════════════════════════════════════════════════════════
-                
-                YOUR TASK:
-                1. Scan each page of the document systematically
-                2. Identify ALL distinct tax forms present
-                3. Extract ALL relevant fields with maximum precision
-                4. Provide confidence scores (0.0-1.0) for each field
-                5. Track document provenance (page number, bounding box location)
-                6. Skip instruction pages and blank pages with clear reasons
-                
-                CRITICAL EXTRACTION RULES:
-                ═══════════════════════════════════════════════════════════════════════════════
-                W-2 FORM - Extract ALL boxes (1-20):
-                • Box a: Employee SSN (masked as ***-**-XXXX)
-                • Box b: Employer Identification Number (EIN) - 9 digits, format XX-XXXXXXX
-                • Box c: Employer Name, Address, City, State, ZIP
-                • Box d: Control number (if present)
-                • Box e: Employee Name
-                • Box f: Employee Address
-                • Box 1: Wages, tips, other compensation (federalWages)
-                • Box 2: Federal income tax withheld (federalWithheld)
-                • Box 3: Social Security wages (socialSecurityWages)
-                • Box 4: Social Security tax withheld (socialSecurityTaxWithheld)
-                • Box 5: Medicare wages and tips (medicareWages)
-                • Box 6: Medicare tax withheld (medicareTaxWithheld)
-                • Box 7: Social Security tips
-                • Box 8: Allocated tips
-                • Box 10: Dependent care benefits
-                • Box 11: Nonqualified plans
-                • Box 12a-d: Codes and amounts (e.g., DD, D, E, etc.)
-                • Box 13: Checkboxes (statutory, retirement, third-party sick pay)
-                • Box 14: Other (employer-specific info)
-                • Box 15: State/Employer's state ID
-                • Box 16: State wages (stateWages)
-                • Box 17: State income tax (stateIncomeTax)
-                • Box 18: Local wages, tips, etc. (localWages)
-                • Box 19: Local income tax (localWithheld)
-                • Box 20: Locality name (locality)
-                
-                1099-NEC/MISC - Extract:
-                • Payer name, address, and TIN
-                • Recipient name, address, and TIN (masked)
-                • Box 1: Nonemployee compensation (1099-NEC) OR
-                • Box 3: Other income (1099-MISC)
-                • Box 4: Federal income tax withheld
-                • State/Local tax information if present
-                
-                W-2G (Gambling) - Extract:
-                • Box 1: Gross winnings (grossWinnings)
-                • Box 2: Date won (dateWon)
-                • Box 3: Type of wager (typeOfWager)
-                • Box 4: Federal income tax withheld (federalWithheld)
-                • Box 5: Transaction
-                • Box 6: Race
-                • Box 7: Winnings from identical wagers
-                • Box 14: State winnings
-                • Box 15: State income tax withheld
-                • Box 16: Local winnings
-                • Box 17: Local income tax withheld
-                • Payer info (name, TIN, address)
-                
-                SCHEDULE C - Extract:
-                • Business name and principal business/product
-                • EIN (if separate from SSN)
-                • Business address
-                • Accounting method (cash/accrual)
-                • Line 1: Gross receipts or sales
-                • Line 2: Returns and allowances
-                • Line 3: Subtract line 2 from line 1
-                • Line 4: Cost of goods sold
-                • Line 5: Gross profit
-                • Line 6: Other income
-                • Line 7: Gross income
-                • Lines 8-27: Individual expense categories
-                • Line 28: Total expenses
-                • Line 29: Tentative profit/loss
-                • Line 30: Expenses for business use of home
-                • Line 31: Net profit or loss (netProfit)
-                
-                SCHEDULE E Part I (Rentals) - For EACH property:
-                • Property address (street, city, state, zip)
-                • Property type (Single Family, Multi-Family, Vacation/Short-term, Commercial, Land, Royalties, Self-Rental)
-                • Fair rental days (line 1)
-                • Personal use days (line 2)
-                • Rents received (line 3)
-                • Royalties received (line 4)
-                • Lines 5-19: Individual expense categories
-                • Line 20: Total expenses
-                • Line 21: Net income or loss for property
-                • Line 22: Deductible rental real estate loss
-                
-                SCHEDULE E Part II (Partnerships/S-Corps) - For EACH entity:
-                • Entity name
-                • Entity type (P for Partnership, S for S-Corp)
-                • Check if foreign partnership
-                • EIN
-                • Line 28j (passive): Passive income/loss
-                • Line 28k (nonpassive): Nonpassive income/loss
-                
-                FEDERAL 1040 - Extract ALL key lines:
-                • Filing Status: Single, MFJ, MFS, HOH, QW (checkboxes)
-                • Taxpayer name, SSN
-                • Spouse name and SSN (if joint)
-                • Home address
-                • Digital assets question (Yes/No)
-                • Line 1a: Total amount from W-2s
-                • Line 1b: Household employee wages
-                • Line 1c: Tip income
-                • Line 1d: Medicaid waiver payments
-                • Line 1e: Taxable dependent care benefits
-                • Line 1f: Employer-provided adoption benefits
-                • Line 1g: Wages from Form 8919
-                • Line 1h: Other earned income
-                • Line 1i: Nontaxable combat pay
-                • Line 1z: Total wages (sum of 1a-1i)
-                • Line 2a: Tax-exempt interest
-                • Line 2b: Taxable interest
-                • Line 3a: Qualified dividends
-                • Line 3b: Ordinary dividends
-                • Line 4a: IRA distributions
-                • Line 4b: Taxable IRA
-                • Line 5a: Pensions and annuities
-                • Line 5b: Taxable pensions
-                • Line 6a: Social Security benefits
-                • Line 6b: Taxable Social Security
-                • Line 7: Capital gain or loss
-                • Line 8: Other income (from Schedule 1)
-                • Line 9: Total income
-                • Line 10: Adjustments (from Schedule 1)
-                • Line 11: Adjusted gross income
-                • Line 12: Standard or itemized deduction
-                • Line 13: Qualified business income deduction
-                • Line 14: Total deductions
-                • Line 15: Taxable income
-                • Line 16: Tax
-                • Line 17: Schedule 2 tax
-                • Line 18: Total tax before credits
-                • Line 19-21: Credits
-                • Line 22: Total tax after credits
-                • Line 23: Other taxes
-                • Line 24: Total tax
-                • Line 25a: Federal income tax withheld from W-2
-                • Line 25b: Federal income tax withheld from 1099
-                • Line 25c: Other withholding
-                • Line 25d: Total withholding
-                • Line 26: Estimated tax payments
-                • Line 27-32: Other payments and credits
-                • Line 33: Total payments
-                • Line 34: Overpayment
-                • Line 35a: Refund amount
-                • Line 37: Amount owed
-                
-                BUSINESS FORMS (1120/1065/Form 27):
-                • Business name and EIN
-                • Fiscal year dates
-                • Total income (from appropriate line)
-                • Total deductions
-                • Taxable income (Line 30 for 1120, Line 22 for 1065)
-                • Schedule X reconciliation items (add-backs and deductions)
-                • Schedule Y allocation factors (Property, Payroll, Sales - each with inside/everywhere)
-                ═══════════════════════════════════════════════════════════════════════════════
-                
-                BOUNDING BOX COORDINATES:
-                For each extracted field, provide approximate bounding box as normalized coordinates (0-1):
-                • x: left position (0 = left edge, 1 = right edge)
-                • y: top position (0 = top edge, 1 = bottom edge)
-                • width: width of the field area
-                • height: height of the field area
-                
-                CONFIDENCE SCORING:
-                • 0.95-1.0: Clear OCR, exact match to expected format
-                • 0.85-0.94: Minor uncertainty, slightly blurry but readable
-                • 0.70-0.84: Some ambiguity, may need human verification
-                • Below 0.70: Low confidence, flag for manual review
-                
-                SKIPPED PAGES - Provide detailed reasons:
-                • "Blank page detected"
-                • "Instruction page - no data to extract"
-                • "Image quality too low for accurate extraction"
-                • "Unrecognized form type - [describe what was detected]"
-                • "Partially obscured - [specify which parts]"
-                
-                OUTPUT FORMAT (JSON only, no markdown):
-                {
-                  "scanMetadata": {
-                    "pageCount": number,
-                    "scanQuality": "HIGH" | "MEDIUM" | "LOW",
-                    "processingNotes": [string]
-                  },
-                  "taxPayerProfile": {
-                    "name": string,
-                    "ssn": string (masked as ***-**-XXXX),
-                    "filingStatus": "SINGLE" | "MARRIED_FILING_JOINTLY" | "MARRIED_FILING_SEPARATELY" | "HEAD_OF_HOUSEHOLD" | "QUALIFYING_WIDOWER",
-                    "spouse": { "name": string, "ssn": string } | null,
-                    "address": { "street": string, "city": string, "state": string, "zip": string }
-                  },
-                  "returnSettings": {
-                    "taxYear": number,
-                    "isAmendment": boolean,
-                    "amendmentReason": string | null
-                  },
-                  "forms": [
-                    {
-                      "formType": string,
-                      "confidenceScore": number,
-                      "pageNumber": number,
-                      "extractionReason": string,
-                      "owner": "PRIMARY" | "SPOUSE",
-                      "boundingBox": { "x": number, "y": number, "width": number, "height": number },
-                      "fieldConfidence": { [fieldName]: number },
-                      "fieldBoundingBoxes": { 
-                        [fieldName]: { "x": number, "y": number, "width": number, "height": number } 
-                      },
-                      
-                      // Form-specific fields as detailed above
-                      // Include ALL applicable fields for the form type
-                    }
-                  ],
-                  "skippedPages": [
-                    { 
-                      "pageNumber": number, 
-                      "reason": string,
-                      "suggestion": string,
-                      "detectedContent": string | null
-                    }
-                  ]
+        /**
+         * Production-grade extraction prompt with precise field descriptions.
+         * Optimized for Gemini 2.5 Flash model.
+         */
+        private String buildProductionExtractionPrompt() {
+            StringBuilder prompt = new StringBuilder();
+            prompt.append("You are an expert Tax Document Analyzer specialized in U.S. federal, state, and local municipality tax forms.\n");
+            prompt.append("Review every page, detect all supported forms, and extract only the fields defined by the UI schemas.\n");
+
+            prompt.append("\nPRIMARY OBJECTIVE:\n");
+            prompt.append("- Detect each distinct form present in the document.\n");
+            prompt.append("- Output an entry in the forms array for every detected form, including formType, confidenceScore, and pageNumber.\n");
+            prompt.append("- Populate the form object with ONLY the schema-approved field ids; never invent or rename keys.\n");
+            prompt.append("- Provide fieldConfidence and fieldBoundingBoxes maps so reviewers know where a value came from.\n");
+
+            prompt.append("\nSTRICT FIELD POLICY:\n");
+            prompt.append("- UI field ids are authoritative. Keys must match the ids below exactly.\n");
+            prompt.append("- If a field is missing, illegible, or not applicable, still include the key with value null.\n");
+            prompt.append("- Preserve number formatting as plain numbers (no currency symbols or commas).\n");
+            prompt.append("- Mask personally identifiable information exactly as found in the document; never fabricate digits.\n");
+            prompt.append("- When a form contains repeated sections (for example properties or dependents), output arrays following the schema structure.\n");
+
+            prompt.append("\nSUPPORTED FORMS AND UI FIELD IDS:\n");
+            prompt.append(buildFormFieldInstructions());
+
+            prompt.append("BOUNDING BOX REQUIREMENTS:\n");
+            prompt.append("- Provide boundingBox for the form and each field using normalized coordinates within [0,1].\n");
+            prompt.append("- Coordinate order is {\"x\": left, \"y\": top, \"width\": width, \"height\": height}.\n");
+
+            prompt.append("\nCONFIDENCE SCORING GUIDANCE:\n");
+            prompt.append("- 0.95-1.0: high certainty (clear OCR, exact match).\n");
+            prompt.append("- 0.85-0.94: moderate certainty (minor noise but readable).\n");
+            prompt.append("- 0.70-0.84: low certainty (flag for review).\n");
+            prompt.append("- Below 0.70: very low certainty; explain issues in processingNotes.\n");
+
+            prompt.append("\nSKIPPED PAGES:\n");
+            prompt.append("- If a page is skipped, record it in skippedPages with pageNumber, reason, and detectedContent.\n");
+
+            prompt.append("\nOUTPUT JSON SHAPE:\n");
+            prompt.append("{\n");
+            prompt.append("  \"scanMetadata\": {\n");
+            prompt.append("    \"pageCount\": number,\n");
+            prompt.append("    \"scanQuality\": \"HIGH\" | \"MEDIUM\" | \"LOW\",\n");
+            prompt.append("    \"processingNotes\": [string]\n");
+            prompt.append("  },\n");
+            prompt.append("  \"taxPayerProfile\": {\n");
+            prompt.append("    \"name\": string | null,\n");
+            prompt.append("    \"ssn\": string | null,\n");
+            prompt.append("    \"filingStatus\": string | null,\n");
+            prompt.append("    \"spouse\": { \"name\": string | null, \"ssn\": string | null } | null,\n");
+            prompt.append("    \"address\": { \"street\": string | null, \"city\": string | null, \"state\": string | null, \"zip\": string | null } | null\n");
+            prompt.append("  },\n");
+            prompt.append("  \"returnSettings\": {\n");
+            prompt.append("    \"taxYear\": number | null,\n");
+            prompt.append("    \"isAmendment\": boolean | null,\n");
+            prompt.append("    \"amendmentReason\": string | null\n");
+            prompt.append("  },\n");
+            prompt.append("  \"forms\": [\n");
+            prompt.append("    {\n");
+            prompt.append("      \"formType\": string,\n");
+            prompt.append("      \"confidenceScore\": number,\n");
+            prompt.append("      \"pageNumber\": number,\n");
+            prompt.append("      \"extractionReason\": string,\n");
+            prompt.append("      \"owner\": \"PRIMARY\" | \"SPOUSE\" | null,\n");
+            prompt.append("      \"boundingBox\": { \"x\": number, \"y\": number, \"width\": number, \"height\": number },\n");
+            prompt.append("      \"fieldConfidence\": { [fieldId]: number },\n");
+            prompt.append("      \"fieldBoundingBoxes\": { [fieldId]: { \"x\": number, \"y\": number, \"width\": number, \"height\": number } },\n");
+            prompt.append("      // Include the schema-defined fields for this formType using the ids above\n");
+            prompt.append("    }\n");
+            prompt.append("  ],\n");
+            prompt.append("  \"skippedPages\": [\n");
+            prompt.append("    { \"pageNumber\": number, \"reason\": string, \"suggestion\": string | null, \"detectedContent\": string | null }\n");
+            prompt.append("  ]\n");
+            prompt.append("}\n");
+            prompt.append("IMPORTANT: Return ONLY valid JSON. No markdown code blocks. No explanatory text.\n");
+            return prompt.toString();
+        }
+
+        private String buildFormFieldInstructions() {
+            Map<String, FormSchema> schemaMap = formSchemaRepository.getAllSchemas();
+            if (schemaMap.isEmpty()) {
+                log.warn("Form schema repository is empty; prompt will lack field guidance.");
+                return "- No schemas loaded. Return forms as an empty array.\n";
+            }
+
+            StringBuilder builder = new StringBuilder();
+            List<FormSchema> schemas = new ArrayList<>(schemaMap.values());
+            schemas.sort(Comparator.comparing(FormSchema::getFormType, String.CASE_INSENSITIVE_ORDER));
+
+            for (FormSchema schema : schemas) {
+                builder.append("- ").append(schema.getFormType());
+                if (schema.getDescription() != null && !schema.getDescription().isBlank()) {
+                    builder.append(" (").append(schema.getDescription()).append(")");
                 }
-                
-                IMPORTANT: Return ONLY valid JSON. No markdown code blocks. No explanatory text.
-                """;
-}
-}
+                if (schema.getVersion() != null && !schema.getVersion().isBlank()) {
+                    builder.append(" [version ").append(schema.getVersion()).append("]");
+                }
+                builder.append("\n");
+                builder.append("  formType value: \"").append(schema.getFormType()).append("\"\n");
+                builder.append("  UI field ids (use exactly these keys; set value null when missing):\n");
+
+                List<FormFieldSchema> fields = new ArrayList<>(schema.getFields());
+                Comparator<FormFieldSchema> fieldComparator = Comparator
+                        .comparingInt((FormFieldSchema field) -> field.getDisplayOrder() > 0 ? field.getDisplayOrder() : Integer.MAX_VALUE)
+                        .thenComparing(field -> {
+                            String label = field.getLabel();
+                            return label != null && !label.isBlank() ? label : field.getId();
+                        }, String.CASE_INSENSITIVE_ORDER);
+                fields.sort(fieldComparator);
+
+                for (FormFieldSchema field : fields) {
+                    builder.append("    - ").append(field.getId());
+                    if (field.getLabel() != null && !field.getLabel().isBlank()) {
+                        builder.append(" => ").append(field.getLabel());
+                    }
+                    if (field.getType() != null && !field.getType().isBlank()) {
+                        builder.append(" [").append(field.getType()).append("]");
+                    }
+                    builder.append("\n");
+                }
+
+                builder.append("\n");
+            }
+
+            return builder.toString();
+        }
+    }

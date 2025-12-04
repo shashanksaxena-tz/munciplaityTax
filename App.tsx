@@ -11,6 +11,8 @@ import { AuditorDashboard } from './components/AuditorDashboard';
 import { ReturnReviewPanel } from './components/ReturnReviewPanel';
 import { RuleManagementDashboard } from './components/RuleManagementDashboard';
 import LedgerDashboard from './components/LedgerDashboard';
+import FormSchemaViewer from './components/FormSchemaViewer';
+import { FormSchemaTest } from './components/FormSchemaTest';
 import { AppStep } from './types';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -162,6 +164,16 @@ const AppContent = () => {
                             <RuleManagementWrapper />
                         </AdminRoute>
                     } />
+                    
+                    {/* Admin Routes - Form Schema Viewer */}
+                    <Route path="/admin/schemas" element={
+                        <AdminRoute>
+                            <FormSchemaViewer />
+                        </AdminRoute>
+                    } />
+                    
+                    {/* Test Route - Form Schema Loading Test (Development only) */}
+                    <Route path="/test/schemas" element={<FormSchemaTest />} />
                     
                     {/* Ledger Dashboard - Available to all authenticated users */}
                     <Route path="/ledger" element={

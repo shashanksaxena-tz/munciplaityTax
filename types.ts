@@ -124,25 +124,8 @@ export interface WithholdingReturnData {
   confirmationNumber?: string;
 }
 
-// Business Schedule X: Reconciliation
-export interface BusinessScheduleXDetails {
-  fedTaxableIncome: number;
-  addBacks: {
-    interestAndStateTaxes: number; // Income Taxes paid to states/cities
-    wagesCredit: number; // Wages deducted for federal credits
-    losses1231: number; // Capital Losses / 1231 Losses
-    guaranteedPayments: number; // Payments to partners (Line 10 1065)
-    expensesOnIntangibleIncome: number; // 5% Rule: Expenses incurred to earn non-taxable income
-    other: number;
-  };
-  deductions: {
-    interestIncome: number;
-    dividends: number;
-    capitalGains: number; // Capital Gains / 1231 Gains
-    section179Excess: number;
-    other: number;
-  };
-}
+// Business Schedule X: Reconciliation - Import from canonical source
+export type { BusinessScheduleXDetails, AddBacks, Deductions, CalculatedFields, Metadata } from './src/types/scheduleX';
 
 // Business Schedule Y: Allocation
 export interface BusinessAllocation {
@@ -217,7 +200,32 @@ export interface BaseTaxForm {
   fieldBoundingBoxes?: Record<string, BoundingBox>; // Per-field location in PDF for highlighting
 }
 
-export interface W2Form extends BaseTaxForm { formType: TaxFormType.W2; employer: string; employerEin: string; employerAddress: Address; employerCounty?: string; totalMonthsInCity?: number; employee: string; employeeInfo?: TaxPayerProfile; federalWages: number; medicareWages: number; localWages: number; localWithheld: number; locality: string; taxDue?: number; lowConfidenceFields?: string[]; }
+export interface W2Form extends BaseTaxForm { 
+  formType: TaxFormType.W2; 
+  employer: string; 
+  employerEin: string; 
+  employerAddress: Address; 
+  employerCounty?: string; 
+  totalMonthsInCity?: number; 
+  employee: string; 
+  employeeSSN?: string;
+  employeeAddress?: Address;
+  employeeInfo?: TaxPayerProfile; 
+  federalWages: number; 
+  federalWithheld?: number;
+  socialSecurityWages?: number;
+  socialSecurityTaxWithheld?: number;
+  medicareWages: number; 
+  medicareTaxWithheld?: number;
+  stateWages?: number;
+  stateIncomeTax?: number;
+  state?: string;
+  localWages: number; 
+  localWithheld: number; 
+  locality: string; 
+  taxDue?: number; 
+  lowConfidenceFields?: string[]; 
+}
 export interface W2GForm extends BaseTaxForm { formType: TaxFormType.W2G; payer: string; payerEin: string; payerAddress: Address; recipient: string; recipientTin?: string; grossWinnings: number; dateWon: string; typeOfWager: string; federalWithheld: number; stateWithheld: number; localWinnings: number; localWithheld: number; locality: string; lowConfidenceFields?: string[]; }
 export interface Form1099 extends BaseTaxForm { formType: TaxFormType.FORM_1099_NEC | TaxFormType.FORM_1099_MISC; payer: string; payerTin?: string; payerAddress?: Address; recipient: string; incomeAmount: number; federalWithheld: number; stateWithheld: number; localWithheld: number; locality: string; lowConfidenceFields?: string[]; }
 export interface ScheduleC extends BaseTaxForm { formType: TaxFormType.SCHEDULE_C; principalBusiness: string; businessCode: string; businessName: string; businessEin: string; businessAddress: Address; grossReceipts: number; totalExpenses: number; netProfit: number; lowConfidenceFields?: string[]; }

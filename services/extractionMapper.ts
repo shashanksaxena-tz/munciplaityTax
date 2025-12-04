@@ -1,5 +1,43 @@
 import { TaxFormData, TaxFormType, W2Form, Form1099, W2GForm, ScheduleC, ScheduleE, ScheduleF, LocalTaxForm, BusinessFederalForm, FederalTaxForm } from "../types";
 
+// Helper function to parse address from W-2 box format
+const parseAddress = (addressString?: string): { street: string, city: string, state: string, zip: string } | null => {
+    if (!addressString) return null;
+    
+    const lines = addressString.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length === 0) return null;
+    
+    // Last line typically has city, state, zip (e.g., "MARYSVILLE OH 43040-8612")
+    const lastLine = lines[lines.length - 1];
+    const cityStateZipMatch = lastLine.match(/^(.+?)\s+([A-Z]{2})\s+(\d{5}(?:-\d{4})?)$/);
+    
+    if (cityStateZipMatch) {
+        const [, city, state, zip] = cityStateZipMatch;
+        const street = lines.slice(1, -1).join(' '); // Middle lines are street
+        return { street, city, state, zip };
+    }
+    
+    // Fallback: return what we have
+    return {
+        street: lines.slice(1).join(' '),
+        city: '',
+        state: '',
+        zip: ''
+    };
+};
+
+// Helper function to parse numbers from string format (e.g., "245,695.")
+const parseNumber = (value?: string | number): number | null => {
+    if (value === null || value === undefined || value === '') return null;
+    if (typeof value === 'number') return value;
+    
+    // Remove commas, periods at end, and whitespace
+    const cleaned = String(value).replace(/,/g, '').replace(/\.\s*$/, '').trim();
+    const parsed = parseFloat(cleaned);
+    
+    return isNaN(parsed) ? null : parsed;
+};
+
 export const mapExtractionResultToForms = (finalJson: any, fileName: string): { forms: TaxFormData[], extractedProfile?: any, extractedSettings?: any } => {
     const rawForms = Array.isArray(finalJson) ? finalJson : (finalJson.forms || []);
 
@@ -21,26 +59,31 @@ export const mapExtractionResultToForms = (finalJson: any, fileName: string): { 
             isAiExtracted: true
         };
 
-        if (f.formType === TaxFormType.W2) {
+        if (f.formType === TaxFormType.W2 || f.formType === 'W-2') {
+            // Map W-2 box numbers to semantic field names
             const w2Form = { 
                 ...f, // Spread extracted data FIRST
                 ...base, // Then override with base (id, fileName, etc.)
-                // Ensure required fields exist (use extracted values or defaults)
-                employer: f.employer || '',
-                employerEin: f.employerEin || '',
-                employerAddress: f.employerAddress || { street: '', city: '', state: '', zip: '' },
-                employee: f.employee || '',
-                federalWages: f.federalWages ?? 0,
-                medicareWages: f.medicareWages ?? 0,
-                socialSecurityWages: f.socialSecurityWages ?? 0,
-                socialSecurityTaxWithheld: f.socialSecurityTaxWithheld ?? 0,
-                medicareTaxWithheld: f.medicareTaxWithheld ?? 0,
-                federalWithheld: f.federalWithheld ?? 0,
-                localWages: f.localWages ?? 0,
-                localWithheld: f.localWithheld ?? 0,
-                stateWages: f.stateWages ?? 0,
-                stateIncomeTax: f.stateIncomeTax ?? 0,
-                locality: f.locality || ''
+                // Map W-2 boxes to semantic names
+                employer: f.box_c?.split('\n')[0] || f.employer || '',
+                employerEin: f.box_b || f.employerEin || '',
+                employerAddress: parseAddress(f.box_c) || f.employerAddress || { street: '', city: '', state: '', zip: '' },
+                employee: f.box_e || f.employee || '',
+                employeeSSN: f.box_a || f.employeeSSN || '',
+                employeeAddress: parseAddress(f.box_f) || f.employeeAddress || { street: '', city: '', state: '', zip: '' },
+                // Box numbers to wage fields
+                federalWages: parseNumber(f.box_1) ?? f.federalWages ?? 0,
+                federalWithheld: parseNumber(f.box_2) ?? f.federalWithheld ?? 0,
+                socialSecurityWages: parseNumber(f.box_3) ?? f.socialSecurityWages ?? 0,
+                socialSecurityTaxWithheld: parseNumber(f.box_4) ?? f.socialSecurityTaxWithheld ?? 0,
+                medicareWages: parseNumber(f.box_5) ?? f.medicareWages ?? 0,
+                medicareTaxWithheld: parseNumber(f.box_6) ?? f.medicareTaxWithheld ?? 0,
+                stateWages: parseNumber(f.box_16) ?? f.stateWages ?? 0,
+                stateIncomeTax: parseNumber(f.box_17) ?? f.stateIncomeTax ?? 0,
+                localWages: parseNumber(f.box_18) ?? f.localWages ?? 0,
+                localWithheld: parseNumber(f.box_19) ?? f.localWithheld ?? 0,
+                locality: f.box_20 || f.locality || '',
+                state: f.box_15 || f.state || ''
             } as W2Form;
             console.log('[ExtractionMapper] Mapped W2:', w2Form);
             return w2Form;

@@ -1,0 +1,152 @@
+Request URL
+http://localhost:3000/api/v1/tax-engine/calculate/individual
+Request Method
+POST
+Status Code
+400 Bad Request
+Remote Address
+[::1]:3000
+
+{"forms":[{"formType":"Dublin 1040 / Form R","confidenceScore":0.95,"pageNumber":1,"extractionReason":"Identified as Dublin Individual Tax Return Form R","owner":"PRIMARY","boundingBox":{"x":0.089,"y":0.089,"width":0.822,"height":0.908},"fieldConfidence":{"Total Qualifying Wages and Other Compensation":0.95,"Business Income":0.95,"Income Tax":0.95,"City Tax Withheld":0.95,"Balance of Tax After Payments and Credits":0.95},"fieldBoundingBoxes":{"Total Qualifying Wages and Other Compensation":{"x":0.201,"y":0.362,"width":0.13,"height":0.018},"Business Income":{"x":0.201,"y":0.416,"width":0.13,"height":0.018},"Income Tax":{"x":0.75,"y":0.49,"width":0.07,"height":0.018},"City Tax Withheld":{"x":0.199,"y":0.537,"width":0.07,"height":0.018},"Balance of Tax After Payments and Credits":{"x":0.75,"y":0.635,"width":0.07,"height":0.018}},"Single":null,"Married Joint":true,"Married Separate":null,"Resident":true,"Non-Resident":null,"Part-Year":null,"Date Moved In":"03/31/2024","Qualifying Wages and Other Compensation":"245,695.","Business Income":"245,695.","Income Tax":"4,914.","City Tax Withheld":"4,914.","Balance of Tax After Payments and Credits":"4,914.","id":"6a087b6a-ec85-4971-9f7b-034c0581ff48","fileName":"NazishINDIVIDUAL_split_part_16.pdf","taxYear":2024,"sourcePage":1,"isAiExtracted":true},{"formType":"W-2","confidenceScore":0.98,"pageNumber":5,"extractionReason":"Identified as Form W-2","owner":"PRIMARY","boundingBox":{"x":0.078,"y":0.05,"width":0.844,"height":0.883},"fieldConfidence":{"Employee SSN":0.98,"Employer Identification Number":0.98,"Employer Name":0.98,"Employer Address":0.98,"Employer City":0.98,"Employer State":0.98,"Employer ZIP":0.98,"Employee Name":0.98,"Employee Address":0.98,"Employee City":0.98,"Employee State":0.98,"Employee ZIP":0.98,"federalWages":0.98,"federalWithheld":0.98,"socialSecurityWages":0.98,"socialSecurityTaxWithheld":0.98,"medicareWages":0.98,"medicareTaxWithheld":0.98,"code_12a":0.98,"amount_12a":0.98,"state":0.98,"stateId":0.98,"stateWages":0.98,"stateIncomeTax":0.98,"localWages":0.98,"localWithheld":0.98,"locality":0.98},"fieldBoundingBoxes":{"Employee SSN":{"x":0.217,"y":0.058,"width":0.12,"height":0.02},"Employer Identification Number":{"x":0.217,"y":0.11,"width":0.12,"height":0.02},"Employer Name":{"x":0.217,"y":0.159,"width":0.35,"height":0.02},"Employer Address":{"x":0.217,"y":0.179,"width":0.2,"height":0.02},"Employer City":{"x":0.217,"y":0.21,"width":0.15,"height":0.02},"Employer State":{"x":0.34,"y":0.21,"width":0.03,"height":0.02},"Employer ZIP":{"x":0.38,"y":0.21,"width":0.1,"height":0.02},"Employee Name":{"x":0.118,"y":0.377,"width":0.3,"height":0.02},"Employee Address":{"x":0.118,"y":0.41,"width":0.3,"height":0.02},"Employee City":{"x":0.118,"y":0.443,"width":0.2,"height":0.02},"Employee State":{"x":0.31,"y":0.443,"width":0.03,"height":0.02},"Employee ZIP":{"x":0.34,"y":0.443,"width":0.1,"height":0.02},"federalWages":{"x":0.547,"y":0.11,"width":0.12,"height":0.02},"federalWithheld":{"x":0.754,"y":0.11,"width":0.1,"height":0.02},"socialSecurityWages":{"x":0.547,"y":0.18,"width":0.12,"height":0.02},"socialSecurityTaxWithheld":{"x":0.754,"y":0.18,"width":0.1,"height":0.02},"medicareWages":{"x":0.547,"y":0.25,"width":0.12,"height":0.02},"medicareTaxWithheld":{"x":0.754,"y":0.25,"width":0.1,"height":0.02},"code_12a":{"x":0.59,"y":0.38,"width":0.05,"height":0.02},"amount_12a":{"x":0.66,"y":0.38,"width":0.1,"height":0.02},"state":{"x":0.118,"y":0.57,"width":0.03,"height":0.02},"stateId":{"x":0.16,"y":0.57,"width":0.1,"height":0.02},"stateWages":{"x":0.38,"y":0.57,"width":0.1,"height":0.02},"stateIncomeTax":{"x":0.57,"y":0.57,"width":0.1,"height":0.02},"localWages":{"x":0.38,"y":0.64,"width":0.1,"height":0.02},"localWithheld":{"x":0.57,"y":0.64,"width":0.1,"height":0.02},"locality":{"x":0.75,"y":0.64,"width":0.1,"height":0.02}},"Employee SSN":"746-15-6277","Employer Identification Number":"31-0925242","Employer Name":"HONDA DEV AND MFG OF AM LLC","Employer Address":"24000 HONDA PKWY","Employer City":"MARYSVILLE","Employer State":"OH","Employer ZIP":"43040-8612","Employee Name":"DAISUKE HAYASHI","Employee Address":"HDMA 750 W 7TH ST #812148","Employee City":"DUBLIN","Employee State":"OH","Employee ZIP":"43017-3808","federalWages":"245,695.","federalWithheld":"34,444.","socialSecurityWages":"0.","socialSecurityTaxWithheld":"0.00","medicareWages":"0.","medicareTaxWithheld":"0.00","code_12a":"DD","amount_12a":"14,412.","state":"OH","stateId":"51-498373","stateWages":"245,695.","stateIncomeTax":"7,297.00","localWages":"245,695.","localWithheld":"4,913.89","locality":"DUBLIN","id":"3d78362e-7341-4b92-81a2-831672848d2b","fileName":"NazishINDIVIDUAL_split_part_16.pdf","taxYear":2024,"sourcePage":5,"isAiExtracted":true,"employer":"","employerEin":"","employerAddress":{"street":"","city":"","state":"","zip":""},"employee":"","employeeSSN":"","employeeAddress":{"street":"","city":"","state":"","zip":""}},{"formType":"Federal 1040","confidenceScore":0.95,"pageNumber":7,"extractionReason":"Identified as Form 1040","owner":"PRIMARY","boundingBox":{"x":0.042,"y":0.021,"width":0.916,"height":0.958},"fieldConfidence":{"Filing Status":0.95,"Taxpayer name":0.95,"Taxpayer SSN":0.95,"Spouse name":0.95,"Home address":0.95,"City":0.95,"State":0.95,"ZIP":0.95,"Total amount from W-2s":0.95,"Other earned income":0.95,"Tax-exempt interest":0.95,"Taxable interest":0.95,"Qualified dividends":0.95,"Ordinary dividends":0.95,"Total income":0.95,"Adjusted gross income":0.95,"Standard or itemized deduction":0.95,"Qualified business income deduction":0.95,"Taxable income":0.95,"Tax":0.95},"fieldBoundingBoxes":{"Filing Status":{"x":0.069,"y":0.258,"width":0.1,"height":0.02},"Taxpayer name":{"x":0.069,"y":0.099,"width":0.2,"height":0.02},"Taxpayer SSN":{"x":0.78,"y":0.099,"width":0.15,"height":0.02},"Spouse name":{"x":0.069,"y":0.138,"width":0.2,"height":0.02},"Home address":{"x":0.069,"y":0.177,"width":0.3,"height":0.02},"City":{"x":0.069,"y":0.216,"width":0.2,"height":0.02},"State":{"x":0.43,"y":0.216,"width":0.05,"height":0.02},"ZIP":{"x":0.49,"y":0.216,"width":0.1,"height":0.02},"Total amount from W-2s":{"x":0.78,"y":0.41,"width":0.1,"height":0.02},"Other earned income":{"x":0.78,"y":0.54,"width":0.1,"height":0.02},"Tax-exempt interest":{"x":0.78,"y":0.59,"width":0.1,"height":0.02},"Taxable interest":{"x":0.78,"y":0.61,"width":0.1,"height":0.02},"Qualified dividends":{"x":0.78,"y":0.64,"width":0.1,"height":0.02},"Ordinary dividends":{"x":0.78,"y":0.66,"width":0.1,"height":0.02},"Total income":{"x":0.78,"y":78,"width":0.1,"height":0.02},"Adjusted gross income":{"x":0.78,"y":0.83,"width":0.1,"height":0.02},"Standard or itemized deduction":{"x":0.78,"y":0.87,"width":0.1,"height":0.02},"Qualified business income deduction":{"x":0.78,"y":0.9,"width":0.1,"height":0.02},"Taxable income":{"x":0.78,"y":0.95,"width":0.1,"height":0.02},"Tax":{"x":0.35,"y":0.35,"width":0.1,"height":0.02}},"Filing Status":"MARRIED_FILING_JOINTLY","Taxpayer name":"DAISUKE HAYASHI","Taxpayer SSN":"746 15 6277","Spouse name":"KAZUMI HAYASHI","Home address":"HDMA 750 W 7TH ST #812148","City":"LOS ANGELES","State":"CA","ZIP":"90081","Total amount from W-2s":"245,695.","Other earned income":"13,165.","Tax-exempt interest":null,"Taxable interest":"29.","Qualified dividends":null,"Ordinary dividends":null,"Total income":"258,889.","Adjusted gross income":"258,889.","Standard or itemized deduction":"29,200.","Qualified business income deduction":"29,200.","Taxable income":"229,689.","Tax":"41,210.","id":"f1598b3b-bf56-4e5f-984d-46ea16b6cb2c","fileName":"NazishINDIVIDUAL_split_part_16.pdf","taxYear":2024,"sourcePage":7,"isAiExtracted":true},{"formType":"Schedule 2 (Form 1040)","confidenceScore":0.95,"pageNumber":9,"extractionReason":"Identified as Schedule 2 (Form 1040)","owner":"PRIMARY","boundingBox":{"x":0.042,"y":0.021,"width":0.916,"height":0.958},"fieldConfidence":{"Total":0.95},"fieldBoundingBoxes":{"Total":{"x":0.78,"y":0.35,"width":0.1,"height":0.02}},"Total":"0.","id":"1c8dbb69-293c-4efa-ad37-e77f08426d25","fileName":"NazishINDIVIDUAL_split_part_16.pdf","taxYear":2024,"sourcePage":9,"isAiExtracted":true},{"formType":"Schedule 3 (Form 1040)","confidenceScore":0.95,"pageNumber":11,"extractionReason":"Identified as Schedule 3 (Form 1040)","owner":"PRIMARY","boundingBox":{"x":0.042,"y":0.021,"width":0.916,"height":0.958},"fieldConfidence":{"Foreign tax credit":0.95,"Total other nonrefundable credits":0.95,"Add lines 1 through 4, 5a, 5b, and 7":0.95,"Amount paid with request for extension to file":0.95,"Add lines 9 through 12 and 14":0.95},"fieldBoundingBoxes":{"Foreign tax credit":{"x":0.78,"y":0.14,"width":0.1,"height":0.02},"Total other nonrefundable credits":{"x":0.78,"y":0.49,"width":0.1,"height":0.02},"Add lines 1 through 4, 5a, 5b, and 7":{"x":0.78,"y":0.54,"width":0.1,"height":0.02},"Amount paid with request for extension to file":{"x":0.78,"y":0.64,"width":0.1,"height":0.02},"Add lines 9 through 12 and 14":{"x":0.78,"y":0.88,"width":0.1,"height":0.02}},"Foreign tax credit":"5,759.","Total other nonrefundable credits":null,"Add lines 1 through 4, 5a, 5b, and 7":"5,759.","Amount paid with request for extension to file":"2.","Add lines 9 through 12 and 14":"2.","id":"3126de85-6ab8-4f61-8fd7-2eeac9848515","fileName":"NazishINDIVIDUAL_split_part_16.pdf","taxYear":2024,"sourcePage":11,"isAiExtracted":true}],"profile":{"name":"DAISUKE HAYASHI","address":{"street":"HDMA 750 W 7TH ST #812148","city":"LOS ANGELES","state":"CA","zip":"90081"},"ssn":"746-15-6277","filingStatus":"MARRIED_FILING_JOINTLY","spouse":{"name":"KAZUMI HAYASHI","ssn":"159-55-2081"}},"settings":{"taxYear":2024,"isAmendment":false,"amendmentReason":null},"rules":{"municipalRate":0.02,"municipalCreditLimitRate":0.02,"municipalRates":{"columbus":0.025,"cleveland":0.025,"dublin":0.02,"westerville":0.02,"hilliard":0.025,"upper arlington":0.025,"grandview":0.025,"bexley":0.025},"w2QualifyingWagesRule":"HIGHEST_OF_ALL","incomeInclusion":{"scheduleC":true,"scheduleE":true,"scheduleF":true,"w2g":true,"form1099":true},"enableRounding":true}}
+
+
+[W2Card] Rendering W2 form: 
+{formType: 'W-2', confidenceScore: 0.98, pageNumber: 5, extractionReason: 'Identified as Form W-2', owner: 'PRIMARY', …}
+Employee Address
+: 
+"HDMA 750 W 7TH ST #812148"
+Employee City
+: 
+"DUBLIN"
+Employee Name
+: 
+"DAISUKE HAYASHI"
+Employee SSN
+: 
+"746-15-6277"
+Employee State
+: 
+"OH"
+Employee ZIP
+: 
+"43017-3808"
+Employer Address
+: 
+"24000 HONDA PKWY"
+Employer City
+: 
+"MARYSVILLE"
+Employer Identification Number
+: 
+"31-0925242"
+Employer Name
+: 
+"HONDA DEV AND MFG OF AM LLC"
+Employer State
+: 
+"OH"
+Employer ZIP
+: 
+"43040-8612"
+amount_12a
+: 
+"14,412."
+boundingBox
+: 
+{x: 0.078, y: 0.05, width: 0.844, height: 0.883}
+code_12a
+: 
+"DD"
+confidenceScore
+: 
+0.98
+employee
+: 
+""
+employeeAddress
+: 
+{street: '', city: '', state: '', zip: ''}
+employeeSSN
+: 
+""
+employer
+: 
+""
+employerAddress
+: 
+{street: '', city: '', state: '', zip: ''}
+employerEin
+: 
+""
+extractionReason
+: 
+"Identified as Form W-2"
+federalWages
+: 
+"245,695."
+federalWithheld
+: 
+"34,444."
+fieldBoundingBoxes
+: 
+{Employee SSN: {…}, Employer Identification Number: {…}, Employer Name: {…}, Employer Address: {…}, Employer City: {…}, …}
+fieldConfidence
+: 
+{Employee SSN: 0.98, Employer Identification Number: 0.98, Employer Name: 0.98, Employer Address: 0.98, Employer City: 0.98, …}
+fileName
+: 
+"NazishINDIVIDUAL_split_part_16.pdf"
+formType
+: 
+"W-2"
+id
+: 
+"3d78362e-7341-4b92-81a2-831672848d2b"
+isAiExtracted
+: 
+true
+localWages
+: 
+"245,695."
+localWithheld
+: 
+"4,913.89"
+locality
+: 
+"DUBLIN"
+medicareTaxWithheld
+: 
+"0.00"
+medicareWages
+: 
+"0."
+owner
+: 
+"PRIMARY"
+pageNumber
+: 
+5
+socialSecurityTaxWithheld
+: 
+"0.00"
+socialSecurityWages
+: 
+"0."
+sourcePage
+: 
+5
+state
+: 
+"OH"
+stateId
+: 
+"51-498373"
+stateIncomeTax
+: 
+"7,297.00"
+stateWages
+: 
+"245,695."
+taxYear
+: 
+2024

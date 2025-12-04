@@ -1,0 +1,21 @@
+{
+  "formType": "Schedule E",
+  "version": "2024",
+  "description": "Supplemental Income and Loss (Rental, Partnership, S-Corp, Trust)",
+  "fields": [
+    {
+      "id": "totalNetIncome",
+      "label": "Total Net Income",
+      "lineNumber": "26",
+      "type": "currency",
+      "required": true,
+      "weight": "CRITICAL",
+      "displayInUI": true,
+      "displayOrder": 1,
+      "validationRules": {
+        "min": -99999999,
+        "max": 99999999
+      }
+    }
+  ]
+}
