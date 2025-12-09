@@ -144,13 +144,12 @@ public class PaymentController {
             @PathVariable @Parameter(description = "Payment or Transaction UUID") UUID id) {
         log.info("Confirming payment {}", id);
         // Try to find by paymentId first, then by transactionId
-        PaymentTransaction payment;
         try {
-            payment = paymentService.getPaymentByPaymentId(id);
+            return ResponseEntity.ok(paymentService.getPaymentByPaymentId(id));
         } catch (IllegalArgumentException e) {
-            payment = paymentService.getPaymentByTransactionId(id);
+            log.debug("Payment not found by paymentId, trying transactionId: {}", id);
+            return ResponseEntity.ok(paymentService.getPaymentByTransactionId(id));
         }
-        return ResponseEntity.ok(payment);
     }
     
     @GetMapping("/test-mode-indicator")

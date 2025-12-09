@@ -154,13 +154,13 @@ public class MockPaymentProviderService {
                     .cardNumber("4242-4242-4242-4242")
                     .cardType("VISA")
                     .expectedResult("APPROVED")
-                    .description("Standard Visa test card - always approved")
+                    .description("Stripe-compatible Visa test card - always approved")
                     .build(),
             TestCreditCard.builder()
                     .cardNumber("4111-1111-1111-1111")
                     .cardType("VISA")
                     .expectedResult("APPROVED")
-                    .description("Alternative Visa test card - always approved")
+                    .description("Standard Visa test card - always approved")
                     .build(),
             TestCreditCard.builder()
                     .cardNumber("5555-5555-5555-4444")
