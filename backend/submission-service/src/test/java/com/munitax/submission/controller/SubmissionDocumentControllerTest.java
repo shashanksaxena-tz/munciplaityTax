@@ -209,4 +209,44 @@ class SubmissionDocumentControllerTest {
         mockMvc.perform(get("/api/v1/submissions/sub-123/documents/nonexistent/provenance"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void testGetDocumentProvenance_TenantIsolation() throws Exception {
+        // Document from a different tenant
+        SubmissionDocument otherTenantDoc = new SubmissionDocument();
+        otherTenantDoc.setId("doc-456");
+        otherTenantDoc.setSubmissionId("sub-123");
+        otherTenantDoc.setDocumentId("storage-doc-456");
+        otherTenantDoc.setFileName("W2_2024.pdf");
+        otherTenantDoc.setTenantId("tenant-2");
+
+        when(submissionRepository.existsById("sub-123")).thenReturn(true);
+        when(documentService.getDocumentById("doc-456"))
+                .thenReturn(Optional.of(otherTenantDoc));
+
+        // Attempting to access with tenant-1 should fail
+        mockMvc.perform(get("/api/v1/submissions/sub-123/documents/doc-456/provenance")
+                .param("tenantId", "tenant-1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testDownloadDocument_TenantIsolation() throws Exception {
+        // Document from a different tenant
+        SubmissionDocument otherTenantDoc = new SubmissionDocument();
+        otherTenantDoc.setId("doc-789");
+        otherTenantDoc.setSubmissionId("sub-123");
+        otherTenantDoc.setDocumentId("storage-doc-789");
+        otherTenantDoc.setFileName("1099_2024.pdf");
+        otherTenantDoc.setTenantId("tenant-2");
+
+        when(submissionRepository.existsById("sub-123")).thenReturn(true);
+        when(documentService.getDocumentById("doc-789"))
+                .thenReturn(Optional.of(otherTenantDoc));
+
+        // Attempting to download with tenant-1 should fail
+        mockMvc.perform(get("/api/v1/submissions/sub-123/documents/doc-789")
+                .param("tenantId", "tenant-1"))
+                .andExpect(status().isNotFound());
+    }
 }

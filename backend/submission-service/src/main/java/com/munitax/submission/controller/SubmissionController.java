@@ -33,7 +33,33 @@ public class SubmissionController {
     }
 
     @PostMapping
+    @org.springframework.transaction.annotation.Transactional
     public SubmissionResponse submitReturn(@RequestBody SubmissionRequest request) {
+        // Validate documents if provided
+        if (request.getDocuments() != null) {
+            for (SubmissionRequest.DocumentAttachment doc : request.getDocuments()) {
+                if (doc.getFileName() == null || doc.getFileName().trim().isEmpty()) {
+                    throw new IllegalArgumentException("Document filename is required");
+                }
+                if (doc.getFileName().contains("..")) {
+                    throw new IllegalArgumentException("Invalid filename: path traversal detected");
+                }
+                if (doc.getDocumentId() == null || doc.getDocumentId().trim().isEmpty()) {
+                    throw new IllegalArgumentException("Document ID is required");
+                }
+                if (doc.getFileSize() != null && doc.getFileSize() <= 0) {
+                    throw new IllegalArgumentException("File size must be positive");
+                }
+                if (doc.getPageCount() != null && doc.getPageCount() < 0) {
+                    throw new IllegalArgumentException("Page count must be non-negative");
+                }
+                if (doc.getExtractionConfidence() != null && 
+                    (doc.getExtractionConfidence() < 0.0 || doc.getExtractionConfidence() > 1.0)) {
+                    throw new IllegalArgumentException("Extraction confidence must be between 0.0 and 1.0");
+                }
+            }
+        }
+        
         // Create submission entity
         Submission submission = new Submission();
         submission.setId(UUID.randomUUID().toString());
@@ -59,28 +85,34 @@ public class SubmissionController {
         if (request.getDocuments() != null && !request.getDocuments().isEmpty()) {
             String submissionId = submission.getId();
             List<SubmissionDocument> documents = request.getDocuments().stream()
-                .map(doc -> {
-                    SubmissionDocument submissionDoc = new SubmissionDocument();
-                    submissionDoc.setSubmissionId(submissionId);
-                    submissionDoc.setDocumentId(doc.getDocumentId());
-                    submissionDoc.setFileName(doc.getFileName());
-                    submissionDoc.setFormType(doc.getFormType());
-                    submissionDoc.setFileSize(doc.getFileSize());
-                    submissionDoc.setMimeType(doc.getMimeType());
-                    submissionDoc.setUploadDate(Instant.now());
-                    submissionDoc.setExtractionResult(doc.getExtractionResult());
-                    submissionDoc.setExtractionConfidence(doc.getExtractionConfidence());
-                    submissionDoc.setPageCount(doc.getPageCount());
-                    submissionDoc.setFieldProvenance(doc.getFieldProvenance());
-                    submissionDoc.setTenantId(request.getTenantId());
-                    return submissionDoc;
-                })
+                .map(doc -> mapDocumentAttachmentToEntity(doc, submissionId, request.getTenantId()))
                 .collect(Collectors.toList());
             
             savedDocuments = documentService.saveDocuments(documents);
         }
         
         return SubmissionResponse.fromEntity(submission, savedDocuments);
+    }
+    
+    /**
+     * Maps a DocumentAttachment DTO to a SubmissionDocument entity
+     */
+    private SubmissionDocument mapDocumentAttachmentToEntity(
+            SubmissionRequest.DocumentAttachment doc, String submissionId, String tenantId) {
+        SubmissionDocument submissionDoc = new SubmissionDocument();
+        submissionDoc.setSubmissionId(submissionId);
+        submissionDoc.setDocumentId(doc.getDocumentId());
+        submissionDoc.setFileName(doc.getFileName());
+        submissionDoc.setFormType(doc.getFormType());
+        submissionDoc.setFileSize(doc.getFileSize());
+        submissionDoc.setMimeType(doc.getMimeType());
+        submissionDoc.setUploadDate(Instant.now());
+        submissionDoc.setExtractionResult(doc.getExtractionResult());
+        submissionDoc.setExtractionConfidence(doc.getExtractionConfidence());
+        submissionDoc.setPageCount(doc.getPageCount());
+        submissionDoc.setFieldProvenance(doc.getFieldProvenance());
+        submissionDoc.setTenantId(tenantId);
+        return submissionDoc;
     }
 
     @GetMapping
@@ -148,7 +180,8 @@ public class SubmissionController {
     @GetMapping("/{id}/documents/{docId}")
     public ResponseEntity<Resource> downloadDocument(
             @PathVariable String id,
-            @PathVariable String docId) {
+            @PathVariable String docId,
+            @RequestParam(required = false) String tenantId) {
         
         // Verify submission exists
         if (!repository.existsById(id)) {
@@ -158,6 +191,13 @@ public class SubmissionController {
         // Get document metadata
         return documentService.getDocumentById(docId)
             .filter(doc -> doc.getSubmissionId().equals(id))
+            .filter(doc -> {
+                // Verify tenant access if tenantId is provided
+                if (tenantId != null && doc.getTenantId() != null) {
+                    return doc.getTenantId().equals(tenantId);
+                }
+                return true; // No tenant filtering if not provided
+            })
             .map(doc -> {
                 // In a real implementation, fetch the actual file from storage service
                 // For now, return metadata as JSON for demonstration
@@ -170,13 +210,13 @@ public class SubmissionController {
                 
                 ByteArrayResource resource = new ByteArrayResource(content);
                 
-                // Sanitize filename to prevent header injection
+                // Sanitize filename to prevent header injection - allow only safe characters
                 String sanitizedFilename = doc.getFileName()
-                    .replaceAll("[\\n\\r]", "") // Remove newlines
-                    .replaceAll("\"", "'");     // Replace quotes
+                    .replaceAll("[^a-zA-Z0-9._-]", "_");
                 
                 return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedFilename + "\"")
+                    .header("X-Content-Type-Options", "nosniff")
                     .contentType(MediaType.parseMediaType(doc.getMimeType() != null ? doc.getMimeType() : "application/octet-stream"))
                     .contentLength(content.length)
                     .body((Resource) resource);
@@ -190,9 +230,10 @@ public class SubmissionController {
      * This enables PDF highlighting and preview functionality in review/auditor screens
      */
     @GetMapping("/{id}/documents/{docId}/provenance")
-    public ResponseEntity<?> getDocumentProvenance(
+    public ResponseEntity<DocumentProvenanceResponse> getDocumentProvenance(
             @PathVariable String id,
-            @PathVariable String docId) {
+            @PathVariable String docId,
+            @RequestParam(required = false) String tenantId) {
         
         // Verify submission exists
         if (!repository.existsById(id)) {
@@ -202,6 +243,13 @@ public class SubmissionController {
         // Get document metadata with provenance
         return documentService.getDocumentById(docId)
             .filter(doc -> doc.getSubmissionId().equals(id))
+            .filter(doc -> {
+                // Verify tenant access if tenantId is provided
+                if (tenantId != null && doc.getTenantId() != null) {
+                    return doc.getTenantId().equals(tenantId);
+                }
+                return true; // No tenant filtering if not provided
+            })
             .map(doc -> {
                 // Return provenance data for PDF highlighting
                 return ResponseEntity.ok()

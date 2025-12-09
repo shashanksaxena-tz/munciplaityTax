@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS submission_documents (
 
 CREATE INDEX IF NOT EXISTS idx_submission_documents_submission_id ON submission_documents(submission_id);
 CREATE INDEX IF NOT EXISTS idx_submission_documents_tenant_id ON submission_documents(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_submission_documents_submission_tenant ON submission_documents(submission_id, tenant_id);
 
 COMMENT ON TABLE submission_documents IS 'Documents attached to tax submissions for auditor review';
 COMMENT ON COLUMN submission_documents.document_id IS 'Reference to document in storage/extraction service';
