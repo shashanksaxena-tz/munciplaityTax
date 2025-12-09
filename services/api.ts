@@ -262,5 +262,74 @@ export const api = {
             if (!response.ok) throw new Error('Submission failed');
             return response.json();
         }
+    },
+
+    w3Reconciliation: {
+        /**
+         * Create a new W-3 year-end reconciliation.
+         */
+        create: async (request: {
+            businessId: string;
+            taxYear: number;
+            totalW2Tax: number;
+            w2FormCount?: number;
+            totalEmployees?: number;
+            notes?: string;
+        }) => {
+            const response = await fetch(`${API_BASE_URL}/w3-reconciliation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`,
+                    'X-Tenant-Id': 'dublin'
+                },
+                body: JSON.stringify(request)
+            });
+            if (!response.ok) throw new Error('W-3 reconciliation creation failed');
+            return response.json();
+        },
+
+        /**
+         * Get W-3 reconciliation by year.
+         */
+        getByYear: async (businessId: string, taxYear: number) => {
+            const response = await fetch(`${API_BASE_URL}/w3-reconciliation/${taxYear}?businessId=${businessId}`, {
+                headers: {
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`,
+                    'X-Tenant-Id': 'dublin'
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch W-3 reconciliation');
+            return response.json();
+        },
+
+        /**
+         * Submit W-3 reconciliation.
+         */
+        submit: async (id: string) => {
+            const response = await fetch(`${API_BASE_URL}/w3-reconciliation/${id}/submit`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`,
+                    'X-Tenant-Id': 'dublin'
+                }
+            });
+            if (!response.ok) throw new Error('W-3 submission failed');
+            return response.json();
+        },
+
+        /**
+         * Get discrepancies for W-3 reconciliation.
+         */
+        getDiscrepancies: async (id: string) => {
+            const response = await fetch(`${API_BASE_URL}/w3-reconciliation/${id}/discrepancies`, {
+                headers: {
+                    'Authorization': `Bearer ${safeLocalStorage.getItem('auth_token')}`,
+                    'X-Tenant-Id': 'dublin'
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch W-3 discrepancies');
+            return response.json();
+        }
     }
 };
