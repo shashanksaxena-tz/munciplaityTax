@@ -37,7 +37,7 @@ public class TaxEngineController {
                 // Fetch dynamic rules from rule service
                 String tenantId = request.tenantId() != null ? request.tenantId() : defaultTenantId;
                 int taxYear = request.taxYear() != null ? request.taxYear() : 
-                        (request.settings() != null ? request.settings().year() : java.time.Year.now().getValue());
+                        (request.settings() != null ? request.settings().taxYear() : java.time.Year.now().getValue());
                 
                 TaxRulesConfig rules = request.rules() != null ? 
                         request.rules() : 
