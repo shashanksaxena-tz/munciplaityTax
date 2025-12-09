@@ -1,8 +1,60 @@
 @import "tailwindcss";
 
+:root {
+  /* Figma Design System Colors */
+  /* Heading Colors */
+  --heading-grey-dark: #0f1012;
+  
+  /* Body & Text Colors */
+  --body-grey-dark: #0f1012;
+  --body-grey: #5d6567;
+  --sub-heading-grey: #5d6567;
+  
+  /* Form Colors */
+  --form-label-dark: #102124;
+  --form-label-alert: #ec1656;
+  --form-field-default: #ffffff;
+  --form-border-default: #dcdede;
+  --form-placeholder-light: #5d6567;
+  
+  /* Grey Scale */
+  --grey-scale-100: #0f1012;
+  --grey-scale-200: #5d6567;
+  --grey-scale-300: #babebf;
+  --grey-scale-400: #dcdede;
+  --grey-scale-500: #f0f0f0;
+  --grey-scale-600: #f8f9fa;
+  --grey-scale-700: #ffffff;
+  
+  /* Primary Colors (Gradient) */
+  --primary-purple: #970bed;
+  --primary-blue: #469fe8;
+  
+  /* Alert & Status */
+  --alert-red: #ec1656;
+  --success-green: #10b981;
+  
+  /* Background Colors */
+  --bg-light-blue: #ebf4ff;
+  --bg-blue-tint: #dfedff;
+  --bg-green-tint: #d5faeb;
+  --bg-off-white: #fbfbfb;
+  
+  /* Button */
+  --button-primary-default: linear-gradient(90deg, #970bed, #469fe8);
+  --button-primary-content: #ffffff;
+  --button-radius-m: 12px;
+  --button-m-size: 14px;
+  --button-m-lineheight: 20px;
+  
+  /* Field */
+  --field-border-radius: 8px;
+}
+
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: #f8fafc;
+  font-family: 'Inter', 'Urbanist', sans-serif;
+  background-color: #f8f9fa;
+  color: var(--body-grey-dark);
 }
 
 /* Custom Scrollbar */
@@ -10,14 +62,14 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; 
+  background: var(--grey-scale-500); 
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
+  background: var(--grey-scale-300); 
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; 
+  background: var(--grey-scale-200); 
 }
 
 @media print {

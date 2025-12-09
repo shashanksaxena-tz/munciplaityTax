@@ -164,19 +164,19 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
       <div className="mb-6">
         <button
           onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-          className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 transition-colors"
+          className="flex items-center gap-2 text-sm text-[#5d6567] hover:text-[#970bed] transition-colors"
         >
           <Settings className="w-4 h-4" />
           <span>{showApiKeyInput ? 'Hide' : 'Configure'} Gemini API Key</span>
         </button>
 
         {showApiKeyInput && (
-          <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-slideUp">
+          <div className="mt-3 p-4 bg-[#fbfbfb] rounded-xl border border-[#dcdede] animate-slideUp">
             <div className="flex items-start gap-3 mb-3">
-              <Key className="w-5 h-5 text-indigo-500 mt-0.5" />
+              <Key className="w-5 h-5 text-[#970bed] mt-0.5" />
               <div>
-                <h4 className="font-semibold text-slate-800">Your Gemini API Key</h4>
-                <p className="text-xs text-slate-500 mt-1">
+                <h4 className="font-semibold text-[#0f1012]">Your Gemini API Key</h4>
+                <p className="text-xs text-[#5d6567] mt-1">
                   Provide your own API key for extraction. Keys are never stored and used only for this session.
                 </p>
               </div>
@@ -187,23 +187,23 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="Enter your Gemini API key..."
-                className="w-full px-4 py-2.5 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                className="w-full px-4 py-2.5 pr-12 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed] text-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#babebf] hover:text-[#5d6567]"
               >
                 {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            <p className="text-xs text-slate-400 mt-2">
+            <p className="text-xs text-[#5d6567] mt-2">
               Get your API key from{' '}
               <a
                 href="https://aistudio.google.com/app/apikey"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 hover:underline"
+                className="text-[#970bed] hover:underline"
               >
                 Google AI Studio
               </a>
@@ -220,8 +220,8 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
         className={`
           relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 cursor-pointer group
           ${isDragging
-            ? 'border-indigo-500 bg-indigo-50 scale-[1.02] shadow-xl'
-            : 'border-slate-300 hover:border-indigo-400 bg-white hover:bg-slate-50 hover:shadow-md'}
+            ? 'border-[#970bed] bg-[#ebf4ff] scale-[1.02] shadow-xl'
+            : 'border-[#dcdede] hover:border-[#970bed] bg-white hover:bg-[#fbfbfb] hover:shadow-md'}
         `}
       >
         <input
@@ -233,18 +233,18 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
         />
 
         <div className="flex flex-col items-center justify-center space-y-5 pointer-events-none">
-          <div className={`p-5 rounded-full transition-colors duration-300 ${isDragging ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-500'}`}>
+          <div className={`p-5 rounded-full transition-colors duration-300 ${isDragging ? 'bg-gradient-to-br from-[#970bed] to-[#469fe8] text-white' : 'bg-[#f0f0f0] text-[#5d6567] group-hover:bg-gradient-to-br group-hover:from-[#970bed]/10 group-hover:to-[#469fe8]/10 group-hover:text-[#970bed]'}`}>
             <Upload className="w-10 h-10" />
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-slate-800">
+            <h3 className="text-2xl font-bold text-[#0f1012]">
               Upload Tax Documents
             </h3>
-            <p className="text-slate-500 text-base max-w-sm mx-auto">
-              Drop your <span className="font-semibold text-indigo-600">PDF, JPG, or PNG</span> files here.
+            <p className="text-[#5d6567] text-base max-w-sm mx-auto">
+              Drop your <span className="font-semibold text-[#970bed]">PDF, JPG, or PNG</span> files here.
             </p>
-            <p className="text-xs text-slate-400 pt-2">
+            <p className="text-xs text-[#babebf] pt-2">
               Supports multi-page PDFs containing mixed W-2s, 1099s, Schedules, and more.
             </p>
           </div>
@@ -252,7 +252,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
       </div>
 
       {error && (
-        <div className="mt-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-700 animate-slideUp shadow-sm">
+        <div className="mt-6 p-4 bg-[#ec1656]/10 border border-[#ec1656]/30 rounded-xl flex items-start gap-3 text-[#ec1656] animate-slideUp shadow-sm">
           <X className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <div>
             <span className="font-bold block">Upload Failed</span>
@@ -261,17 +261,17 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
         </div>
       )}
 
-      <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-slate-600">
-        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
-          <div className="p-2 bg-green-50 rounded-md text-green-600"><FileStack className="w-4 h-4" /></div>
+      <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-[#5d6567]">
+        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#dcdede] shadow-sm">
+          <div className="p-2 bg-[#d5faeb] rounded-md text-[#10b981]"><FileStack className="w-4 h-4" /></div>
           <span className="font-medium">Bulk Extraction</span>
         </div>
-        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
-          <div className="p-2 bg-blue-50 rounded-md text-blue-600"><FileText className="w-4 h-4" /></div>
+        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#dcdede] shadow-sm">
+          <div className="p-2 bg-[#ebf4ff] rounded-md text-[#469fe8]"><FileText className="w-4 h-4" /></div>
           <span className="font-medium">Smart Filtering</span>
         </div>
-        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
-          <div className="p-2 bg-purple-50 rounded-md text-purple-600"><FileText className="w-4 h-4" /></div>
+        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-[#dcdede] shadow-sm">
+          <div className="p-2 bg-[#970bed]/10 rounded-md text-[#970bed]"><FileText className="w-4 h-4" /></div>
           <span className="font-medium">Auto-Mapping</span>
         </div>
       </div>

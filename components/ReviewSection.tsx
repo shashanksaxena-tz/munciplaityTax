@@ -73,15 +73,15 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
   if (isSubmitted) {
     return (
       <div className="max-w-2xl mx-auto py-12 text-center space-y-6">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle className="w-8 h-8 text-green-600" />
+        <div className="w-16 h-16 bg-[#d5faeb] rounded-full flex items-center justify-center mx-auto">
+          <CheckCircle className="w-8 h-8 text-[#10b981]" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Return Submitted</h2>
-          <p className="text-slate-500 mt-2">This return has been finalized and locked for editing.</p>
+          <h2 className="text-2xl font-bold text-[#0f1012]">Return Submitted</h2>
+          <p className="text-[#5d6567] mt-2">This return has been finalized and locked for editing.</p>
         </div>
         <div className="flex justify-center gap-4">
-          <button onClick={onCalculate} className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium">View Final Report</button>
+          <button onClick={onCalculate} className="px-6 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-lg font-medium">View Final Report</button>
         </div>
       </div>
     );
@@ -93,33 +93,33 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
       {liveResult && forms.length > 0 && <LiveTaxVisualizer result={liveResult} />}
 
       {/* Settings & Profile */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-[#dcdede] shadow-sm overflow-hidden">
         <div
-          className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center cursor-pointer hover:bg-slate-100 transition-colors"
+          className="bg-[#fbfbfb] px-6 py-4 border-b border-[#dcdede] flex justify-between items-center cursor-pointer hover:bg-[#f0f0f0] transition-colors"
           onClick={() => setExpandedProfile(!expandedProfile)}
         >
           <div className="flex items-center gap-3">
-            <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600"><User className="w-5 h-5" /></div>
+            <div className="bg-[#970bed]/10 p-2 rounded-lg text-[#970bed]"><User className="w-5 h-5" /></div>
             <div>
-              <h3 className="font-bold text-slate-800">Return Settings & Taxpayer Profile</h3>
-              <p className="text-xs text-slate-500">Tax Year: {settings.taxYear} • {settings.isAmendment ? 'Amendment' : 'Standard'}</p>
+              <h3 className="font-bold text-[#0f1012]">Return Settings & Taxpayer Profile</h3>
+              <p className="text-xs text-[#5d6567]">Tax Year: {settings.taxYear} • {settings.isAmendment ? 'Amendment' : 'Standard'}</p>
             </div>
           </div>
-          <div className="text-slate-400">{expandedProfile ? 'Hide' : 'Edit'}</div>
+          <div className="text-[#babebf]">{expandedProfile ? 'Hide' : 'Edit'}</div>
         </div>
 
         {expandedProfile && (
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Settings</h4>
+              <h4 className="text-xs font-bold text-[#babebf] uppercase tracking-wider mb-2">Settings</h4>
               <div className="grid grid-cols-2 gap-4">
                 <InputGroup label="Tax Year" value={settings.taxYear} onChange={(v: any) => onUpdateSettings({ ...settings, taxYear: v })} isText tooltip="The calendar year for which you are filing taxes." taxRelevant />
                 <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Filing Status</label>
+                  <label className="text-[10px] font-bold text-[#102124] uppercase">Filing Status</label>
                   <select
                     value={profile.filingStatus || FilingStatus.SINGLE}
                     onChange={(e) => onUpdateProfile({ ...profile, filingStatus: e.target.value as FilingStatus })}
-                    className="w-full py-1.5 px-2 bg-white border border-slate-300 rounded text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="w-full py-1.5 px-2 bg-white border border-[#dcdede] rounded text-sm font-medium outline-none focus:ring-2 focus:ring-[#970bed]/20"
                   >
                     <option value={FilingStatus.SINGLE}>Single</option>
                     <option value={FilingStatus.MARRIED_FILING_JOINTLY}>Married Filing Jointly</option>
@@ -144,17 +144,17 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
               <InputGroup label="Primary SSN" value={profile.ssn || ''} onChange={(v: any) => onUpdateProfile({ ...profile, ssn: v })} isText tooltip="Last 4 digits of SSN." />
 
               {isMFJ && (
-                <div className="p-3 bg-indigo-50 rounded-lg border border-indigo-100 space-y-3 mt-2">
-                  <div className="flex items-center gap-2 text-indigo-700 font-bold text-xs uppercase"><Users className="w-3.5 h-3.5" /> Spouse Details</div>
+                <div className="p-3 bg-[#ebf4ff] rounded-lg border border-[#469fe8]/20 space-y-3 mt-2">
+                  <div className="flex items-center gap-2 text-[#469fe8] font-bold text-xs uppercase"><Users className="w-3.5 h-3.5" /> Spouse Details</div>
                   <InputGroup label="Spouse Name" value={profile.spouse?.name || ''} onChange={(v: any) => onUpdateProfile({ ...profile, spouse: { ...profile.spouse, name: v } as any })} isText />
                   <InputGroup label="Spouse SSN" value={profile.spouse?.ssn || ''} onChange={(v: any) => onUpdateProfile({ ...profile, spouse: { ...profile.spouse, ssn: v } as any })} isText />
                 </div>
               )}
 
               {/* Address Block */}
-              <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 mt-4">
+              <div className="bg-[#fbfbfb] p-3 rounded-lg border border-[#dcdede] mt-4">
                 <div className="flex justify-between items-center mb-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase">Address</label>
+                  <label className="text-[10px] font-bold text-[#102124] uppercase">Address</label>
                   <AddressStatusBadge status={profile.address?.verificationStatus} onVerify={handleVerifyProfileAddress} />
                 </div>
                 <InputGroup
@@ -192,9 +192,9 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
       {liveResult?.discrepancyReport && <DiscrepancyView report={liveResult.discrepancyReport} />}
 
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-slate-900">Tax Documents</h2>
+        <h2 className="text-xl font-bold text-[#0f1012]">Tax Documents</h2>
         {forms.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-slate-300"><p className="text-slate-500">No forms added.</p></div>
+          <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-[#dcdede]"><p className="text-[#5d6567]">No forms added.</p></div>
         ) : (
           <div className="grid gap-6">
             {forms.map((form) => {
@@ -215,43 +215,43 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
 
       <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
         <div className="flex gap-2 relative">
-          <button onClick={onBack} className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 font-medium">Upload More</button>
+          <button onClick={onBack} className="px-4 py-2 border border-[#dcdede] rounded-lg hover:bg-[#fbfbfb] font-medium text-[#5d6567]">Upload More</button>
           <div className="relative">
-            <button onClick={() => setShowAddMenu(!showAddMenu)} className="px-4 py-2 bg-slate-800 text-white rounded-lg font-medium flex items-center gap-2 hover:bg-slate-900">
+            <button onClick={() => setShowAddMenu(!showAddMenu)} className="px-4 py-2 bg-[#0f1012] text-white rounded-lg font-medium flex items-center gap-2 hover:bg-[#102124]">
               <Plus className="w-4 h-4" /> Add Manual Form <ChevronDown className="w-4 h-4" />
             </button>
             {showAddMenu && (
-              <div className="absolute bottom-full left-0 mb-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden z-20">
+              <div className="absolute bottom-full left-0 mb-2 w-56 bg-white rounded-xl shadow-xl border border-[#dcdede] overflow-hidden z-20">
                 {INDIVIDUAL_FORMS.map(t => <MenuOption key={t} label={t} onClick={() => { onAddManualForm(t); setShowAddMenu(false); }} />)}
               </div>
             )}
           </div>
         </div>
-        <button onClick={onCalculate} disabled={forms.length === 0} className="px-8 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-md disabled:opacity-50">View Final Report</button>
+        <button onClick={onCalculate} disabled={forms.length === 0} className="px-8 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-lg font-semibold shadow-md disabled:opacity-50">View Final Report</button>
       </div>
 
       {liveResult && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-indigo-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 animate-slideUp">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#dcdede] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 animate-slideUp">
           <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 rounded-full text-indigo-700 animate-pulse"><Activity className="w-5 h-5" /></div>
+              <div className="p-2 bg-[#970bed]/10 rounded-full text-[#970bed] animate-pulse"><Activity className="w-5 h-5" /></div>
               <div>
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Live Estimate</h4>
-                <div className="text-sm font-medium text-slate-700">Updating in real-time</div>
+                <h4 className="text-xs font-bold text-[#babebf] uppercase tracking-wider">Live Estimate</h4>
+                <div className="text-sm font-medium text-[#5d6567]">Updating in real-time</div>
               </div>
             </div>
             <div className="flex gap-8 text-sm">
               <div>
-                <span className="block text-slate-400 text-xs uppercase mb-1">Taxable Income</span>
-                <span className="font-bold text-slate-800 text-lg">${liveResult.totalTaxableIncome.toLocaleString()}</span>
+                <span className="block text-[#babebf] text-xs uppercase mb-1">Taxable Income</span>
+                <span className="font-bold text-[#0f1012] text-lg">${liveResult.totalTaxableIncome.toLocaleString()}</span>
               </div>
               <div>
-                <span className="block text-slate-400 text-xs uppercase mb-1">Est. Liability</span>
-                <span className="font-bold text-indigo-600 text-lg">${liveResult.municipalLiabilityAfterCredits.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="block text-[#babebf] text-xs uppercase mb-1">Est. Liability</span>
+                <span className="font-bold text-[#970bed] text-lg">${liveResult.municipalLiabilityAfterCredits.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
-              <div className="pl-6 border-l border-slate-200">
-                <span className="block text-slate-400 text-xs uppercase mb-1">Balance Due</span>
-                <span className={`font-bold text-xl ${netBalance > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className="pl-6 border-l border-[#dcdede]">
+                <span className="block text-[#babebf] text-xs uppercase mb-1">Balance Due</span>
+                <span className={`font-bold text-xl ${netBalance > 0 ? 'text-[#10b981]' : 'text-[#ec1656]'}`}>
                   {netBalance > 0 ? `+${Math.abs(netBalance).toLocaleString()}` : `${Math.abs(netBalance).toLocaleString()}`}
                 </span>
               </div>
@@ -266,18 +266,18 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
 const AddressStatusBadge = ({ status, onVerify }: { status?: string, onVerify: () => void }) => {
   if (!status || status === 'UNVERIFIED') {
     return (
-      <button onClick={onVerify} className="flex items-center gap-1 px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold uppercase rounded border border-slate-300 transition-colors">
+      <button onClick={onVerify} className="flex items-center gap-1 px-2 py-0.5 bg-[#f0f0f0] hover:bg-[#dcdede] text-[#5d6567] text-[10px] font-bold uppercase rounded border border-[#dcdede] transition-colors">
         Verify Address
       </button>
     );
   }
   if (status === 'VERIFIED_IN_DISTRICT') {
-    return <span className="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded border border-green-200"><CheckCircle className="w-3 h-3" /> Inside Dublin</span>;
+    return <span className="flex items-center gap-1 px-2 py-0.5 bg-[#d5faeb] text-[#10b981] text-[10px] font-bold uppercase rounded border border-[#10b981]/20"><CheckCircle className="w-3 h-3" /> Inside Dublin</span>;
   }
   if (status === 'JEDD') {
-    return <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase rounded border border-blue-200"><Briefcase className="w-3 h-3" /> JEDD District</span>;
+    return <span className="flex items-center gap-1 px-2 py-0.5 bg-[#ebf4ff] text-[#469fe8] text-[10px] font-bold uppercase rounded border border-[#469fe8]/20"><Briefcase className="w-3 h-3" /> JEDD District</span>;
   }
-  return <span className="flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold uppercase rounded border border-red-200"><XCircle className="w-3 h-3" /> Out of District</span>;
+  return <span className="flex items-center gap-1 px-2 py-0.5 bg-[#ec1656]/10 text-[#ec1656] text-[10px] font-bold uppercase rounded border border-[#ec1656]/20"><XCircle className="w-3 h-3" /> Out of District</span>;
 };
 
 const LiveTaxVisualizer: React.FC<{ result: TaxCalculationResult }> = ({ result }) => {
@@ -291,39 +291,39 @@ const LiveTaxVisualizer: React.FC<{ result: TaxCalculationResult }> = ({ result 
   const withheldPct = Math.min(100, (result.totalLocalWithheld / liabilityMax) * 100);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-4">
+    <div className="bg-white rounded-xl border border-[#dcdede] shadow-sm p-6 mb-4">
       <div className="flex items-center gap-2 mb-4">
-        <PieChart className="w-5 h-5 text-indigo-600" />
-        <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Tax Breakdown Preview</h3>
+        <PieChart className="w-5 h-5 text-[#970bed]" />
+        <h3 className="font-bold text-[#0f1012] text-sm uppercase tracking-wider">Tax Breakdown Preview</h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-2">
-          <div className="flex justify-between text-xs font-semibold text-slate-600">
+          <div className="flex justify-between text-xs font-semibold text-[#5d6567]">
             <span>Taxable Income Sources</span>
             <span>${result.totalTaxableIncome.toLocaleString()}</span>
           </div>
-          <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden flex">
-            {w2Pct > 0 && <div style={{ width: `${w2Pct}%` }} className="bg-blue-500 relative"></div>}
-            {schXPct > 0 && <div style={{ width: `${schXPct}%` }} className="bg-purple-500 relative"></div>}
+          <div className="h-4 w-full bg-[#f0f0f0] rounded-full overflow-hidden flex">
+            {w2Pct > 0 && <div style={{ width: `${w2Pct}%` }} className="bg-[#469fe8] relative"></div>}
+            {schXPct > 0 && <div style={{ width: `${schXPct}%` }} className="bg-[#970bed] relative"></div>}
           </div>
-          <div className="flex gap-4 text-[10px] text-slate-500">
-            {w2Pct > 0 && <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-blue-500"></div> W-2</div>}
-            {schXPct > 0 && <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-purple-500"></div> Schedule X</div>}
+          <div className="flex gap-4 text-[10px] text-[#5d6567]">
+            {w2Pct > 0 && <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#469fe8]"></div> W-2</div>}
+            {schXPct > 0 && <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-[#970bed]"></div> Schedule X</div>}
           </div>
         </div>
 
         <div className="space-y-2">
-          <div className="flex justify-between text-xs font-semibold text-slate-600">
+          <div className="flex justify-between text-xs font-semibold text-[#5d6567]">
             <span>Estimated Liability Coverage</span>
             <span>${totalLiability.toLocaleString()}</span>
           </div>
-          <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden flex relative">
-            {totalLiability === 0 && <div className="w-full bg-slate-200"></div>}
-            {creditsPct > 0 && <div style={{ width: `${creditsPct}%` }} className="bg-green-500"></div>}
-            {withheldPct > 0 && <div style={{ width: `${withheldPct}%` }} className="bg-emerald-400"></div>}
+          <div className="h-4 w-full bg-[#f0f0f0] rounded-full overflow-hidden flex relative">
+            {totalLiability === 0 && <div className="w-full bg-[#dcdede]"></div>}
+            {creditsPct > 0 && <div style={{ width: `${creditsPct}%` }} className="bg-[#10b981]"></div>}
+            {withheldPct > 0 && <div style={{ width: `${withheldPct}%` }} className="bg-[#10b981]/70"></div>}
             {result.municipalLiabilityAfterCredits > (result.scheduleY.totalCredit + result.totalLocalWithheld) &&
-              <div className="flex-1 bg-red-400"></div>
+              <div className="flex-1 bg-[#ec1656]"></div>
             }
           </div>
         </div>
@@ -333,7 +333,7 @@ const LiveTaxVisualizer: React.FC<{ result: TaxCalculationResult }> = ({ result 
 };
 
 const MenuOption = ({ label, onClick }: any) => (
-  <button onClick={onClick} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700">{label}</button>
+  <button onClick={onClick} className="w-full text-left px-3 py-2 text-sm text-[#5d6567] hover:bg-[#ebf4ff] hover:text-[#970bed]">{label}</button>
 );
 
 const InputGroup = ({ label, value, onChange, isText, placeholder, tooltip, taxRelevant, noLabel, confidence }: any) => {
@@ -346,34 +346,34 @@ const InputGroup = ({ label, value, onChange, isText, placeholder, tooltip, taxR
     <div className="w-full relative group">
       {!noLabel && (
         <div className="flex items-center gap-1 mb-1">
-          <label className={`text-[10px] font-bold uppercase tracking-wider truncate flex items-center gap-1 ${taxRelevant ? 'text-emerald-700' : 'text-slate-500'}`}>
+          <label className={`text-[10px] font-bold uppercase tracking-wider truncate flex items-center gap-1 ${taxRelevant ? 'text-[#10b981]' : 'text-[#102124]'}`}>
             {label}
-            {taxRelevant && <Calculator className="w-3 h-3 text-emerald-600" />}
+            {taxRelevant && <Calculator className="w-3 h-3 text-[#10b981]" />}
           </label>
           {tooltip && <Tooltip content={taxRelevant ? `${tooltip} (Calculated Field)` : tooltip} />}
           {confPercent !== null && (
             <Tooltip content={`Extraction Confidence: ${confPercent}%`}>
-              {isLowConfidence ? <AlertOctagon className="w-3 h-3 text-red-500 animate-pulse" /> :
-                isMedConfidence ? <AlertTriangle className="w-3 h-3 text-amber-500" /> :
-                  <CheckCircle className="w-3 h-3 text-green-500/50" />
+              {isLowConfidence ? <AlertOctagon className="w-3 h-3 text-[#ec1656] animate-pulse" /> :
+                isMedConfidence ? <AlertTriangle className="w-3 h-3 text-[#f59e0b]" /> :
+                  <CheckCircle className="w-3 h-3 text-[#10b981]/50" />
               }
             </Tooltip>
           )}
         </div>
       )}
       <div className="relative">
-        {!isText && <DollarSign className={`absolute left-2 top-2 w-3.5 h-3.5 ${taxRelevant ? 'text-emerald-500' : 'text-slate-400'}`} />}
+        {!isText && <DollarSign className={`absolute left-2 top-2 w-3.5 h-3.5 ${taxRelevant ? 'text-[#10b981]' : 'text-[#babebf]'}`} />}
         <input
           type={isText ? 'text' : 'number'}
           value={value} placeholder={placeholder}
           onChange={(e) => isText ? onChange(e.target.value) : onChange(parseFloat(e.target.value) || 0)}
           className={`w-full ${!isText ? 'pl-7' : 'pl-3'} pr-2 py-1.5 bg-white border rounded text-sm font-medium outline-none transition-all
-            ${isLowConfidence ? 'border-red-300 ring-1 ring-red-100 bg-red-50/20' : ''}
-            ${isMedConfidence ? 'border-amber-300 ring-1 ring-amber-100 bg-amber-50/20' : ''}
-            ${isHighConfidence ? 'border-slate-200 hover:border-green-300 focus:border-green-500' : ''}
+            ${isLowConfidence ? 'border-[#ec1656]/50 ring-1 ring-[#ec1656]/20 bg-[#ec1656]/5' : ''}
+            ${isMedConfidence ? 'border-[#f59e0b]/50 ring-1 ring-[#f59e0b]/20 bg-[#f59e0b]/5' : ''}
+            ${isHighConfidence ? 'border-[#dcdede] hover:border-[#10b981]/50 focus:border-[#10b981]' : ''}
             ${taxRelevant && !isLowConfidence && !isMedConfidence
-              ? 'border-emerald-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 text-emerald-900 bg-emerald-50/10'
-              : 'focus:ring-2 focus:ring-indigo-100'}
+              ? 'border-[#10b981]/30 focus:border-[#10b981] focus:ring-2 focus:ring-[#10b981]/20 text-[#0f1012] bg-[#d5faeb]/10'
+              : 'focus:ring-2 focus:ring-[#970bed]/20'}
           `}
         />
       </div>
@@ -388,21 +388,21 @@ const ExtractionMetaBar = ({ form }: { form: TaxFormData }) => {
   }
 
   return (
-    <div className="bg-indigo-50/50 px-6 py-2 border-b border-indigo-100 flex items-center gap-6 text-xs text-indigo-800">
+    <div className="bg-[#ebf4ff] px-6 py-2 border-b border-[#469fe8]/20 flex items-center gap-6 text-xs text-[#469fe8]">
       <div className="flex items-center gap-1.5" title="Click to view PDF source">
-        <FileSearch className="w-3.5 h-3.5 text-indigo-500" />
+        <FileSearch className="w-3.5 h-3.5 text-[#469fe8]" />
         <span className="font-semibold">Source: Page {form.sourcePage || 1}</span>
       </div>
       <div className="flex items-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+        <Sparkles className="w-3.5 h-3.5 text-[#970bed]" />
         <span className="font-semibold">Reason:</span> {form.extractionReason || "AI Identified Form"}
       </div>
       {form.confidenceScore !== undefined && (
         <div className="flex items-center gap-1.5 ml-auto">
-          <span className="font-semibold text-slate-500">Form Confidence:</span>
+          <span className="font-semibold text-[#5d6567]">Form Confidence:</span>
           <div className="flex items-center gap-1">
-            <div className={`w-16 h-1.5 rounded-full bg-slate-200 overflow-hidden`}>
-              <div style={{ width: `${form.confidenceScore * 100}%` }} className={`h-full ${form.confidenceScore > 0.85 ? 'bg-green-500' : 'bg-amber-500'}`}></div>
+            <div className={`w-16 h-1.5 rounded-full bg-[#f0f0f0] overflow-hidden`}>
+              <div style={{ width: `${form.confidenceScore * 100}%` }} className={`h-full ${form.confidenceScore > 0.85 ? 'bg-[#10b981]' : 'bg-[#f59e0b]'}`}></div>
             </div>
             <span className="font-mono">{Math.round(form.confidenceScore * 100)}%</span>
           </div>
@@ -413,7 +413,7 @@ const ExtractionMetaBar = ({ form }: { form: TaxFormData }) => {
           href={form.sourceDocumentUrl} 
           target="_blank" 
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-2 py-0.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded transition-colors"
+          className="flex items-center gap-1.5 px-2 py-0.5 bg-[#469fe8]/10 hover:bg-[#469fe8]/20 text-[#469fe8] rounded transition-colors"
         >
           <FileSearch className="w-3 h-3" />
           <span>View PDF</span>
@@ -424,19 +424,19 @@ const ExtractionMetaBar = ({ form }: { form: TaxFormData }) => {
 };
 
 const OwnerToggle = ({ value, onChange }: { value?: 'PRIMARY' | 'SPOUSE', onChange: (v: 'PRIMARY' | 'SPOUSE') => void }) => (
-  <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-    <button onClick={() => onChange('PRIMARY')} className={`px-2 py-0.5 text-xs font-bold rounded ${value !== 'SPOUSE' ? 'bg-white shadow text-indigo-700' : 'text-slate-500'}`}>Primary</button>
-    <button onClick={() => onChange('SPOUSE')} className={`px-2 py-0.5 text-xs font-bold rounded ${value === 'SPOUSE' ? 'bg-white shadow text-indigo-700' : 'text-slate-500'}`}>Spouse</button>
+  <div className="flex items-center gap-2 bg-[#f0f0f0] p-1 rounded-lg">
+    <button onClick={() => onChange('PRIMARY')} className={`px-2 py-0.5 text-xs font-bold rounded ${value !== 'SPOUSE' ? 'bg-white shadow text-[#970bed]' : 'text-[#5d6567]'}`}>Primary</button>
+    <button onClick={() => onChange('SPOUSE')} className={`px-2 py-0.5 text-xs font-bold rounded ${value === 'SPOUSE' ? 'bg-white shadow text-[#970bed]' : 'text-[#5d6567]'}`}>Spouse</button>
   </div>
 );
 
 const CardContainer = ({ title, icon, onDelete, children, meta, headerAction }: any) => (
-  <div className="bg-white rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md overflow-hidden">
-    <div className="bg-slate-50 px-6 py-3 border-b border-slate-100 flex items-center justify-between">
-      <div className="flex items-center gap-3 font-bold text-slate-700">{icon} {title}</div>
+  <div className="bg-white rounded-xl border border-[#dcdede] shadow-sm transition-all hover:shadow-md overflow-hidden">
+    <div className="bg-[#fbfbfb] px-6 py-3 border-b border-[#dcdede] flex items-center justify-between">
+      <div className="flex items-center gap-3 font-bold text-[#0f1012]">{icon} {title}</div>
       <div className="flex items-center gap-3">
         {headerAction}
-        <button onClick={onDelete} className="text-slate-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+        <button onClick={onDelete} className="text-[#babebf] hover:text-[#ec1656] transition-colors"><Trash2 className="w-4 h-4" /></button>
       </div>
     </div>
     {meta && meta}
@@ -457,13 +457,13 @@ const W2Card: React.FC<{ form: W2Form, onUpdate: any, onDelete: any }> = ({ form
   return (
     <CardContainer title={`W-2: ${form.employer || 'Unknown Employer'}`} icon={<Building className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-3 p-3 bg-slate-50 rounded-lg">
-          <h5 className="font-bold text-xs text-slate-500 uppercase">Employer Info</h5>
+        <div className="space-y-3 p-3 bg-[#fbfbfb] rounded-lg">
+          <h5 className="font-bold text-xs text-[#babebf] uppercase">Employer Info</h5>
           <InputGroup label="Name" value={form.employer} onChange={(v: any) => update('employer', v)} isText confidence={conf.employer} />
           <InputGroup label="EIN" value={form.employerEin} onChange={(v: any) => update('employerEin', v)} isText confidence={conf.employerEin} />
         </div>
-        <div className="space-y-3 p-3 bg-blue-50/50 rounded-lg">
-          <h5 className="font-bold text-xs text-blue-800 uppercase">Wages & Tax</h5>
+        <div className="space-y-3 p-3 bg-[#ebf4ff] rounded-lg">
+          <h5 className="font-bold text-xs text-[#469fe8] uppercase">Wages & Tax</h5>
           <InputGroup label="Box 1: Fed Wages" value={form.federalWages} onChange={(v: any) => update('federalWages', v)} taxRelevant confidence={conf.federalWages} />
           <InputGroup label="Box 5: Medicare Wages" value={form.medicareWages} onChange={(v: any) => update('medicareWages', v)} taxRelevant confidence={conf.medicareWages} />
           <InputGroup label="Box 18: Local Wages" value={form.localWages} onChange={(v: any) => update('localWages', v)} taxRelevant confidence={conf.localWages} />
@@ -570,24 +570,24 @@ const ScheduleECard: React.FC<{ form: ScheduleE, onUpdate: any, onDelete: any }>
         {/* Part I */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h5 className="font-bold text-xs text-slate-500 uppercase flex items-center gap-2">
+            <h5 className="font-bold text-xs text-[#babebf] uppercase flex items-center gap-2">
               Part I: Rental Properties
-              <span className="bg-slate-100 text-slate-600 px-1.5 rounded-full">{rentals.length}</span>
+              <span className="bg-[#f0f0f0] text-[#5d6567] px-1.5 rounded-full">{rentals.length}</span>
             </h5>
-            <button type="button" onClick={addRental} className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-xs font-bold flex items-center gap-1 transition-colors">
+            <button type="button" onClick={addRental} className="px-3 py-1.5 bg-[#ebf4ff] hover:bg-[#469fe8]/20 text-[#469fe8] rounded text-xs font-bold flex items-center gap-1 transition-colors">
               <Plus className="w-3 h-3" /> Add Property
             </button>
           </div>
 
           {rentals.length === 0 ? (
-            <div className="text-center py-4 bg-slate-50 rounded-lg border border-dashed border-slate-300 text-slate-400 text-xs italic">No Part I rental properties.</div>
+            <div className="text-center py-4 bg-[#fbfbfb] rounded-lg border border-dashed border-[#dcdede] text-[#babebf] text-xs italic">No Part I rental properties.</div>
           ) : (
             <div className="space-y-3">
               {rentals.map((r, i) => (
-                <div key={r.id || i} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm relative group">
+                <div key={r.id || i} className="bg-white p-4 rounded-lg border border-[#dcdede] shadow-sm relative group">
                   <div className="absolute top-2 right-2 flex gap-2">
-                    <span className="text-xs font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-500">#{i + 1}</span>
-                    <button onClick={() => removeRental(i)} className="text-slate-300 hover:text-red-500 transition-colors p-1"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <span className="text-xs font-mono bg-[#f0f0f0] px-2 py-0.5 rounded text-[#5d6567]">#{i + 1}</span>
+                    <button onClick={() => removeRental(i)} className="text-[#babebf] hover:text-[#ec1656] transition-colors p-1"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                   <div className="mb-4 pr-12"><InputGroup label="Property Address" value={r.streetAddress} onChange={(v: any) => updateRental(i, 'streetAddress', v)} isText placeholder="e.g. 123 Rental Ave" /></div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -602,22 +602,22 @@ const ScheduleECard: React.FC<{ form: ScheduleE, onUpdate: any, onDelete: any }>
 
         {/* Part II */}
         <div>
-          <div className="flex justify-between items-center mb-4 pt-4 border-t border-slate-100">
-            <h5 className="font-bold text-xs text-slate-500 uppercase flex items-center gap-2">
+          <div className="flex justify-between items-center mb-4 pt-4 border-t border-[#f0f0f0]">
+            <h5 className="font-bold text-xs text-[#babebf] uppercase flex items-center gap-2">
               Part II: Partnerships & S-Corps
-              <span className="bg-slate-100 text-slate-600 px-1.5 rounded-full">{partnerships.length}</span>
+              <span className="bg-[#f0f0f0] text-[#5d6567] px-1.5 rounded-full">{partnerships.length}</span>
             </h5>
-            <button type="button" onClick={addPartnership} className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-xs font-bold flex items-center gap-1 transition-colors">
+            <button type="button" onClick={addPartnership} className="px-3 py-1.5 bg-[#ebf4ff] hover:bg-[#469fe8]/20 text-[#469fe8] rounded text-xs font-bold flex items-center gap-1 transition-colors">
               <Plus className="w-3 h-3" /> Add Entity
             </button>
           </div>
 
           {partnerships.length === 0 ? (
-            <div className="text-center py-4 bg-slate-50 rounded-lg border border-dashed border-slate-300 text-slate-400 text-xs italic">No Part II entities found.</div>
+            <div className="text-center py-4 bg-[#fbfbfb] rounded-lg border border-dashed border-[#dcdede] text-[#babebf] text-xs italic">No Part II entities found.</div>
           ) : (
             <div className="space-y-3">
               {partnerships.map((p, i) => (
-                <div key={p.id || i} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm relative group flex gap-4 items-end">
+                <div key={p.id || i} className="bg-white p-4 rounded-lg border border-[#dcdede] shadow-sm relative group flex gap-4 items-end">
                   <div className="flex-1">
                     <InputGroup label="Entity Name" value={p.name} onChange={(v: any) => updatePartnership(i, 'name', v)} isText placeholder="LLC Name" />
                   </div>
@@ -627,7 +627,7 @@ const ScheduleECard: React.FC<{ form: ScheduleE, onUpdate: any, onDelete: any }>
                   <div className="w-32">
                     <InputGroup label="Net Income" value={p.netProfit} onChange={(v: any) => updatePartnership(i, 'netProfit', v)} taxRelevant />
                   </div>
-                  <button onClick={() => removePartnership(i)} className="text-slate-300 hover:text-red-500 transition-colors p-2"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => removePartnership(i)} className="text-[#babebf] hover:text-[#ec1656] transition-colors p-2"><Trash2 className="w-4 h-4" /></button>
                 </div>
               ))}
             </div>
@@ -656,18 +656,18 @@ const LocalFormCard: React.FC<{ form: LocalTaxForm, onUpdate: any, onDelete: any
   const update = (k: string, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
   return (
-    <CardContainer title={`Verification: ${form.formType}`} icon={<FileCheck className="w-4 h-4 text-indigo-600" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />}>
+    <CardContainer title={`Verification: ${form.formType}`} icon={<FileCheck className="w-4 h-4 text-[#970bed]" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-3 p-3 bg-slate-50 rounded-xl">
-          <h5 className="text-xs font-bold text-slate-500 uppercase border-b pb-1 mb-2">Income</h5>
+        <div className="space-y-3 p-3 bg-[#fbfbfb] rounded-xl">
+          <h5 className="text-xs font-bold text-[#babebf] uppercase border-b pb-1 mb-2">Income</h5>
           <InputGroup label="Qualifying Wages (Line 1)" value={form.qualifyingWages} onChange={(v: any) => update('qualifyingWages', v)} />
           <InputGroup label="Other Income (Line 2)" value={form.otherIncome} onChange={(v: any) => update('otherIncome', v)} />
-          <div className="pt-2 border-t border-slate-200">
+          <div className="pt-2 border-t border-[#dcdede]">
             <InputGroup label="Total Taxable (Line 5)" value={form.reportedTaxableIncome} onChange={(v: any) => update('reportedTaxableIncome', v)} confidence={conf.reportedTaxableIncome} />
           </div>
         </div>
-        <div className="space-y-3 p-3 bg-indigo-50/50 rounded-xl">
-          <h5 className="text-xs font-bold text-indigo-500 uppercase border-b border-indigo-100 pb-1 mb-2">Tax & Credits</h5>
+        <div className="space-y-3 p-3 bg-[#ebf4ff] rounded-xl">
+          <h5 className="text-xs font-bold text-[#469fe8] uppercase border-b border-[#469fe8]/20 pb-1 mb-2">Tax & Credits</h5>
           <InputGroup label="Credits (Line 7)" value={form.credits} onChange={(v: any) => update('credits', v)} />
           <InputGroup label="Tax Due (Line 19/Balance)" value={form.taxDue} onChange={(v: any) => update('taxDue', v)} confidence={conf.taxDue} />
           <InputGroup label="Overpayment" value={form.overpayment} onChange={(v: any) => update('overpayment', v)} />

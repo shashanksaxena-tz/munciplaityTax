@@ -23,8 +23,8 @@ export function ThrowbackElectionPanel({ value, onChange, disabled }: ThrowbackE
         {/* Throwback Option */}
         <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
           value === 'THROWBACK' 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-200 hover:border-gray-300'
+            ? 'border-[#469fe8] bg-[#ebf4ff]' 
+            : 'border-[#dcdede] hover:border-[#babebf]'
         }`}>
           <input
             type="radio"
@@ -37,16 +37,16 @@ export function ThrowbackElectionPanel({ value, onChange, disabled }: ThrowbackE
           />
           <div className="flex-1">
             <div className="flex items-center">
-              <ArrowLeft className="w-4 h-4 text-blue-600 mr-2" />
-              <span className="font-semibold text-gray-900">
+              <ArrowLeft className="w-4 h-4 text-[#469fe8] mr-2" />
+              <span className="font-semibold text-[#0f1012]">
                 Throwback (Recommended)
               </span>
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-sm text-[#5d6567] mt-1">
               Sales to states where you lack nexus are "thrown back" to the origin state (Ohio). 
               This increases your Ohio numerator while keeping the denominator unchanged.
             </div>
-            <div className="text-xs text-gray-500 mt-2">
+            <div className="text-xs text-[#babebf] mt-2">
               <strong>Example:</strong> Ship $100K goods from OH to CA (no CA nexus)<br/>
               → Add $100K to OH sales numerator<br/>
               → Include $100K in total sales denominator<br/>
@@ -58,8 +58,8 @@ export function ThrowbackElectionPanel({ value, onChange, disabled }: ThrowbackE
         {/* Throwout Option */}
         <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
           value === 'THROWOUT' 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-200 hover:border-gray-300'
+            ? 'border-[#469fe8] bg-[#ebf4ff]' 
+            : 'border-[#dcdede] hover:border-[#babebf]'
         }`}>
           <input
             type="radio"
@@ -72,16 +72,16 @@ export function ThrowbackElectionPanel({ value, onChange, disabled }: ThrowbackE
           />
           <div className="flex-1">
             <div className="flex items-center">
-              <Ban className="w-4 h-4 text-orange-600 mr-2" />
-              <span className="font-semibold text-gray-900">
+              <Ban className="w-4 h-4 text-[#f59e0b] mr-2" />
+              <span className="font-semibold text-[#0f1012]">
                 Throwout
               </span>
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-sm text-[#5d6567] mt-1">
               Sales to states where you lack nexus are excluded from the denominator entirely. 
               This reduces your total sales denominator, potentially decreasing your Ohio apportionment.
             </div>
-            <div className="text-xs text-gray-500 mt-2">
+            <div className="text-xs text-[#babebf] mt-2">
               <strong>Example:</strong> Ship $100K goods from OH to CA (no CA nexus)<br/>
               → $0 added to OH sales numerator<br/>
               → Remove $100K from total sales denominator<br/>
@@ -93,8 +93,8 @@ export function ThrowbackElectionPanel({ value, onChange, disabled }: ThrowbackE
         {/* None Option */}
         <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
           value === 'NONE' 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-200 hover:border-gray-300'
+            ? 'border-[#469fe8] bg-[#ebf4ff]' 
+            : 'border-[#dcdede] hover:border-[#babebf]'
         }`}>
           <input
             type="radio"

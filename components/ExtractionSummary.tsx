@@ -53,10 +53,10 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
   // Split View Modal
   if (showSplitView && pdfData) {
     return (
-      <div className="fixed inset-0 z-50 bg-slate-900/80 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] h-[90vh] flex flex-col overflow-hidden">
+      <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[95vw] h-[90vh] flex flex-col overflow-hidden border border-[#dcdede]">
           {/* Modal Header */}
-          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
+          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white">
             <div className="flex items-center gap-3">
               <SplitSquareHorizontal className="w-6 h-6" />
               <h2 className="text-xl font-bold">Review Extraction with PDF Source</h2>
@@ -80,10 +80,10 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
           </div>
           
           {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-4 px-6 py-4 bg-slate-50 border-t border-slate-200">
+          <div className="flex items-center justify-end gap-4 px-6 py-4 bg-[#f8f9fa] border-t border-[#dcdede]">
             <button
               onClick={() => setShowSplitView(false)}
-              className="px-6 py-2.5 bg-white border border-slate-300 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+              className="px-6 py-2.5 bg-white border border-[#dcdede] text-[#5d6567] font-medium rounded-xl hover:bg-[#f8f9fa] transition-colors"
             >
               Close Preview
             </button>
@@ -92,7 +92,7 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
                 setShowSplitView(false);
                 onConfirm();
               }}
-              className="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+              className="px-6 py-2.5 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white font-bold rounded-xl shadow-lg hover:from-[#7f09c5] hover:to-[#3a8bd4] transition-all flex items-center gap-2"
             >
               Proceed to Review <ArrowRight className="w-5 h-5" />
             </button>
@@ -104,16 +104,16 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl border border-[#dcdede] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-6 text-white">
+        <div className="bg-gradient-to-r from-[#970bed] to-[#469fe8] px-8 py-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-3">
-                <CheckCircle className="w-8 h-8 text-green-300" />
+                <CheckCircle className="w-8 h-8 text-[#d5faeb]" />
                 Extraction Complete!
               </h2>
-              <p className="text-indigo-100 mt-2">
+              <p className="text-white/90 mt-2">
                 We identified <strong className="text-white">{forms.length}</strong> distinct tax form{forms.length !== 1 && 's'} in your document.
               </p>
             </div>
@@ -132,7 +132,7 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
               {summary && (
                 <div className="text-right">
                   <div className="text-3xl font-bold">{Math.round(summary.overallConfidence * 100)}%</div>
-                  <div className="text-xs text-indigo-200">Overall Confidence</div>
+                  <div className="text-xs text-white/80">Overall Confidence</div>
                 </div>
               )}
             </div>
@@ -143,8 +143,8 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
           {/* Extraction Stats */}
           {summary && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+              <div className="p-4 bg-[#f8f9fa] rounded-xl border border-[#dcdede]">
+                <div className="flex items-center gap-2 text-[#5d6567] text-sm mb-1">
                   <FileText className="w-4 h-4" />
                   <span>Pages Scanned</span>
                 </div>

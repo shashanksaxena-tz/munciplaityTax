@@ -47,7 +47,7 @@ export const FormHistoryTable: React.FC<FormHistoryTableProps> = ({
 
   if (forms.length === 0) {
     return (
-      <div className={`text-center py-8 text-gray-500 ${className}`}>
+      <div className={`text-center py-8 text-[#5d6567] ${className}`}>
         <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
         <p>No forms generated yet</p>
       </div>
@@ -56,58 +56,58 @@ export const FormHistoryTable: React.FC<FormHistoryTableProps> = ({
 
   return (
     <div className={`overflow-x-auto ${className}`}>
-      <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-        <thead className="bg-gray-50">
+      <table className="min-w-full bg-white border border-[#dcdede] rounded-lg">
+        <thead className="bg-[#f8f9fa]">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
               Form
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
               Version
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
               Status
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
               Generated
             </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
               Details
             </th>
-            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th className="px-6 py-3 text-right text-xs font-medium text-[#5d6567] uppercase tracking-wider">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-[#dcdede]">
           {forms.map((form) => (
-            <tr key={form.generatedFormId} className="hover:bg-gray-50">
+            <tr key={form.generatedFormId} className="hover:bg-[#f8f9fa]">
               <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
-                  <FileText className="w-5 h-5 text-blue-600 mr-2" />
+                  <FileText className="w-5 h-5 text-[#469fe8] mr-2" />
                   <div>
-                    <div className="text-sm font-medium text-gray-900">Form {form.formCode}</div>
-                    <div className="text-sm text-gray-500">Tax Year {form.taxYear}</div>
+                    <div className="text-sm font-medium text-[#0f1012]">Form {form.formCode}</div>
+                    <div className="text-sm text-[#5d6567]">Tax Year {form.taxYear}</div>
                   </div>
                 </div>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <span className="text-sm text-gray-900">v{form.version}</span>
+                <span className="text-sm text-[#0f1012]">v{form.version}</span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <FormStatusBadge status={form.status} />
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
-                <div className="flex items-center text-sm text-gray-500">
+                <div className="flex items-center text-sm text-[#5d6567]">
                   <Calendar className="w-4 h-4 mr-1" />
                   {formatDate(form.generatedDate)}
                 </div>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-[#5d6567]">
                 <div>{form.pageCount} pages</div>
                 <div className="text-xs">{formatFileSize(form.fileSizeBytes)}</div>
                 {form.isWatermarked && (
-                  <div className="text-xs text-yellow-600">DRAFT watermark</div>
+                  <div className="text-xs text-[#f59e0b]">DRAFT watermark</div>
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -115,7 +115,7 @@ export const FormHistoryTable: React.FC<FormHistoryTableProps> = ({
                   {onViewForm && (
                     <button
                       onClick={() => onViewForm(form)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-[#469fe8] hover:text-[#970bed]"
                       title="View form"
                     >
                       <Eye className="w-4 h-4" />
@@ -123,7 +123,7 @@ export const FormHistoryTable: React.FC<FormHistoryTableProps> = ({
                   )}
                   <button
                     onClick={() => handleDownload(form)}
-                    className="text-green-600 hover:text-green-900"
+                    className="text-[#10b981] hover:text-[#059669]"
                     title="Download PDF"
                   >
                     <Download className="w-4 h-4" />

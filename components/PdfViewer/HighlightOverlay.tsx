@@ -34,17 +34,17 @@ export const HighlightOverlay: React.FC<HighlightOverlayProps> = ({
 
   // Determine color based on confidence
   const getHighlightColor = () => {
-    if (confidence === undefined) return 'rgba(99, 102, 241, 0.3)'; // indigo
-    if (confidence >= 0.9) return 'rgba(34, 197, 94, 0.3)'; // green
-    if (confidence >= 0.7) return 'rgba(251, 191, 36, 0.3)'; // amber
-    return 'rgba(239, 68, 68, 0.3)'; // red
+    if (confidence === undefined) return 'rgba(70, 159, 232, 0.3)'; // #469fe8
+    if (confidence >= 0.9) return 'rgba(16, 185, 129, 0.3)'; // #10b981 green
+    if (confidence >= 0.7) return 'rgba(245, 158, 11, 0.3)'; // #f59e0b amber
+    return 'rgba(236, 22, 86, 0.3)'; // #ec1656 red
   };
 
   const getBorderColor = () => {
-    if (confidence === undefined) return 'rgba(99, 102, 241, 0.8)';
-    if (confidence >= 0.9) return 'rgba(34, 197, 94, 0.8)';
-    if (confidence >= 0.7) return 'rgba(251, 191, 36, 0.8)';
-    return 'rgba(239, 68, 68, 0.8)';
+    if (confidence === undefined) return 'rgba(70, 159, 232, 0.8)';
+    if (confidence >= 0.9) return 'rgba(16, 185, 129, 0.8)';
+    if (confidence >= 0.7) return 'rgba(245, 158, 11, 0.8)';
+    return 'rgba(236, 22, 86, 0.8)';
   };
 
   if (variant === 'marker' && !isActive) {

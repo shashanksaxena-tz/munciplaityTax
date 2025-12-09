@@ -108,14 +108,14 @@ export function ScheduleYWizard({ returnId, taxYear, onComplete }: ScheduleYWiza
             <React.Fragment key={s.num}>
               <div className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm ${
-                  step >= s.num ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                  step >= s.num ? 'bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white' : 'bg-[#f8f9fa] text-[#5d6567]'
                 }`}>
                   {s.num}
                 </div>
-                <div className="text-xs mt-2 text-gray-600 text-center max-w-[80px]">{s.label}</div>
+                <div className="text-xs mt-2 text-[#5d6567] text-center max-w-[80px]">{s.label}</div>
               </div>
               {i < 5 && (
-                <div className={`flex-1 h-1 mx-1 ${step > s.num ? 'bg-blue-600' : 'bg-gray-200'}`} />
+                <div className={`flex-1 h-1 mx-1 ${step > s.num ? 'bg-gradient-to-r from-[#970bed] to-[#469fe8]' : 'bg-[#f8f9fa]'}`} />
               )}
             </React.Fragment>
           ))}
@@ -123,9 +123,9 @@ export function ScheduleYWizard({ returnId, taxYear, onComplete }: ScheduleYWiza
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="bg-white rounded-lg shadow-lg border border-[#dcdede] p-8">
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded text-red-700">
+          <div className="mb-4 p-4 bg-[#fff5f5] border border-[#ec1656]/20 rounded text-[#ec1656]">
             {error}
           </div>
         )}

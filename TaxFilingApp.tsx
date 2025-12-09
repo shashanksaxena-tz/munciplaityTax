@@ -13,10 +13,11 @@ import { BusinessRegistration } from './components/BusinessRegistration';
 import { NetProfitsWizard } from './components/NetProfitsWizard';
 import { ReconciliationWizard } from './components/ReconciliationWizard';
 import { BusinessRuleConfigScreen } from './components/BusinessRuleConfigScreen';
+import { DesignConfigurator } from './components/DesignConfigurator';
 import { TaxFormData, AppStep, TaxCalculationResult, TaxFormType, W2Form, Form1099, W2GForm, ScheduleC, ScheduleE, ScheduleF, LocalTaxForm, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxReturnSession, TaxReturnStatus, BusinessProfile, FilingFrequency, WithholdingReturnData, NetProfitReturnData, ReconciliationReturnData, BusinessTaxRulesConfig } from './types';
 import { DEFAULT_TAX_RULES, DEFAULT_BUSINESS_RULES } from './constants';
 import { saveSession, createNewSession } from './services/sessionService';
-import { Calculator, Settings, Briefcase, User, Home, Save, CheckCircle } from 'lucide-react';
+import { Calculator, Settings, Briefcase, User, Home, Save, CheckCircle, Palette } from 'lucide-react';
 
 import { useAuth } from './contexts/AuthContext';
 
@@ -24,6 +25,7 @@ export default function TaxFilingApp() {
   const { user } = useAuth();
   const [currentSession, setCurrentSession] = useState<TaxReturnSession | null>(null);
   const [step, setStep] = useState<AppStep>(AppStep.DASHBOARD);
+  const [showDesignConfigurator, setShowDesignConfigurator] = useState(false);
 
   // State
   const [forms, setForms] = useState<TaxFormData[]>([]);
@@ -311,6 +313,15 @@ export default function TaxFilingApp() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Design Configurator Button */}
+            <button
+              onClick={() => setShowDesignConfigurator(true)}
+              className="p-2 text-[#469fe8] hover:text-[#970bed] hover:bg-[#ebf4ff] rounded-lg transition-colors"
+              title="Customize Theme"
+            >
+              <Palette className="w-5 h-5" />
+            </button>
+
             {currentSession && (
               <button onClick={handleSave} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold hover:bg-indigo-100 transition-colors">
                 {savedNotify ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
@@ -500,6 +511,11 @@ export default function TaxFilingApp() {
         )}
 
       </main>
+
+      {/* Design Configurator Modal */}
+      {showDesignConfigurator && (
+        <DesignConfigurator onClose={() => setShowDesignConfigurator(false)} />
+      )}
     </div>
   );
 }

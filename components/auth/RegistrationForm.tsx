@@ -191,22 +191,22 @@ export const RegistrationForm: React.FC = () => {
 
     if (step === 4) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-md w-full bg-white p-10 rounded-2xl shadow-2xl text-center">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ebf4ff] to-white py-12 px-4 sm:px-6 lg:px-8">
+                <div className="max-w-md w-full bg-white p-10 rounded-2xl shadow-2xl text-center border border-[#f0f0f0]">
                     <div className="flex justify-center mb-6">
-                        <div className="rounded-full bg-green-100 p-4">
-                            <svg className="h-16 w-16 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="rounded-full bg-[#d5faeb] p-4">
+                            <svg className="h-16 w-16 text-[#10b981]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Account Created Successfully!</h2>
-                    <p className="text-gray-600 mb-6">
+                    <h2 className="text-2xl font-bold text-[#0f1012] mb-2">Account Created Successfully!</h2>
+                    <p className="text-[#5d6567] mb-6">
                         Your account has been created with <strong>{formData.email}</strong>. You can now log in and start using MuniTax.
                     </p>
                     <Link
                         to="/login"
-                        className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                        className="inline-block px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-lg transition"
                     >
                         Go to Login
                     </Link>
@@ -218,14 +218,14 @@ export const RegistrationForm: React.FC = () => {
     const passwordStrength = getPasswordStrength(formData.password);
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ebf4ff] to-white py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl w-full space-y-8 bg-white p-10 rounded-2xl shadow-2xl border border-[#f0f0f0]">
                 {/* Header */}
                 <div>
-                    <h2 className="text-center text-4xl font-extrabold text-gray-900">
+                    <h2 className="text-center text-4xl font-extrabold text-[#0f1012]">
                         Create Your Account
                     </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600">
+                    <p className="mt-2 text-center text-sm text-[#5d6567]">
                         Join MuniTax and simplify your tax filing
                     </p>
                 </div>
@@ -234,12 +234,12 @@ export const RegistrationForm: React.FC = () => {
                 <div className="flex justify-between items-center mb-8">
                     {[1, 2, 3].map((s) => (
                         <div key={s} className="flex items-center flex-1">
-                            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${step >= s ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 text-gray-400'
+                            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${step >= s ? 'bg-gradient-to-r from-[#970bed] to-[#469fe8] border-[#970bed] text-white' : 'border-[#dcdede] text-[#babebf]'}
                                 } font-semibold`}>
                                 {s}
                             </div>
                             {s < 3 && (
-                                <div className={`flex-1 h-1 mx-2 ${step > s ? 'bg-indigo-600' : 'bg-gray-300'}`} />
+                                <div className={`flex-1 h-1 mx-2 ${step > s ? 'bg-gradient-to-r from-[#970bed] to-[#469fe8]' : 'bg-[#dcdede]'}`} />
                             )}
                         </div>
                     ))}
@@ -256,37 +256,37 @@ export const RegistrationForm: React.FC = () => {
                     {/* Step 1: Account Credentials */}
                     {step === 1 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Account Credentials</h3>
+                            <h3 className="text-lg font-semibold text-[#0f1012]">Account Credentials</h3>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                                <label className="block text-sm font-medium text-[#102124] mb-1">Email Address *</label>
                                 <input
                                     type="email"
                                     required
                                     value={formData.email}
                                     onChange={(e) => updateField('email', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]"
                                     placeholder="you@example.com"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                                <label className="block text-sm font-medium text-[#102124] mb-1">Password *</label>
                                 <input
                                     type="password"
                                     required
                                     value={formData.password}
                                     onChange={(e) => updateField('password', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]"
                                     placeholder="••••••••"
                                 />
                                 {formData.password && (
                                     <div className="mt-2">
-                                        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                        <div className="flex items-center justify-between text-xs text-[#5d6567] mb-1">
                                             <span>Password Strength:</span>
                                             <span className="font-semibold">{passwordStrength.label}</span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div className="w-full bg-[#f0f0f0] rounded-full h-2">
                                             <div
                                                 className={`h-2 rounded-full transition-all ${passwordStrength.color}`}
                                                 style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
@@ -297,19 +297,19 @@ export const RegistrationForm: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+                                <label className="block text-sm font-medium text-[#102124] mb-1">Confirm Password *</label>
                                 <input
                                     type="password"
                                     required
                                     value={formData.confirmPassword}
                                     onChange={(e) => updateField('confirmPassword', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]"
                                     placeholder="••••••••"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Account Type *</label>
+                                <label className="block text-sm font-medium text-[#102124] mb-1">Account Type *</label>
                                 <select
                                     value={formData.userRole}
                                     onChange={(e) => {
@@ -317,7 +317,7 @@ export const RegistrationForm: React.FC = () => {
                                         updateField('userRole', role);
                                         updateField('profileType', role === 'ROLE_BUSINESS' ? 'BUSINESS' : 'INDIVIDUAL');
                                     }}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]"
                                 >
                                     <option value="ROLE_INDIVIDUAL">Individual Filer</option>
                                     <option value="ROLE_BUSINESS">Business Filer</option>
@@ -330,39 +330,39 @@ export const RegistrationForm: React.FC = () => {
                     {/* Step 2: Personal Information */}
                     {step === 2 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                            <h3 className="text-lg font-semibold text-[#0f1012]">Personal Information</h3>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                                    <label className="block text-sm font-medium text-[#102124] mb-1">First Name *</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.firstName}
                                         onChange={(e) => updateField('firstName', e.target.value)}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                                    <label className="block text-sm font-medium text-[#102124] mb-1">Last Name *</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.lastName}
                                         onChange={(e) => updateField('lastName', e.target.value)}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                                <label className="block text-sm font-medium text-[#102124] mb-1">Phone Number *</label>
                                 <input
                                     type="tel"
                                     required
                                     value={formData.phoneNumber}
                                     onChange={(e) => updateField('phoneNumber', e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]"
                                     placeholder="(555) 123-4567"
                                 />
                             </div>
@@ -372,18 +372,18 @@ export const RegistrationForm: React.FC = () => {
                     {/* Step 3: Profile & Address */}
                     {step === 3 && (
                         <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-gray-900">
+                            <h3 className="text-lg font-semibold text-[#0f1012]">
                                 {formData.userRole === 'ROLE_AUDITOR' ? 'Confirmation' : 'Profile & Address'}
                             </h3>
 
                             {/* Auditors don't need SSN/EIN or address */}
                             {formData.userRole === 'ROLE_AUDITOR' ? (
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="bg-[#ebf4ff] border border-[#469fe8]/30 rounded-lg p-4">
                                     <div className="flex items-center">
-                                        <svg className="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg className="h-5 w-5 text-[#469fe8] mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        <p className="text-sm text-blue-800">
+                                        <p className="text-sm text-[#0f1012]">
                                             As an auditor, you don't need to provide SSN or address information.
                                             Your account will be reviewed and approved by an administrator.
                                         </p>
@@ -392,7 +392,7 @@ export const RegistrationForm: React.FC = () => {
                             ) : (
                                 <>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-[#102124] mb-1">
                                             {formData.profileType === 'BUSINESS' ? 'EIN' : 'SSN'} *
                                         </label>
                                         <input
@@ -483,10 +483,10 @@ export const RegistrationForm: React.FC = () => {
                                     type="checkbox"
                                     checked={formData.agreeToTerms}
                                     onChange={(e) => updateField('agreeToTerms', e.target.checked)}
-                                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
+                                    className="h-4 w-4 text-[#970bed] focus:ring-[#970bed] border-[#dcdede] rounded mt-1"
                                 />
-                                <label className="ml-2 block text-sm text-gray-700">
-                                    I agree to the <Link to="/terms" className="text-indigo-600 hover:text-indigo-500">Terms and Conditions</Link> and <Link to="/privacy" className="text-indigo-600 hover:text-indigo-500">Privacy Policy</Link> *
+                                <label className="ml-2 block text-sm text-[#5d6567]">
+                                    I agree to the <Link to="/terms" className="text-[#970bed] hover:text-[#469fe8]">Terms and Conditions</Link> and <Link to="/privacy" className="text-[#970bed] hover:text-[#469fe8]">Privacy Policy</Link> *
                                 </label>
                             </div>
                         </div>
@@ -498,7 +498,7 @@ export const RegistrationForm: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={handleBack}
-                                className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                                className="px-6 py-3 border border-[#dcdede] rounded-lg text-[#5d6567] hover:bg-[#f0f0f0] transition"
                             >
                                 Back
                             </button>
@@ -508,7 +508,7 @@ export const RegistrationForm: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={handleNext}
-                                className="ml-auto px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                                className="ml-auto px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-lg transition"
                             >
                                 Next
                             </button>
@@ -516,7 +516,7 @@ export const RegistrationForm: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="ml-auto px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition flex items-center"
+                                className="ml-auto px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-lg disabled:opacity-50 transition flex items-center"
                             >
                                 {isLoading ? (
                                     <>
@@ -535,10 +535,10 @@ export const RegistrationForm: React.FC = () => {
                 </form>
 
                 {/* Login Link */}
-                <div className="text-center pt-4 border-t">
-                    <p className="text-sm text-gray-600">
+                <div className="text-center pt-4 border-t border-[#f0f0f0]">
+                    <p className="text-sm text-[#5d6567]">
                         Already have an account?{' '}
-                        <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500 transition">
+                        <Link to="/login" className="font-medium text-[#970bed] hover:text-[#469fe8] transition">
                             Sign in
                         </Link>
                     </p>

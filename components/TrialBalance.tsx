@@ -129,10 +129,10 @@ export const TrialBalance: React.FC<TrialBalanceProps> = ({ tenantId }) => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-8">
+      <div className="bg-white rounded-lg shadow-lg border border-[#dcdede] p-8">
         <div className="flex items-center justify-center space-x-3">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <span className="text-lg text-gray-600">Loading trial balance...</span>
+          <Loader2 className="w-8 h-8 animate-spin text-[#469fe8]" />
+          <span className="text-lg text-[#5d6567]">Loading trial balance...</span>
         </div>
       </div>
     );
@@ -141,8 +141,8 @@ export const TrialBalance: React.FC<TrialBalanceProps> = ({ tenantId }) => {
   // Error state
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        <div className="flex items-center space-x-3 text-red-600">
+      <div className="bg-white rounded-lg shadow-lg border border-[#dcdede] p-8">
+        <div className="flex items-center space-x-3 text-[#ec1656]">
           <AlertTriangle className="w-8 h-8" />
           <div>
             <h3 className="font-semibold text-lg">Error Loading Trial Balance</h3>

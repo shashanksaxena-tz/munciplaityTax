@@ -21,8 +21,8 @@ export function SourcingElectionPanel({ value, onChange, disabled }: SourcingEle
         {/* Finnigan Method */}
         <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
           value === 'FINNIGAN' 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-200 hover:border-gray-300'
+            ? 'border-[#469fe8] bg-[#ebf4ff]' 
+            : 'border-[#dcdede] hover:border-[#babebf]'
         }`}>
           <input
             type="radio"
@@ -34,14 +34,14 @@ export function SourcingElectionPanel({ value, onChange, disabled }: SourcingEle
             className="mt-1 mr-3"
           />
           <div className="flex-1">
-            <div className="font-semibold text-gray-900">
+            <div className="font-semibold text-[#0f1012]">
               Finnigan Method (Recommended)
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-sm text-[#5d6567] mt-1">
               Includes sales from all affiliated entities, even if they lack Ohio nexus. 
               Used by the majority of states. This is the default method.
             </div>
-            <div className="text-xs text-gray-500 mt-2">
+            <div className="text-xs text-[#babebf] mt-2">
               ✓ Includes all group sales in denominator<br/>
               ✓ Majority rule across US states<br/>
               ✓ Simpler calculation
@@ -52,8 +52,8 @@ export function SourcingElectionPanel({ value, onChange, disabled }: SourcingEle
         {/* Joyce Method */}
         <label className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${
           value === 'JOYCE' 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-200 hover:border-gray-300'
+            ? 'border-[#469fe8] bg-[#ebf4ff]' 
+            : 'border-[#dcdede] hover:border-[#babebf]'
         }`}>
           <input
             type="radio"
@@ -65,14 +65,14 @@ export function SourcingElectionPanel({ value, onChange, disabled }: SourcingEle
             className="mt-1 mr-3"
           />
           <div className="flex-1">
-            <div className="font-semibold text-gray-900">
+            <div className="font-semibold text-[#0f1012]">
               Joyce Method
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-sm text-[#5d6567] mt-1">
               Includes only sales from entities with Ohio nexus. 
               Use this method only if explicitly required by the municipality.
             </div>
-            <div className="text-xs text-gray-500 mt-2">
+            <div className="text-xs text-[#babebf] mt-2">
               ✓ Only nexus entities in denominator<br/>
               ✓ Minority rule (few states use this)<br/>
               ✓ More complex nexus tracking required

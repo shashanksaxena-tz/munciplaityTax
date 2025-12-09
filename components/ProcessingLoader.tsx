@@ -119,16 +119,16 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-xl border border-indigo-100 overflow-hidden animate-fadeIn">
+    <div className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-xl border border-[#dcdede] overflow-hidden animate-fadeIn">
       {/* Header Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6 text-white">
+      <div className="bg-gradient-to-r from-[#970bed] to-[#469fe8] px-8 py-6 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
               {status === 'COMPLETE' ? (
-                <CheckCircle className="w-10 h-10 text-green-300" />
+                <CheckCircle className="w-10 h-10 text-[#d5faeb]" />
               ) : status === 'ERROR' ? (
-                <AlertCircle className="w-10 h-10 text-red-300" />
+                <AlertCircle className="w-10 h-10 text-[#fff5f5]" />
               ) : (
                 <Loader2 className="w-10 h-10 animate-spin" />
               )}
@@ -137,7 +137,7 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
               <h2 className="text-2xl font-bold">
                 {status === 'COMPLETE' ? 'Extraction Complete' : status === 'ERROR' ? 'Extraction Error' : 'Smart Extraction in Progress'}
               </h2>
-              <p className="text-indigo-100 text-sm mt-1">
+              <p className="text-white/90 text-sm mt-1">
                 Powered by Gemini 2.5 Flash AI • {formatTime(elapsedTime)} elapsed
               </p>
             </div>
@@ -146,12 +146,12 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
             {confidence > 0 ? (
               <>
                 <div className="text-3xl font-bold">{Math.round(confidence * 100)}%</div>
-                <div className="text-xs text-indigo-200">Confidence</div>
+                <div className="text-xs text-white/80">Confidence</div>
               </>
             ) : (
               <>
                 <div className="text-2xl font-bold">{formatTime(elapsedTime)}</div>
-                <div className="text-xs text-indigo-200">Processing</div>
+                <div className="text-xs text-white/80">Processing</div>
               </>
             )}
           </div>
@@ -161,13 +161,13 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
       <div className="p-8">
         {/* Progress Bar */}
         <div className="mb-6">
-          <div className="flex justify-between text-sm text-slate-600 mb-2">
+          <div className="flex justify-between text-sm text-[#5d6567] mb-2">
             <span className="font-medium">{currentStatusMessage}</span>
             <span className="font-bold">{Math.round(progress)}%</span>
           </div>
-          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-[#f8f9fa] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out rounded-full"
+              className="h-full bg-gradient-to-r from-[#970bed] to-[#469fe8] transition-all duration-500 ease-out rounded-full"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -175,9 +175,9 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
 
         {/* Detected Taxpayer Name */}
         {taxpayerName && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3 animate-slideIn">
+          <div className="mb-6 p-4 bg-[#ebf4ff] border border-[#469fe8]/20 rounded-xl flex items-center gap-3 animate-slideIn">
             <div className="p-2 bg-white rounded-full shadow-sm">
-              <User className="w-5 h-5 text-blue-600" />
+              <User className="w-5 h-5 text-[#469fe8]" />
             </div>
             <div className="flex-1">
               <div className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Detected Taxpayer</div>
