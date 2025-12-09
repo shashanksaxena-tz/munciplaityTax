@@ -16,6 +16,7 @@ The Ledger Service implements a complete double-entry accounting system for trac
 ### 2. Mock Payment Provider
 - Simulates credit card, ACH, check, and wire payments in TEST mode
 - Test cards for various scenarios:
+  - `4242-4242-4242-4242` → APPROVED (Visa - standard test card)
   - `4111-1111-1111-1111` → APPROVED (Visa)
   - `5555-5555-5555-4444` → APPROVED (Mastercard)
   - `378282246310005` → APPROVED (Amex)
@@ -94,9 +95,13 @@ The Ledger Service implements a complete double-entry accounting system for trac
 ## API Endpoints
 
 ### Payments
+- `POST /api/v1/payments` - Process payment (alternate endpoint)
 - `POST /api/v1/payments/process` - Process payment (credit card, ACH, etc.)
 - `GET /api/v1/payments/filer/{filerId}` - Get filer payment history
 - `GET /api/v1/payments/{paymentId}` - Get payment details
+- `POST /api/v1/payments/{id}/confirm` - Confirm payment transaction
+- `GET /api/v1/payments/{paymentId}/receipt` - Get payment receipt
+- `GET /api/v1/payments/test-methods` - Get available test payment methods
 - `GET /api/v1/payments/test-mode-indicator` - Check test mode status
 
 ### Journal Entries
@@ -134,18 +139,40 @@ The Ledger Service implements a complete double-entry accounting system for trac
 ### 1. Process Test Payment
 
 ```bash
-curl -X POST http://localhost:8087/api/v1/payments/process \
+curl -X POST http://localhost:8087/api/v1/payments \
   -H "Content-Type: application/json" \
   -d '{
     "filerId": "123e4567-e89b-12d3-a456-426614174000",
     "tenantId": "123e4567-e89b-12d3-a456-426614174001",
     "amount": 5000.00,
     "paymentMethod": "CREDIT_CARD",
-    "cardNumber": "4111-1111-1111-1111",
-    "cardExpiration": "12/25",
-    "cardCvv": "123",
+    "cardNumber": "4242-4242-4242-4242",
+    "expirationMonth": 12,
+    "expirationYear": 2025,
+    "cvv": "123",
     "description": "Q1 2024 Tax Payment"
   }'
+```
+
+Response:
+```json
+{
+  "transactionId": "123e4567-e89b-12d3-a456-426614174003",
+  "status": "APPROVED",
+  "amount": 5000.00,
+  "providerTransactionId": "mock_ch_a1b2c3d4",
+  "authorizationCode": "mock_auth_1234567890",
+  "timestamp": "2024-01-15T10:30:00",
+  "isTestMode": true,
+  "receiptNumber": "RCPT-20240115-12345678",
+  "journalEntryId": "123e4567-e89b-12d3-a456-426614174004"
+}
+```
+
+### 1a. Confirm Payment
+
+```bash
+curl -X POST http://localhost:8087/api/v1/payments/123e4567-e89b-12d3-a456-426614174003/confirm
 ```
 
 ### 2. Record Tax Assessment

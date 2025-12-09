@@ -33,7 +33,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final MockPaymentProviderService mockPaymentProviderService;
     
-    @PostMapping("/process")
+    @PostMapping({"/process", ""})
     @Operation(
         summary = "Process a payment",
         description = """
@@ -42,6 +42,7 @@ public class PaymentController {
             Creates double-entry journal entries on both filer and municipality books.
             
             **Test Cards:**
+            - 4242-4242-4242-4242: Visa (always approved)
             - 4111-1111-1111-1111: Visa (always approved)
             - 4000-0000-0000-0002: Visa (always declined)
             - 5555-5555-5555-4444: Mastercard (approved)
@@ -119,6 +120,36 @@ public class PaymentController {
         log.info("Generating receipt for payment {}", paymentId);
         PaymentReceipt receipt = paymentService.generatePaymentReceipt(paymentId);
         return ResponseEntity.ok(receipt);
+    }
+    
+    @PostMapping("/{id}/confirm")
+    @Operation(
+        summary = "Confirm a payment",
+        description = """
+            Confirm a payment transaction. In the mock implementation, payments are 
+            immediately processed, so this endpoint returns the current payment status.
+            In a real payment gateway, this would confirm a pending authorization.
+            Accepts either paymentId or transactionId.
+            """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Payment confirmation status retrieved",
+            content = @Content(schema = @Schema(implementation = PaymentTransaction.class))
+        ),
+        @ApiResponse(responseCode = "404", description = "Payment not found")
+    })
+    public ResponseEntity<PaymentTransaction> confirmPayment(
+            @PathVariable @Parameter(description = "Payment or Transaction UUID") UUID id) {
+        log.info("Confirming payment {}", id);
+        // Try to find by paymentId first, then by transactionId
+        try {
+            return ResponseEntity.ok(paymentService.getPaymentByPaymentId(id));
+        } catch (IllegalArgumentException e) {
+            log.debug("Payment not found by paymentId, trying transactionId: {}", id);
+            return ResponseEntity.ok(paymentService.getPaymentByTransactionId(id));
+        }
     }
     
     @GetMapping("/test-mode-indicator")
