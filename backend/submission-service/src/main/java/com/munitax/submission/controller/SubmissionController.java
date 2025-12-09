@@ -1,14 +1,12 @@
 package com.munitax.submission.controller;
 
+import com.munitax.submission.dto.DocumentProvenanceResponse;
 import com.munitax.submission.dto.SubmissionRequest;
 import com.munitax.submission.dto.SubmissionResponse;
 import com.munitax.submission.model.Submission;
 import com.munitax.submission.model.SubmissionDocument;
 import com.munitax.submission.repository.SubmissionRepository;
 import com.munitax.submission.service.SubmissionDocumentService;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -219,21 +217,5 @@ public class SubmissionController {
                     ));
             })
             .orElse(ResponseEntity.notFound().build());
-    }
-    
-    /**
-     * Response DTO for document provenance data
-     */
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class DocumentProvenanceResponse {
-        private String id;
-        private String documentId;
-        private String fileName;
-        private String formType;
-        private Integer pageCount;
-        private Double extractionConfidence;
-        private String fieldProvenance; // JSON string with field locations and bounding boxes
     }
 }
