@@ -23,3 +23,5 @@ export type {
   TestPaymentMethods,
   PaymentFormData,
 } from './types';
+
+export { getResultDisplay } from './types';

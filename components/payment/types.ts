@@ -47,3 +47,19 @@ export interface PaymentFormData {
   achRouting: string;
   achAccount: string;
 }
+
+/**
+ * Helper function to map expected result to display text and color
+ */
+export const getResultDisplay = (result: string): { text: string; color: string } => {
+  switch (result) {
+    case 'APPROVED':
+      return { text: 'Approved ✓', color: 'text-green-600' };
+    case 'DECLINED':
+      return { text: 'Declined (Insufficient Funds)', color: 'text-red-600' };
+    case 'ERROR':
+      return { text: 'Error (Processing)', color: 'text-orange-600' };
+    default:
+      return { text: result, color: 'text-slate-600' };
+  }
+};

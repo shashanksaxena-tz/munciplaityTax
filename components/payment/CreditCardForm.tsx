@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { CreditCard } from 'lucide-react';
-import { TestCreditCard } from './types';
+import { TestCreditCard, getResultDisplay } from './types';
 
 interface CreditCardFormProps {
   cardNumber: string;
@@ -14,20 +14,6 @@ interface CreditCardFormProps {
   isLoading?: boolean;
   disabled?: boolean;
 }
-
-// Helper function to map expected result to display text and color
-const getResultDisplay = (result: string): { text: string; color: string } => {
-  switch (result) {
-    case 'APPROVED':
-      return { text: 'Approved ✓', color: 'text-green-600' };
-    case 'DECLINED':
-      return { text: 'Declined (Insufficient Funds)', color: 'text-red-600' };
-    case 'ERROR':
-      return { text: 'Error (Processing)', color: 'text-orange-600' };
-    default:
-      return { text: result, color: 'text-slate-600' };
-  }
-};
 
 /**
  * CreditCardForm - Credit card payment details input form with test card helpers

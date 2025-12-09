@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Building } from 'lucide-react';
-import { TestACHAccount } from './types';
+import { TestACHAccount, getResultDisplay } from './types';
 
 interface BankAccountFormProps {
   achRouting: string;
@@ -13,18 +13,6 @@ interface BankAccountFormProps {
   disabled?: boolean;
   onAutoFillComplete?: () => void;
 }
-
-// Helper function to map expected result to display text and color
-const getResultDisplay = (result: string): { text: string; color: string } => {
-  switch (result) {
-    case 'APPROVED':
-      return { text: 'Approved ✓', color: 'text-green-600' };
-    case 'DECLINED':
-      return { text: 'Declined (Insufficient Funds)', color: 'text-red-600' };
-    default:
-      return { text: result, color: 'text-slate-600' };
-  }
-};
 
 /**
  * BankAccountForm - Bank account (ACH) payment details input form with test account helpers
