@@ -37,5 +37,7 @@ public class SubmissionRequest {
         private String mimeType;
         private String extractionResult; // JSON string of extraction results
         private Double extractionConfidence;
+        private Integer pageCount;       // Number of pages in document
+        private String fieldProvenance;  // JSON string with field-level provenance for PDF highlighting
     }
 }

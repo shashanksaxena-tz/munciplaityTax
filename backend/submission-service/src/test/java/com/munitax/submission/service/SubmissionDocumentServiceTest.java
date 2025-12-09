@@ -40,6 +40,8 @@ class SubmissionDocumentServiceTest {
         testDocument.setMimeType("application/pdf");
         testDocument.setUploadDate(Instant.now());
         testDocument.setExtractionConfidence(0.95);
+        testDocument.setPageCount(1);
+        testDocument.setFieldProvenance("{\"fields\":[{\"fieldName\":\"wages\",\"pageNumber\":1,\"boundingBox\":{\"x\":0.1,\"y\":0.2,\"width\":0.3,\"height\":0.05},\"confidence\":0.95}]}");
         testDocument.setTenantId("tenant-1");
     }
 

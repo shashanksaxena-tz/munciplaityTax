@@ -53,6 +53,8 @@ public class SubmissionResponse {
         private String mimeType;
         private Instant uploadDate;
         private Double extractionConfidence;
+        private Integer pageCount;
+        private String fieldProvenance; // Field-level provenance for PDF highlighting
     }
     
     /**
@@ -95,7 +97,9 @@ public class SubmissionResponse {
                     doc.getFileSize(),
                     doc.getMimeType(),
                     doc.getUploadDate(),
-                    doc.getExtractionConfidence()
+                    doc.getExtractionConfidence(),
+                    doc.getPageCount(),
+                    doc.getFieldProvenance()
                 ))
                 .collect(Collectors.toList()));
         }

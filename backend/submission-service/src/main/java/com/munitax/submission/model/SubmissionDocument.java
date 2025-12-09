@@ -45,6 +45,12 @@ public class SubmissionDocument {
     @Column(name = "extraction_confidence")
     private Double extractionConfidence;
     
+    @Column(name = "page_count")
+    private Integer pageCount;
+    
+    @Column(columnDefinition = "TEXT", name = "field_provenance")
+    private String fieldProvenance; // JSON string with field-level provenance for PDF highlighting
+    
     @Column(name = "tenant_id")
     private String tenantId;
 }

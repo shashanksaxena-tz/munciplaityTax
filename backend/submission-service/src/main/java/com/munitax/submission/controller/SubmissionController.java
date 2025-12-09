@@ -6,6 +6,9 @@ import com.munitax.submission.model.Submission;
 import com.munitax.submission.model.SubmissionDocument;
 import com.munitax.submission.repository.SubmissionRepository;
 import com.munitax.submission.service.SubmissionDocumentService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -69,6 +72,8 @@ public class SubmissionController {
                     submissionDoc.setUploadDate(Instant.now());
                     submissionDoc.setExtractionResult(doc.getExtractionResult());
                     submissionDoc.setExtractionConfidence(doc.getExtractionConfidence());
+                    submissionDoc.setPageCount(doc.getPageCount());
+                    submissionDoc.setFieldProvenance(doc.getFieldProvenance());
                     submissionDoc.setTenantId(request.getTenantId());
                     return submissionDoc;
                 })
@@ -179,5 +184,56 @@ public class SubmissionController {
                     .body((Resource) resource);
             })
             .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Get field provenance data for a specific document
+     * Returns field-level extraction data with locations, bounding boxes, and confidence scores
+     * This enables PDF highlighting and preview functionality in review/auditor screens
+     */
+    @GetMapping("/{id}/documents/{docId}/provenance")
+    public ResponseEntity<?> getDocumentProvenance(
+            @PathVariable String id,
+            @PathVariable String docId) {
+        
+        // Verify submission exists
+        if (!repository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Get document metadata with provenance
+        return documentService.getDocumentById(docId)
+            .filter(doc -> doc.getSubmissionId().equals(id))
+            .map(doc -> {
+                // Return provenance data for PDF highlighting
+                return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new DocumentProvenanceResponse(
+                        doc.getId(),
+                        doc.getDocumentId(),
+                        doc.getFileName(),
+                        doc.getFormType(),
+                        doc.getPageCount(),
+                        doc.getExtractionConfidence(),
+                        doc.getFieldProvenance()
+                    ));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+    
+    /**
+     * Response DTO for document provenance data
+     */
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DocumentProvenanceResponse {
+        private String id;
+        private String documentId;
+        private String fileName;
+        private String formType;
+        private Integer pageCount;
+        private Double extractionConfidence;
+        private String fieldProvenance; // JSON string with field locations and bounding boxes
     }
 }

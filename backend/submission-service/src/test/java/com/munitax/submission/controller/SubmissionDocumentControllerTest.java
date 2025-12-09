@@ -66,6 +66,8 @@ class SubmissionDocumentControllerTest {
         testDocument.setMimeType("application/pdf");
         testDocument.setUploadDate(Instant.now());
         testDocument.setExtractionConfidence(0.95);
+        testDocument.setPageCount(1);
+        testDocument.setFieldProvenance("{\"fields\":[{\"fieldName\":\"wages\",\"pageNumber\":1,\"boundingBox\":{\"x\":0.1,\"y\":0.2,\"width\":0.3,\"height\":0.05},\"confidence\":0.95}]}");
         testDocument.setTenantId("tenant-1");
     }
 
@@ -87,6 +89,8 @@ class SubmissionDocumentControllerTest {
         docAttachment.setFileSize(102400L);
         docAttachment.setMimeType("application/pdf");
         docAttachment.setExtractionConfidence(0.95);
+        docAttachment.setPageCount(1);
+        docAttachment.setFieldProvenance("{\"fields\":[{\"fieldName\":\"wages\",\"pageNumber\":1,\"boundingBox\":{\"x\":0.1,\"y\":0.2,\"width\":0.3,\"height\":0.05},\"confidence\":0.95}]}");
 
         request.setDocuments(Arrays.asList(docAttachment));
 
@@ -178,6 +182,31 @@ class SubmissionDocumentControllerTest {
                 .thenReturn(Optional.of(otherDocument));
 
         mockMvc.perform(get("/api/v1/submissions/sub-123/documents/doc-456"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testGetDocumentProvenance() throws Exception {
+        when(submissionRepository.existsById("sub-123")).thenReturn(true);
+        when(documentService.getDocumentById("doc-123"))
+                .thenReturn(Optional.of(testDocument));
+
+        mockMvc.perform(get("/api/v1/submissions/sub-123/documents/doc-123/provenance"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("doc-123"))
+                .andExpect(jsonPath("$.fileName").value("W2_2024.pdf"))
+                .andExpect(jsonPath("$.pageCount").value(1))
+                .andExpect(jsonPath("$.extractionConfidence").value(0.95))
+                .andExpect(jsonPath("$.fieldProvenance").exists());
+    }
+
+    @Test
+    void testGetDocumentProvenance_NotFound() throws Exception {
+        when(submissionRepository.existsById("sub-123")).thenReturn(true);
+        when(documentService.getDocumentById("nonexistent"))
+                .thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/v1/submissions/sub-123/documents/nonexistent/provenance"))
                 .andExpect(status().isNotFound());
     }
 }
