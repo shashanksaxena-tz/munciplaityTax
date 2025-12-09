@@ -28,7 +28,9 @@ CREATE TABLE IF NOT EXISTS dublin.w3_reconciliations (
     created_by VARCHAR(255) NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     
-    CONSTRAINT chk_w3_tax_year CHECK (tax_year >= 2020),
+    -- Note: Tax year constraint set to 2020 as minimum supported year
+    -- If older years need support, this constraint should be updated
+    CONSTRAINT chk_w3_tax_year CHECK (tax_year >= 2020 AND tax_year <= 2099),
     CONSTRAINT chk_w3_status CHECK (status IN ('BALANCED', 'UNBALANCED')),
     CONSTRAINT chk_w3_total_w1_tax CHECK (total_w1_tax >= 0),
     CONSTRAINT chk_w3_total_w2_tax CHECK (total_w2_tax >= 0),

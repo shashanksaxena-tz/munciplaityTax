@@ -346,16 +346,20 @@ public class W3ReconciliationService {
             String businessId, Integer taxYear, String tenantId) {
         
         try {
-            // Call tax-engine-service to get W-1 filings
-            // For now, using a mock implementation since we need to integrate with tax-engine-service
-            // In production, this would be a REST call:
+            // TODO: Complete integration with tax-engine-service
+            // Call tax-engine-service to get W-1 filings summary
+            // Expected endpoint: GET /api/v1/w1-filings/summary?businessId={businessId}&taxYear={taxYear}
+            // 
+            // Example implementation:
             // String url = taxEngineServiceUrl + "/api/v1/w1-filings/summary?businessId=" + 
             //              businessId + "&taxYear=" + taxYear + "&tenantId=" + tenantId;
             // W1FilingSummary summary = restTemplate.getForObject(url, W1FilingSummary.class);
+            // return summary;
             
-            // Mock implementation - returns zero for now
-            // This should be replaced with actual service integration
-            logger.warn("Using mock W-1 filing summary - integration with tax-engine-service needed");
+            // MOCK IMPLEMENTATION - Returns zero amounts
+            // This will cause reconciliations to show incorrect discrepancies
+            // Replace with actual REST call before production use
+            logger.warn("Using mock W-1 filing summary - integration with tax-engine-service required for accurate reconciliation");
             
             return W1FilingSummary.builder()
                 .totalTax(BigDecimal.ZERO)
@@ -391,8 +395,9 @@ public class W3ReconciliationService {
         BigDecimal missingFilingPenalty = BigDecimal.ZERO;
         
         // Calculate missing filing penalty
-        // Assuming monthly filing frequency (12 filings per year)
-        // This should be enhanced to fetch actual filing frequency from business profile
+        // TODO: Fetch actual filing frequency from business profile service
+        // For now, assuming monthly filing frequency (12 filings per year)
+        // This should be enhanced to support quarterly (4), semi-monthly (24), and daily frequencies
         int expectedFilings = 12; // Default to monthly
         int missingFilings = Math.max(0, expectedFilings - w1Summary.getFilingCount());
         if (missingFilings > 0) {
@@ -425,9 +430,17 @@ public class W3ReconciliationService {
             return BigDecimal.ZERO;
         }
         
-        // Calculate months late (partial months count as full month)
-        long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, filingDate);
-        int monthsLate = (int) Math.ceil(daysLate / 30.0);
+        // Calculate months late using proper month calculation
+        java.time.Period period = java.time.Period.between(dueDate, filingDate);
+        int monthsLate = period.getYears() * 12 + period.getMonths();
+        // Partial months count as full month
+        if (period.getDays() > 0) {
+            monthsLate++;
+        }
+        // Ensure at least 1 month if filed after due date
+        if (monthsLate == 0) {
+            monthsLate = 1;
+        }
         
         // Calculate penalty: 5% per month, max 25%
         BigDecimal penaltyRate = LATE_FILING_PENALTY_RATE.multiply(new BigDecimal(monthsLate));
@@ -454,6 +467,9 @@ public class W3ReconciliationService {
      */
     private String generateConfirmationNumber(W3Reconciliation w3) {
         // Format: W3-YYYY-BUSINESSID-UUID
+        if (w3.getBusinessId() == null || w3.getBusinessId().isEmpty()) {
+            throw new IllegalStateException("Business ID cannot be null or empty for confirmation number generation");
+        }
         String businessIdShort = w3.getBusinessId().substring(0, Math.min(8, w3.getBusinessId().length()));
         String uuidShort = w3.getId().toString().substring(0, 8);
         return String.format("W3-%d-%s-%s", w3.getTaxYear(), businessIdShort, uuidShort).toUpperCase();
