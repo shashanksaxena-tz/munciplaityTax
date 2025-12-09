@@ -197,7 +197,9 @@ class SubmissionDocumentControllerTest {
                 .andExpect(jsonPath("$.fileName").value("W2_2024.pdf"))
                 .andExpect(jsonPath("$.pageCount").value(1))
                 .andExpect(jsonPath("$.extractionConfidence").value(0.95))
-                .andExpect(jsonPath("$.fieldProvenance").exists());
+                .andExpect(jsonPath("$.fieldProvenance").exists())
+                .andExpect(jsonPath("$.fieldProvenance").isNotEmpty())
+                .andExpect(jsonPath("$.fieldProvenance").value(org.hamcrest.Matchers.containsString("\"fields\":")));
     }
 
     @Test

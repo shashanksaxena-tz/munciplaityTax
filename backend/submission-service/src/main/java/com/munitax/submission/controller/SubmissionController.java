@@ -81,6 +81,9 @@ public class SubmissionController {
         submission = repository.save(submission);
         
         // Save documents if provided
+        // NOTE: For optimal performance with large document uploads, ensure that batch inserts
+        // are enabled in JPA/Hibernate configuration (e.g., spring.jpa.properties.hibernate.jdbc.batch_size=50)
+        // to avoid N+1 query problems
         List<SubmissionDocument> savedDocuments = new ArrayList<>();
         if (request.getDocuments() != null && !request.getDocuments().isEmpty()) {
             String submissionId = submission.getId();

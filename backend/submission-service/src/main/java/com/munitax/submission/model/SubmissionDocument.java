@@ -1,6 +1,8 @@
 package com.munitax.submission.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,12 +20,15 @@ public class SubmissionDocument {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
     
+    @NotBlank
     @Column(nullable = false, name = "submission_id")
     private String submissionId;
     
+    @NotBlank
     @Column(nullable = false, name = "document_id")
     private String documentId; // Reference to document in storage/extraction service
     
+    @NotBlank
     @Column(nullable = false, name = "file_name")
     private String fileName;
     
@@ -36,6 +41,7 @@ public class SubmissionDocument {
     @Column(name = "mime_type")
     private String mimeType; // application/pdf, image/jpeg, etc.
     
+    @NotNull
     @Column(name = "upload_date")
     private Instant uploadDate;
     

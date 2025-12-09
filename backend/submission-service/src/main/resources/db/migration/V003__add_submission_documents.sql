@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS submission_documents (
     form_type VARCHAR(50),
     file_size BIGINT,
     mime_type VARCHAR(100),
-    upload_date TIMESTAMP NOT NULL,
+    upload_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     extraction_result TEXT,
     extraction_confidence DOUBLE PRECISION,
     page_count INTEGER,
