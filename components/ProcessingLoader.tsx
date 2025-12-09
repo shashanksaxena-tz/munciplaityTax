@@ -41,7 +41,7 @@ const STATUS_MESSAGES: Record<string, string[]> = {
 // Personalized messages based on detected forms
 const getPersonalizedMessage = (forms: string[], taxpayerName?: string): string => {
   const name = taxpayerName ? taxpayerName.split(' ')[0] : 'there';
-  
+
   if (forms.includes('W-2')) {
     return `Great news, ${name}! We detected your W-2 form. This contains your wage information and withholding details.`;
   }
@@ -60,15 +60,16 @@ const getPersonalizedMessage = (forms: string[], taxpayerName?: string): string 
   if (forms.length > 2) {
     return `${name}, you have multiple income sources. Our AI is carefully analyzing each form to ensure accuracy.`;
   }
-  
+
   return `${name}, your documents are being analyzed with precision to ensure accurate tax calculations.`;
 };
 
 interface ProcessingLoaderProps {
   extractionUpdate?: RealTimeExtractionUpdate;
+  onContinue?: () => void;
 }
 
-export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUpdate }) => {
+export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUpdate, onContinue }) => {
   const [factIndex, setFactIndex] = useState(0);
   const [statusMessageIndex, setStatusMessageIndex] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -110,7 +111,7 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
   const statusMessages = STATUS_MESSAGES[status] || STATUS_MESSAGES.SCANNING;
   const currentStatusMessage = logs.length > 0 ? logs[logs.length - 1] : statusMessages[statusMessageIndex % statusMessages.length];
   const personalizedMessage = getPersonalizedMessage(detectedForms, taxpayerName);
-  
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -165,7 +166,7 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
             <span className="font-bold">{Math.round(progress)}%</span>
           </div>
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out rounded-full"
               style={{ width: `${progress}%` }}
             />
@@ -196,16 +197,15 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
               {detectedForms.map((form, idx) => {
                 const provenance = formProvenances.find(p => p.formType === form);
                 const isCurrentForm = form === currentFormType;
-                
+
                 return (
-                  <div 
+                  <div
                     key={idx}
                     style={{ animationDelay: `${idx * 100}ms` }}
-                    className={`p-3 rounded-xl border transition-all duration-300 animate-slideIn ${
-                      isCurrentForm 
-                        ? 'bg-indigo-50 border-indigo-300 scale-[1.02] shadow-md ring-2 ring-indigo-200' 
-                        : 'bg-slate-50 border-slate-200 hover:border-slate-300'
-                    }`}
+                    className={`p-3 rounded-xl border transition-all duration-300 animate-slideIn ${isCurrentForm
+                      ? 'bg-indigo-50 border-indigo-300 scale-[1.02] shadow-md ring-2 ring-indigo-200'
+                      : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                      }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <FileText className={`w-4 h-4 ${isCurrentForm ? 'text-indigo-600' : 'text-slate-400'}`} />
@@ -245,30 +245,43 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
         )}
 
         {/* Fact Card */}
-        <div className="bg-gradient-to-br from-slate-50 to-indigo-50/50 border border-indigo-100 rounded-xl p-6 relative overflow-hidden">
+        <div className="mt-10 bg-gradient-to-br from-slate-50 to-indigo-50/50 border border-indigo-100 rounded-xl p-6 pt-8 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-indigo-100 px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 z-10">
             <Lightbulb className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Dublin Tax Insight</span>
           </div>
-          
-          <div className="min-h-[60px] flex items-center justify-center">
+
+          <div className="min-h-[80px] flex items-center justify-center">
             <p className="text-slate-700 text-sm leading-relaxed italic text-center transition-opacity duration-300">
               "{FACTS[factIndex]}"
             </p>
           </div>
-          
+
           {/* Progress indicator */}
           <div className="mt-4 flex justify-center gap-1">
             {[...Array(5)].map((_, i) => (
-              <div 
-                key={i} 
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                  i === factIndex % 5 ? 'bg-indigo-400 w-4' : 'bg-slate-300'
-                }`}
+              <div
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === factIndex % 5 ? 'bg-indigo-400 w-4' : 'bg-slate-300'
+                  }`}
               />
             ))}
           </div>
         </div>
+
+        {/* Continue Button - Only show when extraction is complete */}
+        {(status === 'COMPLETE' || progress >= 100) && onContinue && (
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <button
+              onClick={onContinue}
+              className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              Continue to Review
+            </button>
+            <p className="text-xs text-slate-500 italic">Click to view your extracted data</p>
+          </div>
+        )}
 
         {/* Security Notice */}
         <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400">

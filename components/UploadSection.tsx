@@ -27,6 +27,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
   const [apiKey, setApiKey] = useState('');
   const [showApiKey, setShowApiKey] = useState(false);
   const [extractionUpdate, setExtractionUpdate] = useState<RealTimeExtractionUpdate | undefined>();
+  const [finalResult, setFinalResult] = useState<any>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -44,6 +45,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
     setIsProcessing(true);
     setError(null);
     setExtractionUpdate(undefined);
+    setFinalResult(null);
 
     try {
       const allExtractedForms: TaxFormData[] = [];
@@ -69,10 +71,10 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
 
         await new Promise<void>((resolve, reject) => {
           api.extraction.uploadAndExtract(
-            file, 
+            file,
             (update: RealTimeExtractionUpdate) => {
               setExtractionUpdate(update);
-              
+
               if (update.status === 'COMPLETE' && update.result) {
                 try {
                   console.log('[UploadSection] Extraction complete, raw result:', update.result);
@@ -111,19 +113,26 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
         throw new Error("No recognizable tax forms were found in the document.");
       }
 
-      // Always pass the complete extraction result object
-      onDataExtracted({
+      const result = {
         forms: allExtractedForms,
         extractedProfile,
         extractedSettings,
         summary: lastSummary,
         pdfData: pdfDataBase64,
         formProvenances: allFormProvenances.length > 0 ? allFormProvenances : undefined
-      });
+      };
+
+      setFinalResult(result);
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to process documents. Please try again.");
       setIsProcessing(false);
+    }
+  };
+
+  const handleContinue = () => {
+    if (finalResult) {
+      onDataExtracted(finalResult);
     }
   };
 
@@ -146,7 +155,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
   };
 
   if (isProcessing) {
-    return <ProcessingLoader extractionUpdate={extractionUpdate} />;
+    return <ProcessingLoader extractionUpdate={extractionUpdate} onContinue={handleContinue} />;
   }
 
   return (
@@ -160,7 +169,7 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
           <Settings className="w-4 h-4" />
           <span>{showApiKeyInput ? 'Hide' : 'Configure'} Gemini API Key</span>
         </button>
-        
+
         {showApiKeyInput && (
           <div className="mt-3 p-4 bg-slate-50 rounded-xl border border-slate-200 animate-slideUp">
             <div className="flex items-start gap-3 mb-3">
@@ -190,9 +199,9 @@ export const UploadSection: React.FC<UploadSectionProps> = ({ onDataExtracted })
             </div>
             <p className="text-xs text-slate-400 mt-2">
               Get your API key from{' '}
-              <a 
-                href="https://aistudio.google.com/app/apikey" 
-                target="_blank" 
+              <a
+                href="https://aistudio.google.com/app/apikey"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-indigo-600 hover:underline"
               >

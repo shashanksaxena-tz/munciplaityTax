@@ -85,4 +85,20 @@ describe('ProcessingLoader Enhanced Features', () => {
     renderWithRouter(<ProcessingLoader extractionUpdate={mockExtractionUpdate} />);
     expect(screen.getByText(/API keys are never stored/i)).toBeTruthy();
   });
+
+  it('should show continue button when complete and onContinue is provided', () => {
+    const onContinue = vi.fn();
+    const completeUpdate: RealTimeExtractionUpdate = {
+      ...mockExtractionUpdate,
+      status: 'COMPLETE',
+      progress: 100
+    };
+    renderWithRouter(<ProcessingLoader extractionUpdate={completeUpdate} onContinue={onContinue} />);
+
+    const button = screen.getByText('Continue to Review');
+    expect(button).toBeTruthy();
+
+    fireEvent.click(button);
+    expect(onContinue).toHaveBeenCalled();
+  });
 });
