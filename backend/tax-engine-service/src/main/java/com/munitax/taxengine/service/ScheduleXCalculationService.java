@@ -17,9 +17,9 @@ import org.springframework.stereotype.Service;
 public class ScheduleXCalculationService {
     
     /**
-     * Calculate total add-backs from all 20 add-back fields (FR-028)
+     * Calculate total add-backs from all 22 add-back fields (FR-028)
      *
-     * @param addBacks Add-backs object with 20 fields
+     * @param addBacks Add-backs object with 22 fields
      * @return Sum of all add-back fields
      */
     public Double calculateTotalAddBacks(AddBacks addBacks) {
@@ -46,6 +46,8 @@ public class ScheduleXCalculationService {
                safeDouble(addBacks.domesticProductionActivities()) +
                safeDouble(addBacks.stockCompensationAdjustment()) +
                safeDouble(addBacks.inventoryMethodChange()) +
+               safeDouble(addBacks.clubDues()) +
+               safeDouble(addBacks.pensionProfitSharingLimits()) +
                safeDouble(addBacks.otherAddBacks());
     }
     

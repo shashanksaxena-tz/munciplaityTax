@@ -15,9 +15,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Unit tests for BusinessScheduleXService backward compatibility
- * Tests migration from old 6-field format to new 27-field format
+ * Tests migration from old 6-field format to new 29-field format
  * 
- * Feature: Comprehensive Business Schedule X Reconciliation (25+ Fields)
+ * Feature: Comprehensive Business Schedule X Reconciliation (29 Fields)
  * Research: R2 (JSONB backward compatibility strategy)
  */
 @DisplayName("Business Schedule X Backward Compatibility Tests")
@@ -65,7 +65,7 @@ class BusinessScheduleXServiceTest {
     }
 
     /**
-     * Test Case: Convert old 6-field format to new 27-field format
+     * Test Case: Convert old 6-field format to new 29-field format
      * Scenario: Old format with federal income $500K, state taxes $10K, intangible income $10K
      * Expected: New format with proper nested structure:
      *   - addBacks.interestAndStateTaxes = $10K (migrated from top-level)
@@ -75,7 +75,7 @@ class BusinessScheduleXServiceTest {
      *   - All other fields initialized to 0
      */
     @Test
-    @DisplayName("Convert old 6-field format to new 27-field format")
+    @DisplayName("Convert old 6-field format to new 29-field format")
     void testConvertOldFormatToNew() throws Exception {
         // Arrange - Create old format JSON
         String oldFormatJson = """
@@ -166,12 +166,12 @@ class BusinessScheduleXServiceTest {
     }
 
     /**
-     * Test Case: Detect new 27-field format (should not trigger migration)
+     * Test Case: Detect new 29-field format (should not trigger migration)
      * Scenario: Schedule X data already has nested structure (addBacks, deductions objects)
      * Expected: System detects new format and returns false (no migration needed)
      */
     @Test
-    @DisplayName("Detect new 27-field format (no migration needed)")
+    @DisplayName("Detect new 29-field format (no migration needed)")
     void testDetectNewFormat() throws Exception {
         // Arrange
         AddBacks addBacks = new AddBacks(
@@ -194,6 +194,8 @@ class BusinessScheduleXServiceTest {
             0.0,      // domesticProductionActivities
             0.0,      // stockCompensationAdjustment
             0.0,      // inventoryMethodChange
+            0.0,      // clubDues
+            0.0,      // pensionProfitSharingLimits
             0.0,      // otherAddBacks
             null,     // otherAddBacksDescription
             0.0       // wagesCredit
@@ -239,7 +241,7 @@ class BusinessScheduleXServiceTest {
 
         // Assert
         assertFalse(isOldFormat, 
-            "System should NOT detect old format for new 27-field structure (has nested addBacks and deductions objects)");
+            "System should NOT detect old format for new 29-field structure (has nested addBacks and deductions objects)");
     }
 
     // ========== Helper Methods ==========

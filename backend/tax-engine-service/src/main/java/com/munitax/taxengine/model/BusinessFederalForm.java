@@ -22,8 +22,8 @@ public record BusinessFederalForm(
 ) implements TaxFormData {
     
     /**
-     * Expanded BusinessScheduleXDetails with 27 fields for complete M-1 reconciliation.
-     * Supports both old 6-field format (runtime conversion) and new 27-field format.
+     * Expanded BusinessScheduleXDetails with 29 fields for complete M-1 reconciliation.
+     * Supports both old 6-field format (runtime conversion) and new 29-field format.
      */
     public record BusinessScheduleXDetails(
         Double fedTaxableIncome,
@@ -33,7 +33,7 @@ public record BusinessFederalForm(
         Metadata metadata
     ) {
         /**
-         * Add-backs (20 fields) - adjustments that increase federal taxable income
+         * Add-backs (22 fields) - adjustments that increase federal taxable income
          */
         public record AddBacks(
             // Old fields (maintained for backward compatibility)
@@ -58,6 +58,8 @@ public record BusinessFederalForm(
             Double domesticProductionActivities,// FR-017 - DPAD Section 199
             Double stockCompensationAdjustment, // FR-018 - Book vs tax
             Double inventoryMethodChange,       // FR-019 - Section 481(a)
+            Double clubDues,                    // FR-020A - Non-deductible club dues
+            Double pensionProfitSharingLimits,  // FR-020B - Excess pension/profit-sharing contributions
             Double otherAddBacks,               // FR-020 - catch-all (renamed from "other")
             String otherAddBacksDescription,    // Required if otherAddBacks > 0
             
@@ -65,12 +67,12 @@ public record BusinessFederalForm(
             Double wagesCredit                  // Deprecated - moved to tax credits section
         ) {
             /**
-             * Default constructor for new 27-field format (all fields initialized to 0)
+             * Default constructor for new 29-field format (all fields initialized to 0)
              */
             public static AddBacks createEmpty() {
                 return new AddBacks(
                     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, null, 0.0
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, null, 0.0
                 );
             }
         }
@@ -155,6 +157,8 @@ public record BusinessFederalForm(
                 safeDouble(addBacks.domesticProductionActivities()) +
                 safeDouble(addBacks.stockCompensationAdjustment()) +
                 safeDouble(addBacks.inventoryMethodChange()) +
+                safeDouble(addBacks.clubDues()) +
+                safeDouble(addBacks.pensionProfitSharingLimits()) +
                 safeDouble(addBacks.otherAddBacks());
             
             double totalDeductions =
