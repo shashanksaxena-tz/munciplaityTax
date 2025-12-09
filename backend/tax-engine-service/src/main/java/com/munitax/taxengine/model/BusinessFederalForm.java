@@ -106,7 +106,7 @@ public record BusinessFederalForm(
          * Calculated fields (read-only) - computed from addBacks and deductions
          */
         public record CalculatedFields(
-            Double totalAddBacks,               // FR-028 - Sum of all 20 add-back fields
+            Double totalAddBacks,               // FR-028 - Sum of all 22 add-back fields
             Double totalDeductions,             // FR-029 - Sum of all 7 deduction fields
             Double adjustedMunicipalIncome      // FR-030 - fedTaxableIncome + totalAddBacks - totalDeductions
         ) {}
