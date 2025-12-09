@@ -268,10 +268,15 @@ class WithholdingReconciliationServiceTest {
             LocalDate.of(2025, 1, 30)
         };
         
-        for (int i = 0; i < w1Filings.size(); i++) {
-            w1Filings.get(i).setDueDate(dueDates[i]);
-            w1Filings.get(i).setFilingDate(LocalDateTime.of(2024, 3 * (i + 1), 15, 10, 0));
-        }
+        // Set realistic filing dates for each quarter
+        w1Filings.get(0).setDueDate(dueDates[0]);
+        w1Filings.get(0).setFilingDate(LocalDateTime.of(2024, 4, 15, 10, 0)); // Q1: after Mar 31, before Apr 30
+        w1Filings.get(1).setDueDate(dueDates[1]);
+        w1Filings.get(1).setFilingDate(LocalDateTime.of(2024, 7, 15, 10, 0)); // Q2: after Jun 30, before Jul 30
+        w1Filings.get(2).setDueDate(dueDates[2]);
+        w1Filings.get(2).setFilingDate(LocalDateTime.of(2024, 10, 15, 10, 0)); // Q3: after Sep 30, before Oct 30
+        w1Filings.get(3).setDueDate(dueDates[3]);
+        w1Filings.get(3).setFilingDate(LocalDateTime.of(2025, 1, 15, 10, 0)); // Q4: after Dec 31, before Jan 30
         
         List<W2Form> w2Forms = List.of(
             createW2Form(400000.0, 400000.0) // Matches W-1 total

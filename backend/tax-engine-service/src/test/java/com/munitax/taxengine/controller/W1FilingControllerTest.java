@@ -160,7 +160,7 @@ class W1FilingControllerTest {
     void shouldGetReconciliationIssues() throws Exception {
         // Given
         UUID employerId = UUID.randomUUID();
-        Integer taxYear = 2024;
+        int taxYear = 2024;
 
         List<ReconciliationIssue> issues = List.of(
             ReconciliationIssue.builder()

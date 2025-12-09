@@ -99,9 +99,8 @@ public class W1FilingController {
         description = "Reconcile W-1 filings against W-2 forms and detect issues"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Reconciliation completed successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid request data"),
-        @ApiResponse(responseCode = "404", description = "No W-1 filings found for employer")
+        @ApiResponse(responseCode = "200", description = "Reconciliation completed successfully (returns empty array if no W-1 filings found)"),
+        @ApiResponse(responseCode = "400", description = "Invalid request data")
     })
     public ResponseEntity<List<ReconciliationIssue>> reconcileW1Filings(
             @Valid @RequestBody ReconciliationRequest request) {

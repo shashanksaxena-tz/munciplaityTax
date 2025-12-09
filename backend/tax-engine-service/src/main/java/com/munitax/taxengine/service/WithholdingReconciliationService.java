@@ -131,9 +131,7 @@ public class WithholdingReconciliationService {
         // Check federal wage mismatch
         if (w2TotalFederalWages.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal federalVariance = w1TotalWages.subtract(w2TotalFederalWages);
-            BigDecimal federalVariancePercentage = w2TotalFederalWages.compareTo(BigDecimal.ZERO) > 0 ?
-                federalVariance.divide(w2TotalFederalWages, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100")) :
-                BigDecimal.ZERO;
+            BigDecimal federalVariancePercentage = federalVariance.divide(w2TotalFederalWages, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
             
             if (federalVariance.abs().compareTo(VARIANCE_THRESHOLD_AMOUNT) > 0 ||
                 federalVariancePercentage.abs().compareTo(VARIANCE_THRESHOLD_PERCENTAGE) > 0) {
@@ -158,9 +156,7 @@ public class WithholdingReconciliationService {
         // Check local wage mismatch
         if (w2TotalLocalWages.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal localVariance = w1TotalWages.subtract(w2TotalLocalWages);
-            BigDecimal localVariancePercentage = w2TotalLocalWages.compareTo(BigDecimal.ZERO) > 0 ?
-                localVariance.divide(w2TotalLocalWages, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100")) :
-                BigDecimal.ZERO;
+            BigDecimal localVariancePercentage = localVariance.divide(w2TotalLocalWages, 4, RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
             
             if (localVariance.abs().compareTo(VARIANCE_THRESHOLD_AMOUNT) > 0 ||
                 localVariancePercentage.abs().compareTo(VARIANCE_THRESHOLD_PERCENTAGE) > 0) {
@@ -218,7 +214,7 @@ public class WithholdingReconciliationService {
     
     /**
      * Check that cumulative totals are consistent across periods.
-     * Verifies that each period's wages contribute correctly to year-to-date totals.
+     * Verifies that each period's tax calculation is correct.
      */
     private List<ReconciliationIssue> checkCumulativeTotals(List<W1Filing> w1Filings) {
         List<ReconciliationIssue> issues = new ArrayList<>();
@@ -228,19 +224,13 @@ public class WithholdingReconciliationService {
             .sorted(Comparator.comparing(W1Filing::getPeriodEndDate))
             .toList();
         
-        BigDecimal cumulativeWages = BigDecimal.ZERO;
-        BigDecimal cumulativeTax = BigDecimal.ZERO;
-        
         for (W1Filing filing : sortedFilings) {
-            cumulativeWages = cumulativeWages.add(filing.getGrossWages());
-            cumulativeTax = cumulativeTax.add(filing.getTaxDue());
-            
-            // Calculate expected tax based on cumulative wages and filing's tax rate
-            BigDecimal expectedCumulativeTax = filing.getGrossWages().multiply(filing.getTaxRate())
+            // Calculate expected tax based on filing's gross wages and tax rate
+            BigDecimal expectedTax = filing.getGrossWages().multiply(filing.getTaxRate())
                 .setScale(2, RoundingMode.HALF_UP);
             
             // Check if individual period tax matches expected
-            BigDecimal taxVariance = filing.getTaxDue().subtract(expectedCumulativeTax).abs();
+            BigDecimal taxVariance = filing.getTaxDue().subtract(expectedTax).abs();
             if (taxVariance.compareTo(new BigDecimal("1.00")) > 0) {
                 issues.add(ReconciliationIssue.builder()
                     .id(UUID.randomUUID())
@@ -250,10 +240,10 @@ public class WithholdingReconciliationService {
                     .issueType(ReconciliationIssue.IssueType.CUMULATIVE_MISMATCH)
                     .severity(ReconciliationIssue.IssueSeverity.MEDIUM)
                     .description(String.format("Tax calculation mismatch for period %s. Expected $%,.2f, found $%,.2f",
-                        filing.getPeriod(), expectedCumulativeTax, filing.getTaxDue()))
-                    .expectedValue(expectedCumulativeTax)
+                        filing.getPeriod(), expectedTax, filing.getTaxDue()))
+                    .expectedValue(expectedTax)
                     .actualValue(filing.getTaxDue())
-                    .variance(filing.getTaxDue().subtract(expectedCumulativeTax))
+                    .variance(filing.getTaxDue().subtract(expectedTax))
                     .recommendedAction("Review tax calculation for this period.")
                     .resolved(false)
                     .build());
@@ -334,6 +324,7 @@ public class WithholdingReconciliationService {
     
     /**
      * Check for missing required filings based on filing frequency.
+     * Handles cases where an employer may have different frequencies.
      */
     private List<ReconciliationIssue> checkMissingFilings(UUID employerId, Integer taxYear, List<W1Filing> w1Filings) {
         List<ReconciliationIssue> issues = new ArrayList<>();
@@ -342,33 +333,39 @@ public class WithholdingReconciliationService {
             return issues;
         }
         
-        // Determine filing frequency from first filing
-        FilingFrequency frequency = w1Filings.get(0).getFilingFrequency();
+        // Group filings by their filing frequency
+        Map<FilingFrequency, List<W1Filing>> filingsByFrequency = w1Filings.stream()
+                .collect(Collectors.groupingBy(W1Filing::getFilingFrequency));
         
-        // Get filed periods
-        Set<String> filedPeriods = w1Filings.stream()
-            .map(W1Filing::getPeriod)
-            .collect(Collectors.toSet());
-        
-        // Determine required periods based on frequency
-        Set<String> requiredPeriods = getRequiredPeriods(frequency);
-        
-        // Find missing periods
-        Set<String> missingPeriods = new HashSet<>(requiredPeriods);
-        missingPeriods.removeAll(filedPeriods);
-        
-        for (String period : missingPeriods) {
-            issues.add(ReconciliationIssue.builder()
-                .id(UUID.randomUUID())
-                .employerId(employerId)
-                .taxYear(taxYear)
-                .period(period)
-                .issueType(ReconciliationIssue.IssueType.MISSING_FILING)
-                .severity(ReconciliationIssue.IssueSeverity.CRITICAL)
-                .description(String.format("Missing required filing for period %s", period))
-                .recommendedAction("File W-1 return for missing period.")
-                .resolved(false)
-                .build());
+        for (Map.Entry<FilingFrequency, List<W1Filing>> entry : filingsByFrequency.entrySet()) {
+            FilingFrequency frequency = entry.getKey();
+            List<W1Filing> filingsForFrequency = entry.getValue();
+
+            // Get filed periods for this frequency
+            Set<String> filedPeriods = filingsForFrequency.stream()
+                    .map(W1Filing::getPeriod)
+                    .collect(Collectors.toSet());
+
+            // Determine required periods based on frequency
+            Set<String> requiredPeriods = getRequiredPeriods(frequency);
+
+            // Find missing periods
+            Set<String> missingPeriods = new HashSet<>(requiredPeriods);
+            missingPeriods.removeAll(filedPeriods);
+
+            for (String period : missingPeriods) {
+                issues.add(ReconciliationIssue.builder()
+                        .id(UUID.randomUUID())
+                        .employerId(employerId)
+                        .taxYear(taxYear)
+                        .period(period)
+                        .issueType(ReconciliationIssue.IssueType.MISSING_FILING)
+                        .severity(ReconciliationIssue.IssueSeverity.CRITICAL)
+                        .description(String.format("Missing required filing for period %s (%s filer)", period, frequency))
+                        .recommendedAction("File W-1 return for missing period.")
+                        .resolved(false)
+                        .build());
+            }
         }
         
         return issues;
