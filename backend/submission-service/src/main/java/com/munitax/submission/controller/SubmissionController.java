@@ -167,8 +167,13 @@ public class SubmissionController {
                 
                 ByteArrayResource resource = new ByteArrayResource(content);
                 
+                // Sanitize filename to prevent header injection
+                String sanitizedFilename = doc.getFileName()
+                    .replaceAll("[\\n\\r]", "") // Remove newlines
+                    .replaceAll("\"", "'");     // Replace quotes
+                
                 return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + doc.getFileName() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedFilename + "\"")
                     .contentType(MediaType.parseMediaType(doc.getMimeType() != null ? doc.getMimeType() : "application/octet-stream"))
                     .contentLength(content.length)
                     .body((Resource) resource);
