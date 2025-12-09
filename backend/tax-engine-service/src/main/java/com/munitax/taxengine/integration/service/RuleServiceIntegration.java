@@ -11,6 +11,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,21 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class RuleServiceIntegration {
+    
+    // Default values for business tax rules
+    private static final double DEFAULT_MINIMUM_TAX = 50.0;
+    private static final String DEFAULT_ALLOCATION_METHOD = "3_FACTOR";
+    private static final double DEFAULT_SALES_FACTOR_WEIGHT = 2.0;
+    private static final double DEFAULT_NOL_OFFSET_CAP = 1.0;
+    private static final double DEFAULT_INTANGIBLE_EXPENSE_RATE = 0.0;
+    private static final double DEFAULT_SAFE_HARBOR_PERCENT = 0.90;
+    private static final double DEFAULT_PENALTY_LATE_FILING = 25.0;
+    private static final double DEFAULT_PENALTY_UNDERPAYMENT = 0.05;
+    private static final double DEFAULT_INTEREST_RATE = 0.05;
+    
+    // Precision for financial calculations
+    private static final int DECIMAL_SCALE = 6;
+    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
     
     private final RuleServiceClient ruleServiceClient;
     
@@ -105,24 +121,24 @@ public class RuleServiceIntegration {
             double municipalRate = extractRate(rules, "BUSINESS_MUNICIPAL_TAX_RATE", fallbackMunicipalRate);
             
             // Extract minimum tax
-            double minimumTax = extractScalar(rules, "MINIMUM_TAX", 50.0);
+            double minimumTax = extractScalar(rules, "MINIMUM_TAX", DEFAULT_MINIMUM_TAX);
             
             // Allocation method defaults
-            String allocationMethod = "3_FACTOR";
-            double salesFactorWeight = 2.0;
+            String allocationMethod = DEFAULT_ALLOCATION_METHOD;
+            double salesFactorWeight = DEFAULT_SALES_FACTOR_WEIGHT;
             
             // NOL settings
             boolean enableNOL = extractBoolean(rules, "ENABLE_NOL", true);
-            double nolOffsetCapPercent = extractScalar(rules, "NOL_OFFSET_CAP_PERCENT", 1.0);
+            double nolOffsetCapPercent = extractScalar(rules, "NOL_OFFSET_CAP_PERCENT", DEFAULT_NOL_OFFSET_CAP);
             
             // Intangible expense rate
-            double intangibleExpenseRate = 0.0; // Default
+            double intangibleExpenseRate = DEFAULT_INTANGIBLE_EXPENSE_RATE;
             
             // Safe harbor and penalties
-            double safeHarborPercent = extractScalar(rules, "SAFE_HARBOR_PERCENT", 0.90);
-            double penaltyLateFiling = extractScalar(rules, "PENALTY_RATE_LATE_FILING", 25.0);
-            double penaltyUnderpayment = extractScalar(rules, "PENALTY_RATE_UNDERPAYMENT", 0.05);
-            double interestRate = extractScalar(rules, "INTEREST_RATE_ANNUAL", 0.05);
+            double safeHarborPercent = extractScalar(rules, "SAFE_HARBOR_PERCENT", DEFAULT_SAFE_HARBOR_PERCENT);
+            double penaltyLateFiling = extractScalar(rules, "PENALTY_RATE_LATE_FILING", DEFAULT_PENALTY_LATE_FILING);
+            double penaltyUnderpayment = extractScalar(rules, "PENALTY_RATE_UNDERPAYMENT", DEFAULT_PENALTY_UNDERPAYMENT);
+            double interestRate = extractScalar(rules, "INTEREST_RATE_ANNUAL", DEFAULT_INTEREST_RATE);
             
             log.info("Resolved business tax rules for {}-{}: municipalRate={}, minimumTax={}", 
                     tenantId, taxYear, municipalRate, minimumTax);
@@ -158,8 +174,8 @@ public class RuleServiceIntegration {
         
         if (rule.isPresent() && rule.get().getValue() != null && rule.get().getValue().getScalar() != null) {
             BigDecimal scalar = rule.get().getValue().getScalar();
-            // Convert percentage to decimal (2.0 -> 0.02)
-            double rate = scalar.divide(BigDecimal.valueOf(100)).doubleValue();
+            // Convert percentage to decimal (2.0 -> 0.02) with proper rounding
+            double rate = scalar.divide(BigDecimal.valueOf(100), DECIMAL_SCALE, ROUNDING_MODE).doubleValue();
             log.debug("Rule {} = {}", ruleCode, rate);
             return rate;
         }
@@ -263,16 +279,16 @@ public class RuleServiceIntegration {
         log.warn("Using fallback business tax rules");
         return new BusinessTaxRulesConfig(
                 fallbackMunicipalRate,
-                50.0,
-                "3_FACTOR",
-                2.0,
+                DEFAULT_MINIMUM_TAX,
+                DEFAULT_ALLOCATION_METHOD,
+                DEFAULT_SALES_FACTOR_WEIGHT,
                 true,
-                1.0,
-                0.0,
-                0.90,
-                25.0,
-                0.05,
-                0.05
+                DEFAULT_NOL_OFFSET_CAP,
+                DEFAULT_INTANGIBLE_EXPENSE_RATE,
+                DEFAULT_SAFE_HARBOR_PERCENT,
+                DEFAULT_PENALTY_LATE_FILING,
+                DEFAULT_PENALTY_UNDERPAYMENT,
+                DEFAULT_INTEREST_RATE
         );
     }
 }

@@ -35,9 +35,8 @@ public class TaxEngineController {
                         @RequestBody IndividualCalculationRequest request) {
                 
                 // Fetch dynamic rules from rule service
-                String tenantId = request.tenantId() != null ? request.tenantId() : defaultTenantId;
-                int taxYear = request.taxYear() != null ? request.taxYear() : 
-                        (request.settings() != null ? request.settings().taxYear() : java.time.Year.now().getValue());
+                String tenantId = determineTenantId(request.tenantId());
+                int taxYear = determineTaxYear(request.taxYear(), request.settings());
                 
                 TaxRulesConfig rules = request.rules() != null ? 
                         request.rules() : 
@@ -58,7 +57,7 @@ public class TaxEngineController {
                         @RequestBody BusinessCalculationRequest request) {
                 
                 // Fetch dynamic rules from rule service
-                String tenantId = request.tenantId() != null ? request.tenantId() : defaultTenantId;
+                String tenantId = determineTenantId(request.tenantId());
                 int taxYear = request.year();
                 
                 BusinessTaxRulesConfig rules = request.rules() != null ? 
@@ -76,6 +75,26 @@ public class TaxEngineController {
                                 request.schY(),
                                 request.nolCarryforward(),
                                 rules);
+        }
+
+        /**
+         * Determine tenant ID from request or use default.
+         */
+        private String determineTenantId(String requestTenantId) {
+                return requestTenantId != null ? requestTenantId : defaultTenantId;
+        }
+
+        /**
+         * Determine tax year from request, settings, or current year.
+         */
+        private int determineTaxYear(Integer requestTaxYear, TaxCalculationResult.TaxReturnSettings settings) {
+                if (requestTaxYear != null) {
+                        return requestTaxYear;
+                }
+                if (settings != null) {
+                        return settings.taxYear();
+                }
+                return java.time.Year.now().getValue();
         }
 
         public record IndividualCalculationRequest(
