@@ -39,6 +39,8 @@ public record BusinessScheduleXDetailsDto(
         Double domesticProductionActivities,
         Double stockCompensationAdjustment,
         Double inventoryMethodChange,
+        Double clubDues,
+        Double pensionProfitSharingLimits,
         Double otherAddBacks,
         String otherAddBacksDescription
     ) {}
@@ -117,6 +119,8 @@ public record BusinessScheduleXDetailsDto(
             addBacks.domesticProductionActivities(),
             addBacks.stockCompensationAdjustment(),
             addBacks.inventoryMethodChange(),
+            addBacks.clubDues(),
+            addBacks.pensionProfitSharingLimits(),
             addBacks.otherAddBacks(),
             addBacks.otherAddBacksDescription()
         );

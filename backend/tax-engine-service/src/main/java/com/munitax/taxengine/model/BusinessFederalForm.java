@@ -22,8 +22,8 @@ public record BusinessFederalForm(
 ) implements TaxFormData {
     
     /**
-     * Expanded BusinessScheduleXDetails with 27 fields for complete M-1 reconciliation.
-     * Supports both old 6-field format (runtime conversion) and new 27-field format.
+     * Expanded BusinessScheduleXDetails with 29 fields for complete M-1 reconciliation.
+     * Supports both old 6-field format (runtime conversion) and new 29-field format.
      */
     public record BusinessScheduleXDetails(
         Double fedTaxableIncome,
@@ -33,7 +33,7 @@ public record BusinessFederalForm(
         Metadata metadata
     ) {
         /**
-         * Add-backs (20 fields) - adjustments that increase federal taxable income
+         * Add-backs (22 fields) - adjustments that increase federal taxable income
          */
         public record AddBacks(
             // Old fields (maintained for backward compatibility)
@@ -58,6 +58,8 @@ public record BusinessFederalForm(
             Double domesticProductionActivities,// FR-017 - DPAD Section 199
             Double stockCompensationAdjustment, // FR-018 - Book vs tax
             Double inventoryMethodChange,       // FR-019 - Section 481(a)
+            Double clubDues,                    // FR-020A - Non-deductible club dues
+            Double pensionProfitSharingLimits,  // FR-020B - Excess pension/profit-sharing contributions
             Double otherAddBacks,               // FR-020 - catch-all (renamed from "other")
             String otherAddBacksDescription,    // Required if otherAddBacks > 0
             
@@ -65,12 +67,37 @@ public record BusinessFederalForm(
             Double wagesCredit                  // Deprecated - moved to tax credits section
         ) {
             /**
-             * Default constructor for new 27-field format (all fields initialized to 0)
+             * Default constructor for AddBacks (22 active fields + 1 description + 1 deprecated)
+             * Creates an empty AddBacks object with all numeric fields initialized to 0.0
              */
             public static AddBacks createEmpty() {
                 return new AddBacks(
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, null, 0.0
+                    // Old fields (maintained for backward compatibility)
+                    0.0, // interestAndStateTaxes
+                    0.0, // guaranteedPayments
+                    0.0, // expensesOnIntangibleIncome
+                    // New fields (FR-001 to FR-020)
+                    0.0, // depreciationAdjustment
+                    0.0, // amortizationAdjustment
+                    0.0, // mealsAndEntertainment
+                    0.0, // relatedPartyExcess
+                    0.0, // penaltiesAndFines
+                    0.0, // politicalContributions
+                    0.0, // officerLifeInsurance
+                    0.0, // capitalLossExcess
+                    0.0, // federalTaxRefunds
+                    0.0, // section179Excess
+                    0.0, // bonusDepreciation
+                    0.0, // badDebtReserveIncrease
+                    0.0, // charitableContributionExcess
+                    0.0, // domesticProductionActivities
+                    0.0, // stockCompensationAdjustment
+                    0.0, // inventoryMethodChange
+                    0.0, // clubDues
+                    0.0, // pensionProfitSharingLimits
+                    0.0, // otherAddBacks
+                    null, // otherAddBacksDescription
+                    0.0  // wagesCredit (deprecated)
                 );
             }
         }
@@ -104,7 +131,7 @@ public record BusinessFederalForm(
          * Calculated fields (read-only) - computed from addBacks and deductions
          */
         public record CalculatedFields(
-            Double totalAddBacks,               // FR-028 - Sum of all 20 add-back fields
+            Double totalAddBacks,               // FR-028 - Sum of all 22 add-back fields
             Double totalDeductions,             // FR-029 - Sum of all 7 deduction fields
             Double adjustedMunicipalIncome      // FR-030 - fedTaxableIncome + totalAddBacks - totalDeductions
         ) {}
@@ -155,6 +182,8 @@ public record BusinessFederalForm(
                 safeDouble(addBacks.domesticProductionActivities()) +
                 safeDouble(addBacks.stockCompensationAdjustment()) +
                 safeDouble(addBacks.inventoryMethodChange()) +
+                safeDouble(addBacks.clubDues()) +
+                safeDouble(addBacks.pensionProfitSharingLimits()) +
                 safeDouble(addBacks.otherAddBacks());
             
             double totalDeductions =

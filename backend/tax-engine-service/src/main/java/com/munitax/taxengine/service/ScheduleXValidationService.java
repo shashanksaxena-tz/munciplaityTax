@@ -152,6 +152,8 @@ public class ScheduleXValidationService {
             validateNonNegative("Domestic Production Activities", addBacks.domesticProductionActivities(), errors);
             validateNonNegative("Stock Compensation Adjustment", addBacks.stockCompensationAdjustment(), errors);
             validateNonNegative("Inventory Method Change", addBacks.inventoryMethodChange(), errors);
+            validateNonNegative("Club Dues", addBacks.clubDues(), errors);
+            validateNonNegative("Pension/Profit-Sharing Limits", addBacks.pensionProfitSharingLimits(), errors);
             validateNonNegative("Other Add-Backs", addBacks.otherAddBacks(), errors);
         }
         

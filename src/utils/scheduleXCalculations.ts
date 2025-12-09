@@ -72,9 +72,9 @@ export function calculateRelatedPartyExcess(
 }
 
 /**
- * Calculate total add-backs from all 20 add-back fields (FR-028)
+ * Calculate total add-backs from all 22 add-back fields (FR-028)
  * 
- * @param addBacks Object containing all 20 add-back fields
+ * @param addBacks Object containing all 22 add-back fields
  * @returns Sum of all add-back fields
  */
 export function calculateTotalAddBacks(addBacks: {
@@ -97,6 +97,8 @@ export function calculateTotalAddBacks(addBacks: {
   domesticProductionActivities?: number;
   stockCompensationAdjustment?: number;
   inventoryMethodChange?: number;
+  clubDues?: number;
+  pensionProfitSharingLimits?: number;
   otherAddBacks?: number;
 }): number {
   return (
@@ -119,6 +121,8 @@ export function calculateTotalAddBacks(addBacks: {
     (addBacks.domesticProductionActivities || 0) +
     (addBacks.stockCompensationAdjustment || 0) +
     (addBacks.inventoryMethodChange || 0) +
+    (addBacks.clubDues || 0) +
+    (addBacks.pensionProfitSharingLimits || 0) +
     (addBacks.otherAddBacks || 0)
   );
 }
