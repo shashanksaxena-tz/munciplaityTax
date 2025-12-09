@@ -35,6 +35,30 @@ spring:
     default-schema: dublin
     table: flyway_schema_history_tax_engine
 
+  # Redis Configuration
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 2
+        max-wait: 2000ms
+
+# Feign Configuration
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+      rule-service:
+        connectTimeout: 3000
+        readTimeout: 5000
+
 eureka:
   client:
     service-url:
@@ -46,3 +70,13 @@ logging:
     com.munitax.taxengine: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: INFO
+
+# Custom application properties
+app:
+  cache:
+    rule-ttl: ${RULE_CACHE_TTL:3600} # 1 hour in seconds
+    rule-cache-prefix: "tax-engine:rules:"
+  rules:
+    default-tenant-id: dublin
+    fallback-municipal-rate: 0.020
+    fallback-credit-limit-rate: 0.020
