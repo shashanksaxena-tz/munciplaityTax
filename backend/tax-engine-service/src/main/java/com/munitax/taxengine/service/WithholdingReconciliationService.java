@@ -226,7 +226,7 @@ public class WithholdingReconciliationService {
         // Sort filings by period end date
         List<W1Filing> sortedFilings = w1Filings.stream()
             .sorted(Comparator.comparing(W1Filing::getPeriodEndDate))
-            .collect(Collectors.toList());
+            .toList();
         
         BigDecimal cumulativeWages = BigDecimal.ZERO;
         BigDecimal cumulativeTax = BigDecimal.ZERO;
@@ -278,7 +278,7 @@ public class WithholdingReconciliationService {
             String period = entry.getKey();
             List<W1Filing> periodFilings = entry.getValue().stream()
                 .filter(f -> !f.getIsAmended())
-                .collect(Collectors.toList());
+                .toList();
             
             if (periodFilings.size() > 1) {
                 W1Filing firstFiling = periodFilings.get(0);

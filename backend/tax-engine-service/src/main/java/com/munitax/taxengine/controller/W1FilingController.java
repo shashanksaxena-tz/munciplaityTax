@@ -11,6 +11,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 
@@ -147,23 +153,23 @@ public class W1FilingController {
     /**
      * Request DTO for reconciliation endpoint.
      */
-    @lombok.Data
-    @lombok.NoArgsConstructor
-    @lombok.AllArgsConstructor
-    @lombok.Builder
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class ReconciliationRequest {
         
         /**
          * Employer/Business ID to reconcile.
          */
-        @jakarta.validation.constraints.NotNull(message = "Employer ID is required")
+        @NotNull(message = "Employer ID is required")
         private UUID employerId;
         
         /**
          * Tax year to reconcile.
          */
-        @jakarta.validation.constraints.NotNull(message = "Tax year is required")
-        @jakarta.validation.constraints.Min(value = 2020, message = "Tax year must be 2020 or later")
+        @NotNull(message = "Tax year is required")
+        @Min(value = 2020, message = "Tax year must be 2020 or later")
         private Integer taxYear;
         
         /**
