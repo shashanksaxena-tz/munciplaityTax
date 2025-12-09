@@ -232,4 +232,76 @@ class PaymentControllerTest {
                 .andExpect(jsonPath("$.journalEntryId").exists())
                 .andExpect(jsonPath("$.journalEntryId").isNotEmpty());
     }
+    
+    @Test
+    void testProcessPayment_AlternateEndpoint_Returns200() throws Exception {
+        PaymentRequest request = PaymentRequest.builder()
+                .filerId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
+                .amount(new BigDecimal("5000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("4242-4242-4242-4242")
+                .description("Test with 4242 card")
+                .build();
+        
+        mockMvc.perform(post("/api/v1/payments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"))
+                .andExpect(jsonPath("$.transactionId").exists())
+                .andExpect(jsonPath("$.providerTransactionId").value(startsWith("mock_ch_")))
+                .andExpect(jsonPath("$.journalEntryId").exists());
+    }
+    
+    @Test
+    void testProcessPayment_StandardTestCard4242_Returns200() throws Exception {
+        PaymentRequest request = PaymentRequest.builder()
+                .filerId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
+                .amount(new BigDecimal("2500.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("4242-4242-4242-4242")
+                .description("Payment with standard test card")
+                .build();
+        
+        mockMvc.perform(post("/api/v1/payments/process")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APPROVED"))
+                .andExpect(jsonPath("$.transactionId").exists())
+                .andExpect(jsonPath("$.authorizationCode").exists());
+    }
+    
+    @Test
+    void testConfirmPayment_Returns200() throws Exception {
+        // First create a payment
+        PaymentRequest request = PaymentRequest.builder()
+                .filerId(UUID.randomUUID())
+                .tenantId(UUID.randomUUID().toString())
+                .amount(new BigDecimal("3000.00"))
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
+                .cardNumber("4242-4242-4242-4242")
+                .description("Test Payment")
+                .build();
+        
+        String createResponse = mockMvc.perform(post("/api/v1/payments/process")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        
+        // Extract transactionId from response
+        PaymentResponse paymentResponse = objectMapper.readValue(createResponse, PaymentResponse.class);
+        UUID transactionId = paymentResponse.getTransactionId();
+        
+        // Confirm payment (in mock implementation, this just returns the payment status)
+        mockMvc.perform(post("/api/v1/payments/{id}/confirm", transactionId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionId").value(transactionId.toString()))
+                .andExpect(jsonPath("$.status").value("APPROVED"));
+    }
 }
