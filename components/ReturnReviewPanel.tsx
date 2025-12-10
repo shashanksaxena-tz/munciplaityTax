@@ -6,7 +6,10 @@ import {
   DocumentRequest,
   AuditReport,
   AuditStatus,
-  DocumentType
+  DocumentType,
+  SubmissionDocument,
+  FormProvenance,
+  FieldProvenance
 } from '../types';
 import {
   FileText,
@@ -18,6 +21,9 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
+import { SubmissionDocumentsList } from './SubmissionDocumentsList';
+import { DocumentViewer } from './DocumentViewer';
+import { ExtractionProvenanceDisplay } from './ExtractionProvenanceDisplay';
 
 interface ReturnReviewPanelProps {
   returnId: string;
@@ -29,6 +35,12 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
   const [queueEntry, setQueueEntry] = useState<AuditQueue | null>(null);
   const [auditTrail, setAuditTrail] = useState<AuditTrail[]>([]);
   const [auditReport, setAuditReport] = useState<AuditReport | null>(null);
+  const [documents, setDocuments] = useState<SubmissionDocument[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState<SubmissionDocument | null>(null);
+  const [selectedFieldProvenance, setSelectedFieldProvenance] = useState<{
+    field: FieldProvenance;
+    formProvenance: FormProvenance;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
   
@@ -74,6 +86,17 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
       if (reportRes.ok) {
         const reportData = await reportRes.json();
         setAuditReport(reportData);
+      }
+      
+      // Load submission documents
+      const docsRes = await fetch(`/api/v1/submissions/${returnId}/documents`);
+      if (docsRes.ok) {
+        const docsData = await docsRes.json();
+        setDocuments(docsData);
+        // Auto-select first document if available
+        if (docsData.length > 0) {
+          setSelectedDocument(docsData[0]);
+        }
       }
     } catch (error) {
       console.error('Error loading return data:', error);
@@ -190,6 +213,55 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
       console.error('Error requesting documents:', error);
       showToast('error', 'Error requesting documents');
     }
+  };
+
+  const handleDocumentSelect = (document: SubmissionDocument) => {
+    setSelectedDocument(document);
+    setSelectedFieldProvenance(null); // Clear field selection when switching documents
+  };
+
+  const handleDocumentDownload = async (document: SubmissionDocument) => {
+    try {
+      const response = await fetch(
+        `/api/v1/submissions/${returnId}/documents/${document.id}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to download document');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = window.document.createElement('a');
+      a.href = url;
+      a.download = document.fileName;
+      window.document.body.appendChild(a);
+      a.click();
+      window.document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      showToast('success', 'Document downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      showToast('error', 'Failed to download document');
+    }
+  };
+
+  const handleFieldClick = (field: FieldProvenance, formProvenance: FormProvenance) => {
+    setSelectedFieldProvenance({ field, formProvenance });
+  };
+
+  const getHighlightedField = () => {
+    if (!selectedFieldProvenance) return undefined;
+
+    const { field, formProvenance } = selectedFieldProvenance;
+    return {
+      fieldName: field.fieldName,
+      boundingBox: field.boundingBox,
+      formType: formProvenance.formType,
+      pageNumber: field.pageNumber || formProvenance.pageNumber,
+      confidence: field.confidence
+    };
   };
 
   const formatDate = (dateStr: string) => {
@@ -346,6 +418,39 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
                 </div>
               )}
             </div>
+          )}
+
+          {/* Document List */}
+          <SubmissionDocumentsList
+            documents={documents}
+            selectedDocumentId={selectedDocument?.id}
+            onDocumentSelect={handleDocumentSelect}
+            onDocumentDownload={handleDocumentDownload}
+          />
+
+          {/* Document Viewer */}
+          {selectedDocument && (
+            <DocumentViewer
+              document={selectedDocument}
+              submissionId={returnId}
+              highlightedField={getHighlightedField()}
+            />
+          )}
+
+          {/* Extraction Provenance */}
+          {selectedDocument && selectedDocument.fieldProvenance && (
+            <ExtractionProvenanceDisplay
+              provenance={(() => {
+                try {
+                  const parsed = JSON.parse(selectedDocument.fieldProvenance);
+                  return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                  return [];
+                }
+              })()}
+              onFieldClick={handleFieldClick}
+              selectedFieldName={selectedFieldProvenance?.field.fieldName}
+            />
           )}
         </div>
 
