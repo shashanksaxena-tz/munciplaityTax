@@ -361,18 +361,18 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
   if (loading && !metrics) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading dashboard...</span>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#970bed]"></div>
+        <span className="ml-3 text-[#5d6567]">Loading dashboard...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+      <div className="bg-[#ec1656]/10 border border-[#ec1656]/30 rounded-lg p-4">
         <div className="flex items-center">
-          <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
-          <p className="text-red-800">Error loading dashboard: {error}</p>
+          <AlertCircle className="h-5 w-5 text-[#ec1656] mr-2" />
+          <p className="text-[#ec1656]">Error loading dashboard: {error}</p>
         </div>
       </div>
     );
@@ -381,13 +381,13 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg border border-[#dcdede] shadow p-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-[#0f1012]">
               {userRole === 'filer' ? 'My Account' : 'Ledger Dashboard'}
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-[#5d6567] mt-1">
               {userRole === 'filer' 
                 ? 'View your payment history and account balance'
                 : 'Monitor revenue, receivables, and financial reconciliation'}
@@ -395,14 +395,14 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
           </div>
           <div className="flex items-center gap-3">
             {/* Data Source Toggle */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
-              <span className={`text-xs font-medium ${dataSource === 'backend' ? 'text-green-600' : 'text-orange-600'}`}>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f0f0f0] rounded-lg">
+              <span className={`text-xs font-medium ${dataSource === 'backend' ? 'text-[#10b981]' : 'text-[#f59e0b]'}`}>
                 {dataSource === 'backend' ? '● Backend' : '● Mock'}
               </span>
               <button
                 onClick={toggleDataSource}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  useMockData ? 'bg-orange-500' : 'bg-green-500'
+                  useMockData ? 'bg-[#f59e0b]' : 'bg-[#10b981]'
                 }`}
                 title={useMockData ? 'Switch to Backend Data' : 'Switch to Mock Data'}
               >
@@ -415,7 +415,7 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
             </div>
             <button
               onClick={fetchDashboardData}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-lg transition-colors"
               disabled={loading}
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
@@ -494,8 +494,8 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="bg-white rounded-lg border border-[#dcdede] shadow p-6">
+        <h2 className="text-xl font-semibold text-[#0f1012] mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {userRole === 'filer' ? (
             <>
@@ -564,48 +564,48 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg border border-[#dcdede] shadow p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Transactions</h2>
+          <h2 className="text-xl font-semibold text-[#0f1012]">Recent Transactions</h2>
           <button
             onClick={() => handleNavigation(userRole === 'filer' ? '/statement' : '/transactions')}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="text-[#970bed] hover:text-[#7f09c5] text-sm font-medium"
           >
             View All →
           </button>
         </div>
         
         {recentTransactions.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No recent transactions</p>
+          <p className="text-[#babebf] text-center py-8">No recent transactions</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-[#dcdede]">
+              <thead className="bg-[#fbfbfb]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                     Description
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-center text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-[#dcdede]">
                 {recentTransactions.map((txn) => (
-                  <tr key={txn.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <tr key={txn.id} className="hover:bg-[#fbfbfb]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#0f1012]">
                       {new Date(txn.date).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-[#0f1012]">
                       {txn.description}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -631,11 +631,11 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
 
       {/* Last Reconciliation (Municipality only) */}
       {userRole !== 'filer' && (
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg border border-[#dcdede] shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">Last Reconciliation</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <h3 className="text-lg font-semibold text-[#0f1012]">Last Reconciliation</h3>
+              <p className="text-sm text-[#5d6567] mt-1">
                 {metrics?.lastReconciliationDate 
                   ? `Completed on ${new Date(metrics.lastReconciliationDate).toLocaleDateString()}`
                   : 'Not yet run'}
@@ -643,7 +643,7 @@ const LedgerDashboard: React.FC<LedgerDashboardProps> = ({
             </div>
             <button
               onClick={() => handleNavigation('/reconciliation')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-lg transition-colors"
             >
               Run Reconciliation
             </button>
@@ -666,23 +666,23 @@ interface MetricCardProps {
 
 const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, trend, color }) => {
   const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    orange: 'bg-orange-100 text-orange-600',
-    red: 'bg-red-100 text-red-600',
-    purple: 'bg-purple-100 text-purple-600',
-    indigo: 'bg-indigo-100 text-indigo-600',
-    yellow: 'bg-yellow-100 text-yellow-600',
+    blue: 'bg-[#ebf4ff] text-[#469fe8]',
+    green: 'bg-[#d5faeb] text-[#10b981]',
+    orange: 'bg-[#f59e0b]/10 text-[#f59e0b]',
+    red: 'bg-[#ec1656]/10 text-[#ec1656]',
+    purple: 'bg-[#970bed]/10 text-[#970bed]',
+    indigo: 'bg-[#ebf4ff] text-[#469fe8]',
+    yellow: 'bg-[#f59e0b]/10 text-[#f59e0b]',
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white rounded-lg border border-[#dcdede] shadow p-6">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-2">{value}</p>
+          <p className="text-sm font-medium text-[#5d6567]">{title}</p>
+          <p className="text-2xl font-bold text-[#0f1012] mt-2">{value}</p>
           {trend && (
-            <p className="text-sm text-green-600 mt-1">{trend}</p>
+            <p className="text-sm text-[#10b981] mt-1">{trend}</p>
           )}
         </div>
         <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
@@ -703,16 +703,16 @@ interface ActionButtonProps {
 
 const ActionButton: React.FC<ActionButtonProps> = ({ title, description, icon, onClick, color }) => {
   const colorClasses = {
-    blue: 'bg-blue-50 hover:bg-blue-100 text-blue-600',
-    green: 'bg-green-50 hover:bg-green-100 text-green-600',
-    purple: 'bg-purple-50 hover:bg-purple-100 text-purple-600',
-    orange: 'bg-orange-50 hover:bg-orange-100 text-orange-600',
+    blue: 'bg-[#ebf4ff] hover:bg-[#469fe8]/20 text-[#469fe8]',
+    green: 'bg-[#d5faeb] hover:bg-[#10b981]/20 text-[#10b981]',
+    purple: 'bg-[#970bed]/10 hover:bg-[#970bed]/20 text-[#970bed]',
+    orange: 'bg-[#f59e0b]/10 hover:bg-[#f59e0b]/20 text-[#f59e0b]',
   };
 
   return (
     <button
       onClick={onClick}
-      className={`p-4 rounded-lg transition-colors text-left ${colorClasses[color]}`}
+      className={`p-4 rounded-lg transition-colors text-left border border-[#dcdede] ${colorClasses[color]}`}
     >
       <div className="flex items-start space-x-3">
         <div className="flex-shrink-0">{icon}</div>
@@ -738,13 +738,13 @@ const formatCurrency = (amount: number): string => {
 const getTypeColor = (type: string): string => {
   switch (type.toLowerCase()) {
     case 'payment':
-      return 'bg-green-100 text-green-800';
+      return 'bg-[#d5faeb] text-[#10b981]';
     case 'assessment':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-[#ebf4ff] text-[#469fe8]';
     case 'refund':
-      return 'bg-purple-100 text-purple-800';
+      return 'bg-[#970bed]/10 text-[#970bed]';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-[#f0f0f0] text-[#5d6567]';
   }
 };
 
@@ -753,15 +753,15 @@ const getStatusColor = (status: string): string => {
     case 'approved':
     case 'completed':
     case 'posted':
-      return 'bg-green-100 text-green-800';
+      return 'bg-[#d5faeb] text-[#10b981]';
     case 'pending':
     case 'requested':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-[#f59e0b]/10 text-[#f59e0b]';
     case 'declined':
     case 'failed':
-      return 'bg-red-100 text-red-800';
+      return 'bg-[#ec1656]/10 text-[#ec1656]';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'bg-[#f0f0f0] text-[#5d6567]';
   }
 };
 

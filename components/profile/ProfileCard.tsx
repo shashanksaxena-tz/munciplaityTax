@@ -127,16 +127,16 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
                 </div>
 
                 {/* Card Footer */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div className="px-6 py-4 bg-[#f8f9fa] border-t border-[#dcdede] flex items-center justify-between">
                     {!isActive ? (
                         <button
                             onClick={handleSetActive}
-                            className="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition"
+                            className="text-sm font-medium text-[#469fe8] hover:text-[#970bed] transition"
                         >
                             Set as Active
                         </button>
                     ) : (
-                        <span className="inline-flex items-center text-sm font-medium text-green-600">
+                        <span className="inline-flex items-center text-sm font-medium text-[#10b981]">
                             <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                             </svg>
@@ -147,7 +147,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
                     <div className="flex space-x-2">
                         <button
                             onClick={() => setIsEditModalOpen(true)}
-                            className="p-2 text-gray-400 hover:text-gray-600 transition"
+                            className="p-2 text-[#babebf] hover:text-[#5d6567] transition"
                             title="Edit"
                         >
                             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -158,7 +158,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
                         {!profile.isPrimary && (
                             <button
                                 onClick={() => setShowDeleteConfirm(true)}
-                                className="p-2 text-gray-400 hover:text-red-600 transition"
+                                className="p-2 text-[#babebf] hover:text-[#ec1656] transition"
                                 title="Delete"
                             >
                                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -181,20 +181,20 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({ profile }) => {
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-50 overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={() => setShowDeleteConfirm(false)} />
+                        <div className="fixed inset-0 transition-opacity bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
 
-                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-[#dcdede]">
                             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                                 <div className="sm:flex sm:items-start">
-                                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                                        <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-[#fff5f5] sm:mx-0 sm:h-10 sm:w-10">
+                                        <svg className="h-6 w-6 text-[#ec1656]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                         </svg>
                                     </div>
                                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900">Delete Profile</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-[#0f1012]">Delete Profile</h3>
                                         <div className="mt-2">
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-[#5d6567]">
                                                 Are you sure you want to delete the profile for <strong>{profile.name}</strong>? This action cannot be undone.
                                             </p>
                                         </div>

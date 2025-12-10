@@ -25,46 +25,46 @@ export const ReconciliationWizard: React.FC<ReconciliationWizardProps> = ({ prof
   return (
     <div className="max-w-3xl mx-auto py-8 animate-fadeIn">
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full"><ChevronLeft className="w-5 h-5 text-slate-500"/></button>
+        <button onClick={onBack} className="p-2 hover:bg-[#fbfbfb] rounded-full"><ChevronLeft className="w-5 h-5 text-[#5d6567]"/></button>
         <div>
-           <h2 className="text-xl font-bold text-slate-900">Form W-3: Annual Reconciliation</h2>
-           <p className="text-sm text-slate-500">{profile.businessName} • Tax Year {currentYear}</p>
+           <h2 className="text-xl font-bold text-[#0f1012]">Form W-3: Annual Reconciliation</h2>
+           <p className="text-sm text-[#5d6567]">{profile.businessName} • Tax Year {currentYear}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#dcdede] p-8">
         {!result ? (
           <div className="space-y-6">
-             <div className="bg-indigo-50 p-4 rounded-xl">
-                <div className="text-sm font-bold text-indigo-800 uppercase mb-1">Total W-1 Tax Remitted</div>
-                <div className="text-3xl font-bold text-indigo-900">${totalW1.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
-                <div className="text-xs text-indigo-600 mt-1">Calculated from {filings.length} filings this year.</div>
+             <div className="bg-[#ebf4ff] border border-[#469fe8]/30 p-4 rounded-xl">
+                <div className="text-sm font-bold text-[#469fe8] uppercase mb-1">Total W-1 Tax Remitted</div>
+                <div className="text-3xl font-bold text-[#0f1012]">${totalW1.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
+                <div className="text-xs text-[#5d6567] mt-1">Calculated from {filings.length} filings this year.</div>
              </div>
              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Total Local Tax Withheld on W-2s</label>
+                <label className="block text-sm font-bold text-[#102124] mb-2">Total Local Tax Withheld on W-2s</label>
                 <input 
                   type="number" 
                   value={w2Tax} 
                   onChange={e=>setW2Tax(parseFloat(e.target.value))} 
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-lg"
+                  className="w-full px-4 py-3 border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 rounded-xl outline-none text-lg"
                   placeholder="0.00"
                 />
-                <p className="text-xs text-slate-500 mt-2">Enter the Sum of Box 19 from all employee W-2s.</p>
+                <p className="text-xs text-[#5d6567] mt-2">Enter the Sum of Box 19 from all employee W-2s.</p>
              </div>
-             <button onClick={handleReconcile} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700">Run Reconciliation</button>
+             <button onClick={handleReconcile} className="w-full py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-xl font-bold">Run Reconciliation</button>
           </div>
         ) : (
           <div className="text-center space-y-6 animate-slideLeft">
              {result.status === 'BALANCED' ? (
-               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto"><CheckCircle className="w-8 h-8 text-green-600"/></div>
+               <div className="w-16 h-16 bg-[#d5faeb] rounded-full flex items-center justify-center mx-auto"><CheckCircle className="w-8 h-8 text-[#10b981]"/></div>
              ) : (
-               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto"><AlertOctagon className="w-8 h-8 text-red-600"/></div>
+               <div className="w-16 h-16 bg-[#ec1656]/10 rounded-full flex items-center justify-center mx-auto"><AlertOctagon className="w-8 h-8 text-[#ec1656]"/></div>
              )}
              
-             <h3 className="text-2xl font-bold text-slate-900">{result.status === 'BALANCED' ? 'Account Balanced' : 'Discrepancy Found'}</h3>
-             <p className="text-slate-600">Difference: <span className="font-mono font-bold">${result.discrepancy.toFixed(2)}</span></p>
+             <h3 className="text-2xl font-bold text-[#0f1012]">{result.status === 'BALANCED' ? 'Account Balanced' : 'Discrepancy Found'}</h3>
+             <p className="text-[#5d6567]">Difference: <span className="font-mono font-bold text-[#0f1012]">${result.discrepancy.toFixed(2)}</span></p>
              
-             <button onClick={() => onComplete(result)} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold">Submit W-3</button>
+             <button onClick={() => onComplete(result)} className="w-full py-3 bg-[#0f1012] hover:bg-[#1f2022] text-white rounded-xl font-bold">Submit W-3</button>
           </div>
         )}
       </div>

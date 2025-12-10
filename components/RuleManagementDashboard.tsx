@@ -1099,10 +1099,10 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
 
   const getStatusBadge = (status: ApprovalStatus) => {
     const styles: Record<ApprovalStatus, { bg: string; text: string; icon: React.ReactNode }> = {
-      PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-800', icon: <Clock className="w-3 h-3" /> },
-      APPROVED: { bg: 'bg-green-100', text: 'text-green-800', icon: <CheckCircle className="w-3 h-3" /> },
-      REJECTED: { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle className="w-3 h-3" /> },
-      VOIDED: { bg: 'bg-gray-100', text: 'text-gray-800', icon: <X className="w-3 h-3" /> }
+      PENDING: { bg: 'bg-[#f59e0b]/10', text: 'text-[#f59e0b]', icon: <Clock className="w-3 h-3" /> },
+      APPROVED: { bg: 'bg-[#d5faeb]', text: 'text-[#10b981]', icon: <CheckCircle className="w-3 h-3" /> },
+      REJECTED: { bg: 'bg-[#ec1656]/10', text: 'text-[#ec1656]', icon: <XCircle className="w-3 h-3" /> },
+      VOIDED: { bg: 'bg-[#f0f0f0]', text: 'text-[#0f1012]', icon: <X className="w-3 h-3" /> }
     };
     const style = styles[status];
     return (
@@ -1134,35 +1134,35 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="p-2 text-[#babebf] hover:text-[#5d6567] hover:bg-[#f0f0f0] rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <Settings className="w-6 h-6 text-indigo-600" />
+              <h1 className="text-2xl font-bold text-[#0f1012] flex items-center gap-2">
+                <Settings className="w-6 h-6 text-[#970bed]" />
                 Tax Rule Management
               </h1>
-              <p className="text-slate-600 mt-1">
+              <p className="text-[#5d6567] mt-1">
                 Create, update, approve, and manage tax calculation rules
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             {/* Data Source Toggle */}
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-lg">
-              <span className={`text-xs font-medium ${dataSource === 'backend' ? 'text-green-600' : 'text-orange-600'}`}>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f0f0f0] rounded-lg">
+              <span className={`text-xs font-medium ${dataSource === 'backend' ? 'text-[#10b981]' : 'text-orange-600'}`}>
                 {dataSource === 'backend' ? '● Backend' : '● Mock'}
               </span>
               <button
                 onClick={toggleDataSource}
                 className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                  useMockData ? 'bg-orange-500' : 'bg-green-500'
+                  useMockData ? 'bg-orange-500' : 'bg-[#10b981]'
                 }`}
                 title={useMockData ? 'Switch to Backend Data' : 'Switch to Mock Data'}
               >
@@ -1175,14 +1175,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
             </div>
             <button
               onClick={loadRules}
-              className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="p-2 text-[#babebf] hover:text-[#5d6567] hover:bg-[#f0f0f0] rounded-lg transition-colors"
               title="Refresh"
             >
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white rounded-lg hover:from-[#7f09c5] hover:to-[#3a8bd4] transition-colors font-medium"
             >
               <Plus className="w-4 h-4" />
               Create Rule
@@ -1221,24 +1221,24 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-4">
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-64">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#babebf]" />
               <input
                 type="text"
                 placeholder="Search rules by name or code..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm"
               />
             </div>
           </div>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm bg-white"
+            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm bg-white"
           >
             <option value="">All Categories</option>
             {CATEGORIES.map(cat => (
@@ -1248,7 +1248,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
           <select
             value={entityTypeFilter}
             onChange={(e) => setEntityTypeFilter(e.target.value)}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm bg-white"
+            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm bg-white"
           >
             <option value="">All Entity Types</option>
             <option value="INDIVIDUAL">Individual</option>
@@ -1260,7 +1260,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm bg-white"
+            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm bg-white"
           >
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -1270,7 +1270,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
           </select>
           <button
             onClick={() => setShowDocumentation(true)}
-            className="px-4 py-2 border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors text-sm flex items-center gap-2"
+            className="px-4 py-2 border border-[#970bed]/30 text-[#970bed] rounded-lg hover:bg-[#ebf4ff] transition-colors text-sm flex items-center gap-2"
           >
             <FileText className="w-4 h-4" />
             Documentation
@@ -1279,71 +1279,71 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
       </div>
 
       {/* Rules Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] overflow-hidden">
         {loading ? (
           <div className="p-8 text-center">
-            <RefreshCw className="w-8 h-8 animate-spin text-indigo-600 mx-auto" />
-            <p className="mt-2 text-slate-600">Loading rules...</p>
+            <RefreshCw className="w-8 h-8 animate-spin text-[#970bed] mx-auto" />
+            <p className="mt-2 text-[#5d6567]">Loading rules...</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center">
-            <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
-            <p className="mt-2 text-red-600">{error}</p>
-            <button onClick={loadRules} className="mt-4 text-indigo-600 hover:underline">
+            <AlertCircle className="w-8 h-8 text-[#ec1656] mx-auto" />
+            <p className="mt-2 text-[#ec1656]">{error}</p>
+            <button onClick={loadRules} className="mt-4 text-[#970bed] hover:underline">
               Try again
             </button>
           </div>
         ) : filteredRules.length === 0 ? (
           <div className="p-8 text-center">
-            <FileText className="w-8 h-8 text-slate-400 mx-auto" />
-            <p className="mt-2 text-slate-600">No rules found</p>
+            <FileText className="w-8 h-8 text-[#babebf] mx-auto" />
+            <p className="mt-2 text-[#5d6567]">No rules found</p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="mt-4 text-indigo-600 hover:underline"
+              className="mt-4 text-[#970bed] hover:underline"
             >
               Create your first rule
             </button>
           </div>
         ) : (
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50">
+          <table className="min-w-full divide-y divide-[#dcdede]">
+            <thead className="bg-[#f8f9fa]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                   Rule
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                   Value
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                   Effective Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-[#5d6567] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-white divide-y divide-[#dcdede]">
               {filteredRules.map(rule => (
-                <tr key={rule.ruleId} className="hover:bg-slate-50">
+                <tr key={rule.ruleId} className="hover:bg-[#f8f9fa]">
                   <td className="px-6 py-4">
                     <div className="flex items-start gap-2">
                       <div className="max-w-md">
-                        <p className="font-medium text-slate-900">{rule.ruleName}</p>
-                        <p className="text-sm text-slate-500">{rule.ruleCode}</p>
+                        <p className="font-medium text-[#0f1012]">{rule.ruleName}</p>
+                        <p className="text-sm text-[#5d6567]">{rule.ruleCode}</p>
                         {rule.description && (
-                          <p className="text-xs text-slate-400 mt-1 overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }} title={rule.description}>
+                          <p className="text-xs text-[#babebf] mt-1 overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }} title={rule.description}>
                             {rule.description}
                           </p>
                         )}
                         <div className="flex gap-1 mt-1">
                           {rule.entityTypes.map(et => (
-                            <span key={et} className="px-1.5 py-0.5 text-xs bg-slate-100 text-slate-600 rounded">
+                            <span key={et} className="px-1.5 py-0.5 text-xs bg-[#f0f0f0] text-[#5d6567] rounded">
                               {et}
                             </span>
                           ))}
@@ -1364,14 +1364,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs font-medium">
+                    <span className="px-2 py-1 bg-[#f0f0f0] text-[#102124] rounded text-xs font-medium">
                       {rule.category}
                     </span>
                   </td>
                   <td className="px-6 py-4 font-mono text-sm">
                     {formatValue(rule)}
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
+                  <td className="px-6 py-4 text-sm text-[#5d6567]">
                     {new Date(rule.effectiveDate).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
@@ -1383,14 +1383,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                         <>
                           <button
                             onClick={() => { setSelectedRule(rule); setShowApproveModal(true); }}
-                            className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors"
+                            className="p-1.5 text-[#10b981] hover:bg-[#d5faeb] rounded transition-colors"
                             title="Approve"
                           >
                             <Check className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => { setSelectedRule(rule); setShowRejectModal(true); }}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-1.5 text-[#ec1656] hover:bg-[#ec1656]/10 rounded transition-colors"
                             title="Reject"
                           >
                             <X className="w-4 h-4" />
@@ -1399,7 +1399,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                       )}
                       <button
                         onClick={() => setEditingRule(rule)}
-                        className="p-1.5 text-slate-600 hover:bg-slate-100 rounded transition-colors"
+                        className="p-1.5 text-[#5d6567] hover:bg-[#f0f0f0] rounded transition-colors"
                         title="Edit"
                       >
                         <Edit2 className="w-4 h-4" />
@@ -1407,7 +1407,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                       {rule.approvalStatus !== 'VOIDED' && !rule.isSystem && (
                         <button
                           onClick={() => handleVoid(rule)}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                          className="p-1.5 text-[#babebf] hover:text-[#ec1656] hover:bg-[#ec1656]/10 rounded transition-colors"
                           title="Void"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1473,12 +1473,12 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
       {showApproveModal && selectedRule && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Approve Rule</h3>
-            <p className="text-slate-600 mb-4">
+            <h3 className="text-lg font-bold text-[#0f1012] mb-4">Approve Rule</h3>
+            <p className="text-[#5d6567] mb-4">
               Are you sure you want to approve the rule "{selectedRule.ruleName}"?
             </p>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-green-800">
+            <div className="bg-[#d5faeb] border border-[#10b981]/20 rounded-lg p-4 mb-4">
+              <p className="text-sm text-[#10b981]">
                 <strong>Value:</strong> {formatValue(selectedRule)}<br />
                 <strong>Effective:</strong> {new Date(selectedRule.effectiveDate).toLocaleDateString()}
               </p>
@@ -1486,14 +1486,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => { setShowApproveModal(false); setSelectedRule(null); }}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                className="px-4 py-2 text-[#5d6567] hover:bg-[#f0f0f0] rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleApprove}
                 disabled={actionLoading}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-lg hover:from-[#059669] hover:to-[#047857] transition-colors disabled:opacity-50"
               >
                 {actionLoading ? 'Approving...' : 'Approve Rule'}
               </button>
@@ -1506,28 +1506,28 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
       {showRejectModal && selectedRule && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Reject Rule</h3>
-            <p className="text-slate-600 mb-4">
+            <h3 className="text-lg font-bold text-[#0f1012] mb-4">Reject Rule</h3>
+            <p className="text-[#5d6567] mb-4">
               Provide a reason for rejecting the rule "{selectedRule.ruleName}":
             </p>
             <textarea
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Enter rejection reason..."
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none mb-4"
+              className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none mb-4"
               rows={3}
             />
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => { setShowRejectModal(false); setSelectedRule(null); setRejectReason(''); }}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                className="px-4 py-2 text-[#5d6567] hover:bg-[#f0f0f0] rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleReject}
                 disabled={actionLoading || !rejectReason.trim()}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-[#ec1656] text-white rounded-lg hover:bg-[#d01149] transition-colors disabled:opacity-50"
               >
                 {actionLoading ? 'Rejecting...' : 'Reject Rule'}
               </button>
@@ -1540,14 +1540,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
       {showDocumentation && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
+            <div className="sticky top-0 bg-white border-b border-[#dcdede] px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold text-[#0f1012] flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#970bed]" />
                 Tax Rule Configuration Guide
               </h3>
               <button
                 onClick={() => setShowDocumentation(false)}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-[#f0f0f0] rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1556,8 +1556,8 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
             <div className="p-6 space-y-8">
               {/* Overview */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">Overview</h4>
-                <p className="text-slate-600">
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">Overview</h4>
+                <p className="text-[#5d6567]">
                   The Tax Rule Management system allows municipalities to configure all aspects of their income tax calculation rules.
                   Rules are tenant-based (specific to each municipality) and support temporal effective dating, version control, and approval workflows.
                 </p>
@@ -1565,21 +1565,21 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
 
               {/* Rule Categories */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">Rule Categories</h4>
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">Rule Categories</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h5 className="font-semibold text-blue-800">TAX_RATES</h5>
-                    <p className="text-sm text-blue-700 mt-1">Municipal tax rates, credit limits, and locality rates for reciprocity calculations</p>
-                    <ul className="text-sm text-blue-600 mt-2 space-y-1">
+                  <div className="p-4 bg-[#ebf4ff] rounded-lg border border-[#469fe8]/20">
+                    <h5 className="font-semibold text-[#469fe8]">TAX_RATES</h5>
+                    <p className="text-sm text-[#469fe8] mt-1">Municipal tax rates, credit limits, and locality rates for reciprocity calculations</p>
+                    <ul className="text-sm text-[#469fe8] mt-2 space-y-1">
                       <li>• MUNICIPAL_TAX_RATE - Primary tax rate (typically 1-3%)</li>
                       <li>• MUNICIPAL_CREDIT_LIMIT_RATE - Max credit for taxes paid elsewhere</li>
                       <li>• LOCALITY_RATE_* - Rates for other Ohio municipalities</li>
                     </ul>
                   </div>
-                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h5 className="font-semibold text-green-800">INCOME_INCLUSION</h5>
-                    <p className="text-sm text-green-700 mt-1">Which types of income are subject to municipal tax</p>
-                    <ul className="text-sm text-green-600 mt-2 space-y-1">
+                  <div className="p-4 bg-[#d5faeb] rounded-lg border border-[#10b981]/20">
+                    <h5 className="font-semibold text-[#10b981]">INCOME_INCLUSION</h5>
+                    <p className="text-sm text-[#10b981] mt-1">Which types of income are subject to municipal tax</p>
+                    <ul className="text-sm text-[#10b981] mt-2 space-y-1">
                       <li>• W2_QUALIFYING_WAGES_RULE - Which W-2 box to use</li>
                       <li>• INCLUDE_SCHEDULE_C - Self-employment income</li>
                       <li>• INCLUDE_SCHEDULE_E - Rental and royalty income</li>
@@ -1605,18 +1605,18 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                       <li>• INTANGIBLE_EXPENSE_RATE - Intangible expense add-back</li>
                     </ul>
                   </div>
-                  <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200">
-                    <h5 className="font-semibold text-indigo-800">ALLOCATION</h5>
-                    <p className="text-sm text-indigo-700 mt-1">Business income allocation/apportionment methods</p>
-                    <ul className="text-sm text-indigo-600 mt-2 space-y-1">
+                  <div className="p-4 bg-[#ebf4ff] rounded-lg border border-[#970bed]/20">
+                    <h5 className="font-semibold text-[#970bed]">ALLOCATION</h5>
+                    <p className="text-sm text-[#970bed] mt-1">Business income allocation/apportionment methods</p>
+                    <ul className="text-sm text-[#970bed] mt-2 space-y-1">
                       <li>• ALLOCATION_METHOD - 3-factor, single-sales, etc.</li>
                       <li>• ALLOCATION_SALES_FACTOR_WEIGHT - Weighting for sales</li>
                     </ul>
                   </div>
-                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                    <h5 className="font-semibold text-slate-800">FILING</h5>
-                    <p className="text-sm text-slate-700 mt-1">Filing thresholds, deadlines, and extensions</p>
-                    <ul className="text-sm text-slate-600 mt-2 space-y-1">
+                  <div className="p-4 bg-[#f8f9fa] rounded-lg border border-[#dcdede]">
+                    <h5 className="font-semibold text-[#0f1012]">FILING</h5>
+                    <p className="text-sm text-[#102124] mt-1">Filing thresholds, deadlines, and extensions</p>
+                    <ul className="text-sm text-[#5d6567] mt-2 space-y-1">
                       <li>• FILING_THRESHOLD - Minimum income requiring return</li>
                       <li>• EXTENSION_DAYS - Extension period (180 days typical)</li>
                       <li>• QUARTERLY_ESTIMATE_THRESHOLD - When estimates required</li>
@@ -1627,36 +1627,36 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
 
               {/* Value Types */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">Value Types</h4>
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">Value Types</h4>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full border border-slate-200 rounded-lg">
-                    <thead className="bg-slate-50">
+                  <table className="min-w-full border border-[#dcdede] rounded-lg">
+                    <thead className="bg-[#f8f9fa]">
                       <tr>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-slate-700 border-b">Type</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-slate-700 border-b">Description</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-slate-700 border-b">Example</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-[#102124] border-b">Type</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-[#102124] border-b">Description</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-[#102124] border-b">Example</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
+                    <tbody className="divide-y divide-[#dcdede]">
                       <tr>
-                        <td className="px-4 py-2 text-sm font-mono text-indigo-600">PERCENTAGE</td>
-                        <td className="px-4 py-2 text-sm text-slate-600">Rate as percentage (0-100)</td>
-                        <td className="px-4 py-2 text-sm text-slate-500">2.0% for municipal tax rate</td>
+                        <td className="px-4 py-2 text-sm font-mono text-[#970bed]">PERCENTAGE</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">Rate as percentage (0-100)</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">2.0% for municipal tax rate</td>
                       </tr>
-                      <tr className="bg-slate-50">
-                        <td className="px-4 py-2 text-sm font-mono text-indigo-600">NUMBER</td>
-                        <td className="px-4 py-2 text-sm text-slate-600">Fixed dollar amount or count</td>
-                        <td className="px-4 py-2 text-sm text-slate-500">$25 for late filing penalty</td>
+                      <tr className="bg-[#f8f9fa]">
+                        <td className="px-4 py-2 text-sm font-mono text-[#970bed]">NUMBER</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">Fixed dollar amount or count</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">$25 for late filing penalty</td>
                       </tr>
                       <tr>
-                        <td className="px-4 py-2 text-sm font-mono text-indigo-600">BOOLEAN</td>
-                        <td className="px-4 py-2 text-sm text-slate-600">True/false toggle</td>
-                        <td className="px-4 py-2 text-sm text-slate-500">ENABLE_NOL = true</td>
+                        <td className="px-4 py-2 text-sm font-mono text-[#970bed]">BOOLEAN</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">True/false toggle</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">ENABLE_NOL = true</td>
                       </tr>
-                      <tr className="bg-slate-50">
-                        <td className="px-4 py-2 text-sm font-mono text-indigo-600">ENUM</td>
-                        <td className="px-4 py-2 text-sm text-slate-600">Selection from allowed values</td>
-                        <td className="px-4 py-2 text-sm text-slate-500">W2 rule: HIGHEST_OF_ALL, BOX_5_MEDICARE</td>
+                      <tr className="bg-[#f8f9fa]">
+                        <td className="px-4 py-2 text-sm font-mono text-[#970bed]">ENUM</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">Selection from allowed values</td>
+                        <td className="px-4 py-2 text-sm text-[#5d6567]">W2 rule: HIGHEST_OF_ALL, BOX_5_MEDICARE</td>
                       </tr>
                     </tbody>
                   </table>
@@ -1665,108 +1665,108 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
 
               {/* Entity Types */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">Entity Types</h4>
-                <p className="text-slate-600 mb-3">Rules can apply to different taxpayer types:</p>
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">Entity Types</h4>
+                <p className="text-[#5d6567] mb-3">Rules can apply to different taxpayer types:</p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">INDIVIDUAL</span>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">BUSINESS</span>
+                  <span className="px-3 py-1 bg-[#ebf4ff] text-[#469fe8] rounded-full text-sm">INDIVIDUAL</span>
+                  <span className="px-3 py-1 bg-[#d5faeb] text-[#10b981] rounded-full text-sm">BUSINESS</span>
                   <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm">C-CORP</span>
                   <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">S-CORP</span>
                   <span className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm">LLC</span>
-                  <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm">PARTNERSHIP</span>
+                  <span className="px-3 py-1 bg-[#f0f0f0] text-[#102124] rounded-full text-sm">PARTNERSHIP</span>
                 </div>
               </section>
 
               {/* W2 Qualifying Wages */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">W-2 Qualifying Wages Rule</h4>
-                <p className="text-slate-600 mb-3">
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">W-2 Qualifying Wages Rule</h4>
+                <p className="text-[#5d6567] mb-3">
                   Municipalities can choose which W-2 box determines the municipal tax base. This is critical for accurate tax calculation:
                 </p>
                 <div className="space-y-2">
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <code className="text-indigo-600 font-mono">HIGHEST_OF_ALL</code>
-                    <p className="text-sm text-slate-600 mt-1">Uses the highest of Box 1, Box 5, or Box 18 (most common, maximizes tax base)</p>
+                  <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#dcdede]">
+                    <code className="text-[#970bed] font-mono">HIGHEST_OF_ALL</code>
+                    <p className="text-sm text-[#5d6567] mt-1">Uses the highest of Box 1, Box 5, or Box 18 (most common, maximizes tax base)</p>
                   </div>
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <code className="text-indigo-600 font-mono">BOX_5_MEDICARE</code>
-                    <p className="text-sm text-slate-600 mt-1">Always use Medicare wages (Box 5) - includes pre-tax deductions</p>
+                  <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#dcdede]">
+                    <code className="text-[#970bed] font-mono">BOX_5_MEDICARE</code>
+                    <p className="text-sm text-[#5d6567] mt-1">Always use Medicare wages (Box 5) - includes pre-tax deductions</p>
                   </div>
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <code className="text-indigo-600 font-mono">BOX_18_LOCAL</code>
-                    <p className="text-sm text-slate-600 mt-1">Always use local wages (Box 18) - employer-reported local wages</p>
+                  <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#dcdede]">
+                    <code className="text-[#970bed] font-mono">BOX_18_LOCAL</code>
+                    <p className="text-sm text-[#5d6567] mt-1">Always use local wages (Box 18) - employer-reported local wages</p>
                   </div>
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <code className="text-indigo-600 font-mono">BOX_1_FEDERAL</code>
-                    <p className="text-sm text-slate-600 mt-1">Always use federal wages (Box 1) - excludes pre-tax benefits</p>
+                  <div className="p-3 bg-[#f8f9fa] rounded-lg border border-[#dcdede]">
+                    <code className="text-[#970bed] font-mono">BOX_1_FEDERAL</code>
+                    <p className="text-sm text-[#5d6567] mt-1">Always use federal wages (Box 1) - excludes pre-tax benefits</p>
                   </div>
                 </div>
               </section>
 
               {/* Ohio Municipality Localities */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">Ohio Municipality Rates (Schedule Y)</h4>
-                <p className="text-slate-600 mb-3">
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">Ohio Municipality Rates (Schedule Y)</h4>
+                <p className="text-[#5d6567] mb-3">
                   These locality rates are used for calculating credits on Schedule Y when taxpayers work in multiple municipalities.
                   The system includes rates for 35+ Ohio municipalities:
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                  <div className="p-2 bg-slate-50 rounded">Columbus - 2.5%</div>
-                  <div className="p-2 bg-slate-50 rounded">Cleveland - 2.5%</div>
-                  <div className="p-2 bg-slate-50 rounded">Cincinnati - 2.1%</div>
-                  <div className="p-2 bg-slate-50 rounded">Toledo - 2.25%</div>
-                  <div className="p-2 bg-slate-50 rounded">Akron - 2.5%</div>
-                  <div className="p-2 bg-slate-50 rounded">Dayton - 2.5%</div>
-                  <div className="p-2 bg-slate-50 rounded">Dublin - 2.0%</div>
-                  <div className="p-2 bg-slate-50 rounded">Westerville - 2.0%</div>
-                  <div className="p-2 bg-slate-50 rounded">Hilliard - 2.5%</div>
-                  <div className="p-2 bg-slate-50 rounded">Upper Arlington - 2.5%</div>
-                  <div className="p-2 bg-slate-50 rounded">Worthington - 2.5%</div>
-                  <div className="p-2 bg-slate-50 rounded">Gahanna - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Columbus - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Cleveland - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Cincinnati - 2.1%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Toledo - 2.25%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Akron - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Dayton - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Dublin - 2.0%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Westerville - 2.0%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Hilliard - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Upper Arlington - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Worthington - 2.5%</div>
+                  <div className="p-2 bg-[#f8f9fa] rounded">Gahanna - 2.5%</div>
                 </div>
-                <p className="text-sm text-slate-500 mt-2 italic">
+                <p className="text-sm text-[#5d6567] mt-2 italic">
                   * Rates are updated annually. Additional localities can be added via the Create Rule function.
                 </p>
               </section>
 
               {/* Approval Workflow */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">Approval Workflow</h4>
-                <p className="text-slate-600 mb-3">All rule changes go through an approval workflow:</p>
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">Approval Workflow</h4>
+                <p className="text-[#5d6567] mb-3">All rule changes go through an approval workflow:</p>
                 <div className="flex items-center gap-4 overflow-x-auto py-2">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">PENDING</span>
-                    <span className="text-slate-400">→</span>
+                    <span className="px-2 py-1 bg-[#f59e0b]/10 text-[#f59e0b] rounded text-sm font-medium">PENDING</span>
+                    <span className="text-[#babebf]">→</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">APPROVED</span>
-                    <span className="text-slate-400">or</span>
-                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-sm font-medium">REJECTED</span>
+                    <span className="px-2 py-1 bg-[#d5faeb] text-[#10b981] rounded text-sm font-medium">APPROVED</span>
+                    <span className="text-[#babebf]">or</span>
+                    <span className="px-2 py-1 bg-[#ec1656]/10 text-[#ec1656] rounded text-sm font-medium">REJECTED</span>
                   </div>
                 </div>
-                <p className="text-sm text-slate-500 mt-2">
+                <p className="text-sm text-[#5d6567] mt-2">
                   System/default rules are marked with a <span className="px-1 py-0.5 bg-purple-100 text-purple-700 rounded text-xs">DEFAULT</span> badge and cannot be deleted (only modified).
                 </p>
               </section>
 
               {/* Best Practices */}
               <section>
-                <h4 className="text-lg font-semibold text-slate-800 mb-3">Best Practices</h4>
-                <ul className="space-y-2 text-slate-600">
+                <h4 className="text-lg font-semibold text-[#0f1012] mb-3">Best Practices</h4>
+                <ul className="space-y-2 text-[#5d6567]">
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-[#10b981] mt-0.5" />
                     Always include an ordinance reference for audit trail
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-[#10b981] mt-0.5" />
                     Set effective dates in the future to allow time for approval
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-[#10b981] mt-0.5" />
                     Use end dates for temporary rate changes
                   </li>
                   <li className="flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-[#10b981] mt-0.5" />
                     Provide clear change reasons for audit compliance
                   </li>
                 </ul>
@@ -1788,18 +1788,18 @@ const StatCard: React.FC<{
   highlight?: boolean;
 }> = ({ title, value, icon, color, highlight }) => {
   const colors = {
-    blue: 'bg-blue-100 text-blue-600',
-    yellow: 'bg-yellow-100 text-yellow-600',
-    green: 'bg-green-100 text-green-600',
-    red: 'bg-red-100 text-red-600'
+    blue: 'bg-[#ebf4ff] text-[#469fe8]',
+    yellow: 'bg-[#f59e0b]/10 text-[#f59e0b]',
+    green: 'bg-[#d5faeb] text-[#10b981]',
+    red: 'bg-[#ec1656]/10 text-[#ec1656]'
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border p-4 ${highlight ? 'border-yellow-400 ring-2 ring-yellow-100' : 'border-slate-200'}`}>
+    <div className={`bg-white rounded-lg shadow-sm border p-4 ${highlight ? 'border-yellow-400 ring-2 ring-yellow-100' : 'border-[#dcdede]'}`}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-slate-600">{title}</p>
-          <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+          <p className="text-sm text-[#5d6567]">{title}</p>
+          <p className="text-2xl font-bold text-[#0f1012] mt-1">{value}</p>
         </div>
         <div className={`p-3 rounded-lg ${colors[color]}`}>
           {icon}
@@ -1893,15 +1893,15 @@ const RuleFormModal: React.FC<{
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto py-8">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
-        <div className="px-6 py-4 border-b border-slate-200">
-          <h3 className="text-lg font-bold text-slate-900">
+        <div className="px-6 py-4 border-b border-[#dcdede]">
+          <h3 className="text-lg font-bold text-[#0f1012]">
             {rule ? 'Edit Rule' : 'Create New Rule'}
           </h3>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[#102124] mb-1">
                 Rule Code *
               </label>
               <input
@@ -1909,12 +1909,12 @@ const RuleFormModal: React.FC<{
                 value={formData.ruleCode}
                 onChange={(e) => setFormData({ ...formData, ruleCode: e.target.value.toUpperCase() })}
                 placeholder="e.g., MUNICIPAL_TAX_RATE"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[#102124] mb-1">
                 Rule Name *
               </label>
               <input
@@ -1922,7 +1922,7 @@ const RuleFormModal: React.FC<{
                 value={formData.ruleName}
                 onChange={(e) => setFormData({ ...formData, ruleName: e.target.value })}
                 placeholder="e.g., Dublin Municipal Tax Rate"
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             </div>
@@ -1930,13 +1930,13 @@ const RuleFormModal: React.FC<{
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[#102124] mb-1">
                 Category *
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value as RuleCategory })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none bg-white"
               >
                 {CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -1944,13 +1944,13 @@ const RuleFormModal: React.FC<{
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[#102124] mb-1">
                 Value Type *
               </label>
               <select
                 value={formData.valueType}
                 onChange={(e) => setFormData({ ...formData, valueType: e.target.value as RuleValueType })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none bg-white"
               >
                 {VALUE_TYPES.map(type => (
                   <option key={type} value={type}>{type}</option>
@@ -1960,14 +1960,14 @@ const RuleFormModal: React.FC<{
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#102124] mb-1">
               Value *
             </label>
             {formData.valueType === 'BOOLEAN' ? (
               <select
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none bg-white"
               >
                 <option value="true">Yes / True</option>
                 <option value="false">No / False</option>
@@ -1979,43 +1979,43 @@ const RuleFormModal: React.FC<{
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
                 placeholder={formData.valueType === 'PERCENTAGE' ? 'e.g., 2.5' : 'Enter value'}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             )}
             {formData.valueType === 'PERCENTAGE' && (
-              <p className="text-xs text-slate-500 mt-1">Enter as percentage (e.g., 2.5 for 2.5%)</p>
+              <p className="text-xs text-[#5d6567] mt-1">Enter as percentage (e.g., 2.5 for 2.5%)</p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[#102124] mb-1">
                 Effective Date *
               </label>
               <input
                 type="date"
                 value={formData.effectiveDate}
                 onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-[#102124] mb-1">
                 End Date (Optional)
               </label>
               <input
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#102124] mb-1">
               Applies To
             </label>
             <div className="flex gap-4">
@@ -2031,30 +2031,30 @@ const RuleFormModal: React.FC<{
                         setFormData({ ...formData, entityTypes: formData.entityTypes.filter(t => t !== type) });
                       }
                     }}
-                    className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-[#dcdede] text-[#970bed] focus:ring-[#970bed]"
                   />
-                  <span className="text-sm text-slate-700">{type}</span>
+                  <span className="text-sm text-[#102124]">{type}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#102124] mb-1">
               Change Reason *
             </label>
             <textarea
               value={formData.changeReason}
               onChange={(e) => setFormData({ ...formData, changeReason: e.target.value })}
               placeholder="Describe why this rule is being created/updated..."
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
               rows={2}
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-[#102124] mb-1">
               Ordinance Reference (Optional)
             </label>
             <input
@@ -2062,22 +2062,22 @@ const RuleFormModal: React.FC<{
               value={formData.ordinanceReference}
               onChange={(e) => setFormData({ ...formData, ordinanceReference: e.target.value })}
               placeholder="e.g., Dublin Ord. 2024-001"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#dcdede]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-[#5d6567] hover:bg-[#f0f0f0] rounded-lg transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white rounded-lg hover:from-[#7f09c5] hover:to-[#3a8bd4] transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : rule ? 'Update Rule' : 'Create Rule'}
             </button>

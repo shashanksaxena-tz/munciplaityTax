@@ -5,6 +5,7 @@ import { RefreshCcw, ChevronLeft, Info, Printer, FileText, Table2, PieChart, Loc
 import { DiscrepancyView } from './DiscrepancyView';
 import { api } from '../services/api';
 import { PaymentGateway } from './PaymentGateway';
+import { colors } from '../config/design-system';
 
 interface ResultsSectionProps {
   result: TaxCalculationResult;
@@ -61,15 +62,15 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
       {/* Header */}
       <div className="flex justify-between items-start print:hidden">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-[#0f1012] flex items-center gap-2">
             Tax Return {result.settings.taxYear}
-            {result.settings.isAmendment && <span className="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded font-bold uppercase">Amendment</span>}
-            {isSubmitted && <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-bold uppercase flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Submitted</span>}
+            {result.settings.isAmendment && <span className="bg-[#f59e0b]/10 text-[#f59e0b] text-xs px-2 py-1 rounded font-bold uppercase">Amendment</span>}
+            {isSubmitted && <span className="bg-[#d5faeb] text-[#10b981] text-xs px-2 py-1 rounded font-bold uppercase flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Submitted</span>}
           </h2>
-          <div className="text-sm text-slate-500 mt-1 font-medium">{result.profile.name} {result.profile.ssn && `• ***-**-${result.profile.ssn}`}</div>
+          <div className="text-sm text-[#5d6567] mt-1 font-medium">{result.profile.name} {result.profile.ssn && `• ***-**-${result.profile.ssn}`}</div>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm font-medium transition-colors">
+          <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-xl shadow-lg font-medium transition-all">
             <FileDown className="w-4 h-4" /> Download Official PDF
           </button>
         </div>
@@ -82,7 +83,7 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-slate-200 print:hidden">
+      <div className="flex gap-1 border-b border-[#dcdede] print:hidden">
         <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} label="Return Overview" icon={<FileText className="w-4 h-4" />} />
         <TabButton active={activeTab === 'schedulex'} onClick={() => setActiveTab('schedulex')} label="Schedule X Details" icon={<Table2 className="w-4 h-4" />} count={result.scheduleX.entries.length} />
         <TabButton active={activeTab === 'scheduley'} onClick={() => setActiveTab('scheduley')} label="Schedule Y Credits" icon={<Table2 className="w-4 h-4" />} count={result.scheduleY.entries.length} />
@@ -92,13 +93,13 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
         <div className="lg:col-span-2 space-y-6">
           {activeTab === 'overview' && (
             <>
-              <div className="bg-indigo-900 rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
+              <div className="bg-gradient-to-r from-[#970bed] to-[#469fe8] rounded-2xl p-8 text-white shadow-xl relative overflow-hidden">
                 <div className="relative z-10">
-                  <div className="text-indigo-200 font-medium mb-1">Total Municipal Tax Due (Dublin)</div>
+                  <div className="text-white/80 font-medium mb-1">Total Municipal Tax Due (Dublin)</div>
                   <div className="text-4xl font-bold mb-4">${result.municipalLiabilityAfterCredits.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
                   <div className="flex gap-8 text-sm">
-                    <div><span className="block text-indigo-300 text-xs uppercase">Taxable Income</span><span className="font-semibold text-lg">${result.totalTaxableIncome.toLocaleString()}</span></div>
-                    <div><span className="block text-indigo-300 text-xs uppercase">Credits</span><span className="font-semibold text-lg text-green-300">-${result.scheduleY.totalCredit.toLocaleString()}</span></div>
+                    <div><span className="block text-white/70 text-xs uppercase">Taxable Income</span><span className="font-semibold text-lg">${result.totalTaxableIncome.toLocaleString()}</span></div>
+                    <div><span className="block text-white/70 text-xs uppercase">Credits</span><span className="font-semibold text-lg text-green-300">-${result.scheduleY.totalCredit.toLocaleString()}</span></div>
                   </div>
                 </div>
               </div>
@@ -110,11 +111,11 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
           {activeTab === 'schedulex' && (
             <div className="space-y-6">
               {/* Professional Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-xl p-6 shadow-lg">
+              <div className="bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white rounded-xl p-6 shadow-lg">
                 <h3 className="text-2xl font-bold mb-2">Schedule X - Supplemental Income</h3>
-                <p className="text-indigo-100 text-sm">Report all rental real estate, royalties, partnerships, S corporations, trusts, etc.</p>
+                <p className="text-white/80 text-sm">Report all rental real estate, royalties, partnerships, S corporations, trusts, etc.</p>
                 <div className="mt-4 flex items-end justify-between">
-                  <div className="text-indigo-200 text-xs uppercase tracking-wide">Total Net Income</div>
+                  <div className="text-white/70 text-xs uppercase tracking-wide">Total Net Income</div>
                   <div className="text-3xl font-bold">${result.scheduleX.totalNetProfit.toLocaleString()}</div>
                 </div>
               </div>
@@ -128,19 +129,19 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
                   <>
                     {/* Rental Income Section */}
                     {rentals.length > 0 && (
-                      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
+                      <div className="bg-white border border-[#dcdede] rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 border-b border-[#dcdede] bg-[#ebf4ff] flex justify-between items-center">
                           <div>
-                            <h4 className="font-bold text-slate-800 text-lg">Rental Real Estate Income</h4>
-                            <p className="text-xs text-slate-500 mt-1">Properties generating rental income</p>
+                            <h4 className="font-bold text-[#0f1012] text-lg">Rental Real Estate Income</h4>
+                            <p className="text-xs text-[#5d6567] mt-1">Properties generating rental income</p>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs text-slate-400 uppercase">Subtotal</div>
-                            <div className="font-bold text-blue-600 text-xl">${rentals.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
+                            <div className="text-xs text-[#babebf] uppercase">Subtotal</div>
+                            <div className="font-bold text-[#469fe8] text-xl">${rentals.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
                           </div>
                         </div>
                         <table className="w-full text-sm">
-                          <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                          <thead className="bg-[#f8f9fa] text-[#5d6567] font-semibold border-b border-[#dcdede]">
                             <tr>
                               <th className="px-6 py-3 text-left">Property/Source</th>
                               <th className="px-6 py-3 text-left">Type</th>
@@ -149,16 +150,16 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
                               <th className="px-6 py-3 text-right">Net Income</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100">
+                          <tbody className="divide-y divide-[#dcdede]">
                             {rentals.map((entry, i) => (
-                              <tr key={i} className="hover:bg-slate-50 transition">
-                                <td className="px-6 py-4 font-semibold text-slate-700">{entry.source}</td>
+                              <tr key={i} className="hover:bg-[#f8f9fa] transition">
+                                <td className="px-6 py-4 font-semibold text-[#0f1012]">{entry.source}</td>
                                 <td className="px-6 py-4">
-                                  <span className="px-2.5 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium">{entry.type}</span>
+                                  <span className="px-2.5 py-1 rounded-md bg-[#ebf4ff] text-[#469fe8] border border-[#469fe8]/20 text-xs font-medium">{entry.type}</span>
                                 </td>
                                 <td className="px-6 py-4 text-right font-mono">${entry.gross.toLocaleString()}</td>
-                                <td className="px-6 py-4 text-right font-mono text-red-600">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
-                                <td className="px-6 py-4 text-right font-bold font-mono text-slate-900">${entry.netProfit.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#ec1656]">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
+                                <td className="px-6 py-4 text-right font-bold font-mono text-[#0f1012]">${entry.netProfit.toLocaleString()}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -168,19 +169,19 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
 
                     {/* Partnership/S-Corp Income Section */}
                     {partnerships.length > 0 && (
-                      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-slate-100 bg-purple-50 flex justify-between items-center">
+                      <div className="bg-white border border-[#dcdede] rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 border-b border-[#dcdede] bg-[#970bed]/10 flex justify-between items-center">
                           <div>
-                            <h4 className="font-bold text-slate-800 text-lg">Partnership & S Corporation Income</h4>
-                            <p className="text-xs text-slate-500 mt-1">Pass-through entities (Schedule K-1)</p>
+                            <h4 className="font-bold text-[#0f1012] text-lg">Partnership & S Corporation Income</h4>
+                            <p className="text-xs text-[#5d6567] mt-1">Pass-through entities (Schedule K-1)</p>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs text-slate-400 uppercase">Subtotal</div>
-                            <div className="font-bold text-purple-600 text-xl">${partnerships.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
+                            <div className="text-xs text-[#babebf] uppercase">Subtotal</div>
+                            <div className="font-bold text-[#970bed] text-xl">${partnerships.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
                           </div>
                         </div>
                         <table className="w-full text-sm">
-                          <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                          <thead className="bg-[#f8f9fa] text-[#5d6567] font-semibold border-b border-[#dcdede]">
                             <tr>
                               <th className="px-6 py-3 text-left">Entity Name</th>
                               <th className="px-6 py-3 text-left">Type</th>
@@ -189,16 +190,16 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
                               <th className="px-6 py-3 text-right">Net Income</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100">
+                          <tbody className="divide-y divide-[#dcdede]">
                             {partnerships.map((entry, i) => (
-                              <tr key={i} className="hover:bg-slate-50 transition">
-                                <td className="px-6 py-4 font-semibold text-slate-700">{entry.source}</td>
+                              <tr key={i} className="hover:bg-[#f8f9fa] transition">
+                                <td className="px-6 py-4 font-semibold text-[#0f1012]">{entry.source}</td>
                                 <td className="px-6 py-4">
-                                  <span className="px-2.5 py-1 rounded-md bg-purple-100 text-purple-700 border border-purple-200 text-xs font-medium">{entry.type}</span>
+                                  <span className="px-2.5 py-1 rounded-md bg-[#970bed]/10 text-[#970bed] border border-[#970bed]/20 text-xs font-medium">{entry.type}</span>
                                 </td>
                                 <td className="px-6 py-4 text-right font-mono">${entry.gross.toLocaleString()}</td>
-                                <td className="px-6 py-4 text-right font-mono text-red-600">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
-                                <td className="px-6 py-4 text-right font-bold font-mono text-slate-900">${entry.netProfit.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#ec1656]">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
+                                <td className="px-6 py-4 text-right font-bold font-mono text-[#0f1012]">${entry.netProfit.toLocaleString()}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -208,19 +209,19 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
 
                     {/* Other Income Section */}
                     {other.length > 0 && (
-                      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                      <div className="bg-white border border-[#dcdede] rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 border-b border-[#dcdede] bg-[#f8f9fa] flex justify-between items-center">
                           <div>
-                            <h4 className="font-bold text-slate-800 text-lg">Other Schedule X Income</h4>
-                            <p className="text-xs text-slate-500 mt-1">Additional supplemental income sources</p>
+                            <h4 className="font-bold text-[#0f1012] text-lg">Other Schedule X Income</h4>
+                            <p className="text-xs text-[#5d6567] mt-1">Additional supplemental income sources</p>
                           </div>
                           <div className="text-right">
-                            <div className="text-xs text-slate-400 uppercase">Subtotal</div>
-                            <div className="font-bold text-slate-600 text-xl">${other.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
+                            <div className="text-xs text-[#babebf] uppercase">Subtotal</div>
+                            <div className="font-bold text-[#5d6567] text-xl">${other.reduce((sum, e) => sum + e.netProfit, 0).toLocaleString()}</div>
                           </div>
                         </div>
                         <table className="w-full text-sm">
-                          <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                          <thead className="bg-[#f8f9fa] text-[#5d6567] font-semibold border-b border-[#dcdede]">
                             <tr>
                               <th className="px-6 py-3 text-left">Source</th>
                               <th className="px-6 py-3 text-left">Type</th>
@@ -229,16 +230,16 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
                               <th className="px-6 py-3 text-right">Net Income</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-slate-100">
+                          <tbody className="divide-y divide-[#dcdede]">
                             {other.map((entry, i) => (
-                              <tr key={i} className="hover:bg-slate-50 transition">
-                                <td className="px-6 py-4 font-semibold text-slate-700">{entry.source}</td>
+                              <tr key={i} className="hover:bg-[#f8f9fa] transition">
+                                <td className="px-6 py-4 font-semibold text-[#102124]">{entry.source}</td>
                                 <td className="px-6 py-4">
-                                  <span className="px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-200 text-xs font-medium">{entry.type}</span>
+                                  <span className="px-2.5 py-1 rounded-md bg-[#f0f0f0] text-[#102124] border border-[#dcdede] text-xs font-medium">{entry.type}</span>
                                 </td>
                                 <td className="px-6 py-4 text-right font-mono">${entry.gross.toLocaleString()}</td>
-                                <td className="px-6 py-4 text-right font-mono text-red-600">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
-                                <td className="px-6 py-4 text-right font-bold font-mono text-slate-900">${entry.netProfit.toLocaleString()}</td>
+                                <td className="px-6 py-4 text-right font-mono text-[#ec1656]">{entry.expenses > 0 ? `($${entry.expenses.toLocaleString()})` : '$0'}</td>
+                                <td className="px-6 py-4 text-right font-bold font-mono text-[#0f1012]">${entry.netProfit.toLocaleString()}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -248,14 +249,14 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
 
                     {/* No entries message */}
                     {result.scheduleX.entries.length === 0 && (
-                      <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm">
-                        <div className="text-slate-400 mb-2">
+                      <div className="bg-white border border-[#dcdede] rounded-xl p-12 text-center shadow-sm">
+                        <div className="text-[#babebf] mb-2">
                           <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                         </div>
-                        <p className="text-slate-500 font-medium">No Schedule X income sources reported</p>
-                        <p className="text-slate-400 text-sm mt-1">This section includes rental real estate, partnerships, S corporations, and trusts</p>
+                        <p className="text-[#5d6567] font-medium">No Schedule X income sources reported</p>
+                        <p className="text-[#babebf] text-sm mt-1">This section includes rental real estate, partnerships, S corporations, and trusts</p>
                       </div>
                     )}
                   </>
@@ -267,24 +268,24 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
           {activeTab === 'scheduley' && (
             <div className="space-y-6">
               {/* Professional Header */}
-              <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl p-6 shadow-lg">
+              <div className="bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-xl p-6 shadow-lg">
                 <h3 className="text-2xl font-bold mb-2">Schedule Y - Local Tax Credits</h3>
-                <p className="text-green-100 text-sm">Credit for taxes paid to other Ohio municipalities</p>
+                <p className="text-white/80 text-sm">Credit for taxes paid to other Ohio municipalities</p>
                 <div className="mt-4 flex items-end justify-between">
-                  <div className="text-green-200 text-xs uppercase tracking-wide">Total Allowed Credit</div>
+                  <div className="text-white/70 text-xs uppercase tracking-wide">Total Allowed Credit</div>
                   <div className="text-3xl font-bold">${result.scheduleY.totalCredit.toLocaleString()}</div>
                 </div>
               </div>
 
               {/* Credits Table */}
               {result.scheduleY.entries.length > 0 ? (
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                  <div className="px-6 py-4 border-b border-slate-100 bg-green-50">
-                    <h4 className="font-bold text-slate-800 text-lg">Municipal Tax Credit Details</h4>
-                    <p className="text-xs text-slate-500 mt-1">Credits reduce your Dublin tax liability dollar-for-dollar</p>
+                <div className="bg-white border border-[#dcdede] rounded-xl overflow-hidden shadow-sm">
+                  <div className="px-6 py-4 border-b border-[#dcdede] bg-[#d5faeb]">
+                    <h4 className="font-bold text-[#0f1012] text-lg">Municipal Tax Credit Details</h4>
+                    <p className="text-xs text-[#5d6567] mt-1">Credits reduce your Dublin tax liability dollar-for-dollar</p>
                   </div>
                   <table className="w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                    <thead className="bg-[#f8f9fa] text-[#5d6567] font-semibold border-b border-[#dcdede]">
                       <tr>
                         <th className="px-6 py-3 text-left">Municipality</th>
                         <th className="px-6 py-3 text-center">Tax Rate</th>
@@ -293,34 +294,34 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
                         <th className="px-6 py-3 text-right">Credit Allowed</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-[#dcdede]">
                       {result.scheduleY.entries.map((entry, i) => (
-                        <tr key={i} className="hover:bg-green-50/30 transition">
-                          <td className="px-6 py-4 font-semibold text-slate-700">{entry.locality}</td>
+                        <tr key={i} className="hover:bg-[#d5faeb]/30 transition">
+                          <td className="px-6 py-4 font-semibold text-[#102124]">{entry.locality}</td>
                           <td className="px-6 py-4 text-center">
-                            <span className="px-3 py-1 rounded-md bg-slate-100 text-slate-700 font-mono text-xs font-bold">{(entry.cityTaxRate * 100).toFixed(2)}%</span>
+                            <span className="px-3 py-1 rounded-md bg-[#f0f0f0] text-[#102124] font-mono text-xs font-bold">{(entry.cityTaxRate * 100).toFixed(2)}%</span>
                           </td>
                           <td className="px-6 py-4 text-right font-mono">${entry.incomeTaxedByOtherCity.toLocaleString()}</td>
                           <td className="px-6 py-4 text-right font-mono">${entry.taxPaidToOtherCity.toLocaleString()}</td>
-                          <td className="px-6 py-4 text-right font-bold font-mono text-green-700">${entry.creditAllowed.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-right font-bold font-mono text-[#10b981]">${entry.creditAllowed.toLocaleString()}</td>
                         </tr>
                       ))}
-                      <tr className="bg-green-50 font-bold">
-                        <td colSpan={4} className="px-6 py-4 text-right text-slate-700">Total Credits Applied:</td>
-                        <td className="px-6 py-4 text-right font-mono text-green-700 text-lg">${result.scheduleY.totalCredit.toLocaleString()}</td>
+                      <tr className="bg-[#d5faeb] font-bold">
+                        <td colSpan={4} className="px-6 py-4 text-right text-[#102124]">Total Credits Applied:</td>
+                        <td className="px-6 py-4 text-right font-mono text-[#10b981] text-lg">${result.scheduleY.totalCredit.toLocaleString()}</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               ) : (
-                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm">
-                  <div className="text-slate-400 mb-2">
+                <div className="bg-white border border-[#dcdede] rounded-xl p-12 text-center shadow-sm">
+                  <div className="text-[#babebf] mb-2">
                     <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-slate-500 font-medium">No local tax credits claimed</p>
-                  <p className="text-slate-400 text-sm mt-1">You may claim credits for taxes paid to other Ohio municipalities</p>
+                  <p className="text-[#5d6567] font-medium">No local tax credits claimed</p>
+                  <p className="text-[#babebf] text-sm mt-1">You may claim credits for taxes paid to other Ohio municipalities</p>
                 </div>
               )}
             </div>
@@ -328,34 +329,34 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm sticky top-24">
-            <h3 className="font-bold text-lg mb-6 text-slate-800 pb-4 border-b border-slate-100">Final Summary</h3>
+          <div className="bg-white p-6 rounded-xl border border-[#dcdede] shadow-sm sticky top-24">
+            <h3 className="font-bold text-lg mb-6 text-[#0f1012] pb-4 border-b border-[#dcdede]">Final Summary</h3>
             <div className="space-y-5">
               <SummaryRow label="Total Taxable Income" amount={result.totalTaxableIncome} neutral />
               <SummaryRow label="Net Tax Liability (After Credits)" amount={result.municipalLiabilityAfterCredits} neutral />
               <SummaryRow label="Tax Withheld (W-2)" amount={result.totalLocalWithheld} neutral />
 
-              <div className="pt-6 border-t border-slate-200">
+              <div className="pt-6 border-t border-[#dcdede]">
                 <div className="flex justify-between items-end mb-1">
-                  <span className="font-bold text-slate-700">Net Total</span>
-                  <span className="text-xs font-medium text-slate-400 uppercase">{netTotal > 0 ? 'Refund' : 'Due'}</span>
+                  <span className="font-bold text-[#102124]">Net Total</span>
+                  <span className="text-xs font-medium text-[#babebf] uppercase">{netTotal > 0 ? 'Refund' : 'Due'}</span>
                 </div>
-                <div className={`text-3xl font-bold text-right ${netTotal > 0 ? 'text-green-600' : 'text-red-600'}`}>${Math.abs(netTotal).toLocaleString()}</div>
-                <div className="text-xs text-right text-slate-400 mt-1 italic">
+                <div className={`text-3xl font-bold text-right ${netTotal > 0 ? 'text-[#10b981]' : 'text-[#ec1656]'}`}>${Math.abs(netTotal).toLocaleString()}</div>
+                <div className="text-xs text-right text-[#babebf] mt-1 italic">
                   {netTotal > 0 ? "Refund amount to be disbursed" : "Amount due to City of Dublin"}
                 </div>
 
                 {netTotal > 0 && !isSubmitted && (
-                  <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-100">
-                    <h4 className="font-bold text-green-800 mb-2 text-xs uppercase">Overpayment Options</h4>
+                  <div className="mt-4 p-4 bg-[#d5faeb] rounded-xl border border-green-100">
+                    <h4 className="font-bold text-[#10b981] mb-2 text-xs uppercase">Overpayment Options</h4>
                     <div className="flex flex-col gap-2">
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="refundChoice" checked={refundChoice === 'REFUND'} onChange={() => setRefundChoice('REFUND')} className="text-green-600 focus:ring-green-500" />
-                        <span className="text-sm font-medium text-slate-700">Issue Refund Check</span>
+                        <input type="radio" name="refundChoice" checked={refundChoice === 'REFUND'} onChange={() => setRefundChoice('REFUND')} className="text-[#10b981] focus:ring-green-500" />
+                        <span className="text-sm font-medium text-[#102124]">Issue Refund Check</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" name="refundChoice" checked={refundChoice === 'CREDIT'} onChange={() => setRefundChoice('CREDIT')} className="text-green-600 focus:ring-green-500" />
-                        <span className="text-sm font-medium text-slate-700">Credit to Next Year</span>
+                        <input type="radio" name="refundChoice" checked={refundChoice === 'CREDIT'} onChange={() => setRefundChoice('CREDIT')} className="text-[#10b981] focus:ring-green-500" />
+                        <span className="text-sm font-medium text-[#102124]">Credit to Next Year</span>
                       </label>
                     </div>
                   </div>
@@ -367,19 +368,19 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
               {!isSubmitted ? (
                 <>
                   {netTotal < 0 && (
-                    <button onClick={() => setShowPayment(true)} className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-lg shadow-indigo-200 transition-all">
+                    <button onClick={() => setShowPayment(true)} className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-xl font-medium shadow-lg shadow-[#970bed]/20 transition-all">
                       <DollarSign className="w-4 h-4" /> Pay Balance Now
                     </button>
                   )}
-                  <button onClick={() => onSubmit({ refundChoice: netTotal > 0 ? refundChoice : null })} className="flex items-center justify-center gap-2 w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium shadow-md transition-all">
+                  <button onClick={() => onSubmit({ refundChoice: netTotal > 0 ? refundChoice : null })} className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-[#10b981] to-[#059669] hover:from-[#059669] hover:to-[#047857] text-white rounded-xl font-medium shadow-lg shadow-[#10b981]/20 transition-all">
                     <Lock className="w-4 h-4" /> Submit & Finalize
                   </button>
-                  <button onClick={onBack} className="flex items-center justify-center gap-2 w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-medium transition-all">
+                  <button onClick={onBack} className="flex items-center justify-center gap-2 w-full py-3 bg-white border border-[#dcdede] hover:bg-[#f8f9fa] text-[#102124] rounded-xl font-medium transition-all">
                     <ChevronLeft className="w-4 h-4" /> Edit Data
                   </button>
                 </>
               ) : (
-                <button onClick={onAmend} className="flex items-center justify-center gap-2 w-full py-3 bg-amber-50 border border-amber-200 hover:bg-amber-100 text-amber-800 rounded-xl font-medium transition-all">
+                <button onClick={onAmend} className="flex items-center justify-center gap-2 w-full py-3 bg-[#f59e0b]/10 border border-[#f59e0b]/20 hover:bg-[#f59e0b]/20 text-[#f59e0b] rounded-xl font-medium transition-all">
                   <Edit2 className="w-4 h-4" /> Amend / Re-open Return
                 </button>
               )}
@@ -392,21 +393,21 @@ export const ResultsSection: React.FC<ResultsSectionProps> = ({ result, onReset,
 };
 
 const TabButton = ({ active, onClick, label, icon, count }: any) => (
-  <button onClick={onClick} className={`flex items-center gap-2 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${active ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
-    {icon} {label} {count > 0 && <span className="bg-slate-200 text-slate-600 text-xs px-1.5 py-0.5 rounded-full">{count}</span>}
+  <button onClick={onClick} className={`flex items-center gap-2 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${active ? 'border-[#970bed] text-[#970bed] bg-[#ebf4ff]/50' : 'border-transparent text-[#5d6567] hover:text-[#0f1012] hover:bg-[#f8f9fa]'}`}>
+    {icon} {label} {count > 0 && <span className="bg-[#dcdede] text-[#5d6567] text-xs px-1.5 py-0.5 rounded-full">{count}</span>}
   </button>
 );
 
 const BreakdownGroup = ({ title, rules, highlight }: any) => (
-  <div className={`rounded-xl overflow-hidden border ${highlight ? 'border-indigo-200' : 'border-slate-200'}`}>
-    <div className={`px-6 py-4 border-b flex justify-between items-center ${highlight ? 'bg-indigo-50/50 border-indigo-100' : 'bg-slate-50 border-slate-100'}`}><h3 className="font-bold text-slate-800">{title}</h3></div>
+  <div className={`rounded-xl overflow-hidden border ${highlight ? 'border-[#970bed]/20' : 'border-[#dcdede]'}`}>
+    <div className={`px-6 py-4 border-b flex justify-between items-center ${highlight ? 'bg-[#ebf4ff]/50 border-[#970bed]/10' : 'bg-[#f8f9fa] border-[#dcdede]'}`}><h3 className="font-bold text-[#0f1012]">{title}</h3></div>
     <div className="p-6 space-y-5 bg-white">
       {rules.map((rule: TaxBreakdownRule, idx: number) => (
         <div key={idx} className="flex items-start gap-4">
-          <div className="mt-1 p-1 rounded-full bg-slate-100 text-slate-400"><Info className="w-3.5 h-3.5" /></div>
+          <div className="mt-1 p-1 rounded-full bg-[#f0f0f0] text-[#babebf]"><Info className="w-3.5 h-3.5" /></div>
           <div className="flex-1">
-            <div className="flex justify-between mb-1"><span className="font-semibold text-slate-800 text-sm">{rule.ruleName}</span><span className="text-sm font-mono font-medium text-slate-700">{rule.amount !== 0 ? `$${Math.abs(rule.amount).toLocaleString()}` : '-'}</span></div>
-            <p className="text-xs text-slate-500">{rule.description}</p>
+            <div className="flex justify-between mb-1"><span className="font-semibold text-[#0f1012] text-sm">{rule.ruleName}</span><span className="text-sm font-mono font-medium text-[#102124]">{rule.amount !== 0 ? `$${Math.abs(rule.amount).toLocaleString()}` : '-'}</span></div>
+            <p className="text-xs text-[#5d6567]">{rule.description}</p>
           </div>
         </div>
       ))}
@@ -416,10 +417,10 @@ const BreakdownGroup = ({ title, rules, highlight }: any) => (
 
 const SummaryRow = ({ label, amount, highlight, neutral }: any) => (
   <div className="flex justify-between items-center text-sm">
-    <span className={`font-medium ${highlight ? 'text-indigo-900' : 'text-slate-600'}`}>{label}</span>
-    <span className={`font-bold ${neutral ? 'text-slate-800' :
-      amount > 0 ? 'text-green-600' :
-        amount < 0 ? 'text-red-600' : 'text-slate-400'
+    <span className={`font-medium ${highlight ? 'text-[#970bed]' : 'text-[#5d6567]'}`}>{label}</span>
+    <span className={`font-bold ${neutral ? 'text-[#0f1012]' :
+      amount > 0 ? 'text-[#10b981]' :
+        amount < 0 ? 'text-[#ec1656]' : 'text-[#babebf]'
       }`}>
       {amount === 0 ? '$0.00' : `${!neutral && amount > 0 ? '+' : ''}$${Math.abs(amount).toLocaleString()}`}
     </span>

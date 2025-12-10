@@ -83,19 +83,19 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
   const currentPageFields = fieldProvenances?.filter(f => f.pageNumber === pageNumber) || [];
 
   return (
-    <div className={`flex flex-col bg-slate-100 rounded-xl border border-slate-200 overflow-hidden ${className}`}>
+    <div className={`flex flex-col bg-[#f8f9fa] rounded-xl border border-[#dcdede] overflow-hidden ${className}`}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-slate-200">
+      <div className="flex items-center justify-between px-4 py-2 bg-white border-b border-[#dcdede]">
         <div className="flex items-center gap-2">
           <button
             onClick={goToPrevPage}
             disabled={pageNumber <= 1}
-            className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[#f8f9fa] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             title="Previous page"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 text-[#5d6567]" />
           </button>
-          <span className="text-sm font-medium text-slate-600 min-w-[80px] text-center">
+          <span className="text-sm font-medium text-[#102124] min-w-[80px] text-center">
             Page {pageNumber} of {numPages}
           </span>
           <button
@@ -111,24 +111,24 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
         <div className="flex items-center gap-2">
           <button
             onClick={zoomOut}
-            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[#f8f9fa] transition-colors"
             title="Zoom out"
           >
             <ZoomOut className="w-5 h-5" />
           </button>
-          <span className="text-sm font-medium text-slate-600 min-w-[60px] text-center">
+          <span className="text-sm font-medium text-[#5d6567] min-w-[60px] text-center">
             {Math.round(zoom * 100)}%
           </span>
           <button
             onClick={zoomIn}
-            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[#f8f9fa] transition-colors"
             title="Zoom in"
           >
             <ZoomIn className="w-5 h-5" />
           </button>
           <button
             onClick={resetZoom}
-            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-[#f8f9fa] transition-colors"
             title="Reset zoom"
           >
             <Maximize2 className="w-4 h-4" />
@@ -152,11 +152,11 @@ export const PdfViewer: React.FC<PdfViewerProps> = ({
             onLoadSuccess={onDocumentLoadSuccess}
             loading={
               <div className="flex items-center justify-center p-8">
-                <div className="animate-spin w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full" />
+                <div className="animate-spin w-8 h-8 border-4 border-[#469fe8] border-t-transparent rounded-full" />
               </div>
             }
             error={
-              <div className="p-8 text-center text-red-600">
+              <div className="p-8 text-center text-[#ec1656]">
                 Failed to load PDF. Please try again.
               </div>
             }

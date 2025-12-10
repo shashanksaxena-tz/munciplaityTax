@@ -106,8 +106,8 @@ export const FieldWithSource: React.FC<FieldWithSourceProps> = ({
 
   if (isLoadingSchema) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8 text-center">
-        <div className="animate-pulse text-gray-400">Loading form schema...</div>
+      <div className="bg-white rounded-lg border border-[#dcdede] shadow-sm p-8 text-center">
+        <div className="animate-pulse text-[#babebf]">Loading form schema...</div>
       </div>
     );
   }
@@ -127,18 +127,18 @@ export const FieldWithSource: React.FC<FieldWithSourceProps> = ({
             key={key}
             className={`flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${
               isHighlighted 
-                ? 'bg-indigo-50 border border-indigo-200' 
-                : 'hover:bg-slate-50'
+                ? 'bg-[#ebf4ff] border border-[#469fe8]' 
+                : 'hover:bg-[#f8f9fa]'
             }`}
           >
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-600">{label}</span>
+                <span className="text-sm text-[#5d6567]">{label}</span>
                 {isLowConfidence && (
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500" aria-label="Low confidence - verify manually" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#f59e0b]" aria-label="Low confidence - verify manually" />
                 )}
               </div>
-              <div className={`text-base font-semibold ${isLowConfidence ? 'text-amber-700' : 'text-slate-800'}`}>
+              <div className={`text-base font-semibold ${isLowConfidence ? 'text-[#f59e0b]' : 'text-[#0f1012]'}`}>
                 {formatValue(value, format)}
               </div>
             </div>

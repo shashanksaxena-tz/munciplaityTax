@@ -72,35 +72,35 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
       )}
 
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full"><ChevronLeft className="w-5 h-5 text-slate-500"/></button>
+        <button onClick={onBack} className="p-2 hover:bg-[#fbfbfb] rounded-full"><ChevronLeft className="w-5 h-5 text-[#5d6567]"/></button>
         <div>
-           <h2 className="text-xl font-bold text-slate-900">File Withholding (Form W-1)</h2>
-           <p className="text-sm text-slate-500">Frequency: {profile.filingFrequency}</p>
+           <h2 className="text-xl font-bold text-[#0f1012]">File Withholding (Form W-1)</h2>
+           <p className="text-sm text-[#5d6567]">Frequency: {profile.filingFrequency}</p>
         </div>
       </div>
 
       <div className="flex gap-2 mb-6">
          {[1, 2, 3].map(s => (
-            <div key={s} className={`h-2 flex-1 rounded-full transition-all ${s <= step ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
+            <div key={s} className={`h-2 flex-1 rounded-full transition-all ${s <= step ? 'bg-gradient-to-r from-[#970bed] to-[#469fe8]' : 'bg-[#dcdede]'}`}></div>
          ))}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#dcdede] overflow-hidden">
         
         {step === 1 && (
            <div className="p-8">
-              <h3 className="font-bold text-slate-800 mb-4">1. Select Filing Period</h3>
+              <h3 className="font-bold text-[#0f1012] mb-4">1. Select Filing Period</h3>
               
               {profile.filingFrequency === FilingFrequency.DAILY ? (
                  <div className="space-y-4">
-                    <label className="block text-sm font-medium text-slate-700">Select Date of Wages</label>
+                    <label className="block text-sm font-medium text-[#102124]">Select Date of Wages</label>
                     <input 
                       type="date" 
                       value={dailyDate}
                       onChange={handleDailyDateChange}
-                      className="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-4 py-3 border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 rounded-xl outline-none"
                     />
-                    <div className="p-3 bg-blue-50 rounded-lg text-xs text-blue-700">
+                    <div className="p-3 bg-[#ebf4ff] border border-[#469fe8]/30 rounded-lg text-xs text-[#469fe8]">
                        Daily filers must remit taxes by the next banking day.
                     </div>
                  </div>
@@ -112,10 +112,10 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
                          <button 
                            key={p.period}
                            onClick={() => setSelectedPeriod(p)}
-                           className={`text-left p-4 rounded-xl border transition-all ${isSelected ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600' : 'border-slate-200 hover:border-indigo-300'}`}
+                           className={`text-left p-4 rounded-xl border transition-all ${isSelected ? 'border-[#970bed] bg-[#970bed]/10 ring-1 ring-[#970bed]' : 'border-[#dcdede] hover:border-[#469fe8]'}`}
                          >
-                            <div className={`font-bold ${isSelected ? 'text-indigo-700' : 'text-slate-800'}`}>{p.period}</div>
-                            <div className="text-xs text-slate-500 mt-1">Due: {p.dueDate}</div>
+                            <div className={`font-bold ${isSelected ? 'text-[#970bed]' : 'text-[#0f1012]'}`}>{p.period}</div>
+                            <div className="text-xs text-[#5d6567] mt-1">Due: {p.dueDate}</div>
                          </button>
                        )
                     })}
@@ -126,7 +126,7 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
                 <button 
                   onClick={() => setStep(2)}
                   disabled={!selectedPeriod}
-                  className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 disabled:opacity-50 hover:bg-indigo-700 transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-xl font-bold shadow-lg shadow-[#970bed]/20 disabled:opacity-50 transition-all flex items-center gap-2"
                 >
                   Next: Enter Data <ArrowRight className="w-4 h-4" />
                 </button>
@@ -136,46 +136,46 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
         
         {step === 2 && (
           <div className="p-8 space-y-6 animate-slideLeft">
-             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+             <div className="bg-[#fbfbfb] border border-[#dcdede] p-4 rounded-xl">
                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-slate-800">2. Enter Payroll Data</h3>
-                  <span className="text-xs font-mono bg-white border border-slate-200 px-2 py-1 rounded text-slate-600">{selectedPeriod?.period}</span>
+                  <h3 className="font-bold text-[#0f1012]">2. Enter Payroll Data</h3>
+                  <span className="text-xs font-mono bg-white border border-[#dcdede] px-2 py-1 rounded text-[#5d6567]">{selectedPeriod?.period}</span>
                </div>
                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Total Gross Wages</label>
+                    <label className="block text-xs font-bold uppercase text-[#5d6567] mb-1">Total Gross Wages</label>
                     <div className="relative">
-                       <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                       <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-[#babebf]" />
                        <input 
                          type="number" 
                          value={wages || ''} onChange={e => setWages(parseFloat(e.target.value))}
-                         className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg"
+                         className="w-full pl-9 pr-3 py-2 border border-[#dcdede] rounded-lg outline-none focus:ring-2 focus:ring-[#970bed] font-mono text-lg"
                          placeholder="0.00"
                        />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Adjustments (+/-)</label>
+                    <label className="block text-xs font-bold uppercase text-[#5d6567] mb-1">Adjustments (+/-)</label>
                     <input 
                          type="number" 
                          value={adjustments || ''} onChange={e => setAdjustments(parseFloat(e.target.value))}
-                         className="w-full px-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                         className="w-full px-3 py-2 border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 rounded-lg outline-none"
                          placeholder="0.00"
                        />
                   </div>
                </div>
              </div>
-             <div className="border-t border-slate-100 pt-6">
-               <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><Upload className="w-4 h-4 text-indigo-600" /> Reconcile (Optional)</h3>
-               <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition-colors relative">
+             <div className="border-t border-[#dcdede] pt-6">
+               <h3 className="font-bold text-[#0f1012] mb-4 flex items-center gap-2"><Upload className="w-4 h-4 text-[#469fe8]" /> Reconcile (Optional)</h3>
+               <div className="border-2 border-dashed border-[#dcdede] rounded-xl p-6 text-center hover:bg-[#fbfbfb] transition-colors relative">
                   <input type="file" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
-                  <p className="text-sm text-slate-600 font-medium">Drop Payroll File</p>
+                  <p className="text-sm text-[#5d6567] font-medium">Drop Payroll File</p>
                </div>
                {discrepancy && discrepancy.hasDiscrepancies && <div className="mt-4"><DiscrepancyView report={discrepancy} /></div>}
              </div>
              <div className="flex justify-between pt-4">
-                <button onClick={() => setStep(1)} className="text-slate-500 font-medium hover:text-slate-800">Change Period</button>
-                <button onClick={() => setStep(3)} disabled={!wages} className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 disabled:opacity-50 hover:bg-indigo-700 transition-all flex items-center gap-2">
+                <button onClick={() => setStep(1)} className="text-[#5d6567] font-medium hover:text-[#0f1012]">Change Period</button>
+                <button onClick={() => setStep(3)} disabled={!wages} className="px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-xl font-bold shadow-lg shadow-[#970bed]/20 disabled:opacity-50 transition-all flex items-center gap-2">
                   Calculate & Review <ArrowRight className="w-4 h-4" />
                 </button>
              </div>
@@ -184,19 +184,19 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
 
         {step === 3 && calculation && (
            <div className="p-8 animate-slideLeft">
-              <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 mb-6 text-center">
-                 <h3 className="text-sm font-bold uppercase text-indigo-400 tracking-wider mb-2">Total Amount Due</h3>
-                 <div className="text-4xl font-bold text-indigo-900 mb-4">${calculation.totalAmountDue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
-                 <div className="inline-block text-left space-y-1 text-sm text-indigo-800 bg-white/50 p-4 rounded-lg">
-                    <div className="flex justify-between gap-8"><span>Gross Wages:</span><span className="font-mono">${calculation.grossWages.toLocaleString()}</span></div>
-                    <div className="flex justify-between gap-8"><span>Tax Due (2.0%):</span><span className="font-mono">${calculation.taxDue.toLocaleString()}</span></div>
-                    {calculation.penalty > 0 && <div className="flex justify-between gap-8 text-red-600"><span>Penalty:</span><span className="font-mono">+${calculation.penalty.toLocaleString()}</span></div>}
-                    {calculation.interest > 0 && <div className="flex justify-between gap-8 text-red-600"><span>Interest:</span><span className="font-mono">+${calculation.interest.toLocaleString()}</span></div>}
+              <div className="bg-[#ebf4ff] border border-[#469fe8]/30 rounded-xl p-6 mb-6 text-center">
+                 <h3 className="text-sm font-bold uppercase text-[#5d6567] tracking-wider mb-2">Total Amount Due</h3>
+                 <div className="text-4xl font-bold text-[#970bed] mb-4">${calculation.totalAmountDue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                 <div className="inline-block text-left space-y-1 text-sm text-[#5d6567] bg-white/50 p-4 rounded-lg">
+                    <div className="flex justify-between gap-8"><span>Gross Wages:</span><span className="font-mono text-[#0f1012]">${calculation.grossWages.toLocaleString()}</span></div>
+                    <div className="flex justify-between gap-8"><span>Tax Due (2.0%):</span><span className="font-mono text-[#0f1012]">${calculation.taxDue.toLocaleString()}</span></div>
+                    {calculation.penalty > 0 && <div className="flex justify-between gap-8 text-[#ec1656]"><span>Penalty:</span><span className="font-mono">+${calculation.penalty.toLocaleString()}</span></div>}
+                    {calculation.interest > 0 && <div className="flex justify-between gap-8 text-[#ec1656]"><span>Interest:</span><span className="font-mono">+${calculation.interest.toLocaleString()}</span></div>}
                  </div>
               </div>
               <div className="flex gap-4">
-                 <button onClick={() => setStep(2)} className="flex-1 py-3 border border-slate-300 rounded-xl font-medium text-slate-600 hover:bg-slate-50">Back to Edit</button>
-                 <button onClick={() => setShowPayment(true)} className="flex-[2] py-3 bg-green-600 text-white rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-700 flex items-center justify-center gap-2">
+                 <button onClick={() => setStep(2)} className="flex-1 py-3 border border-[#dcdede] rounded-xl font-medium text-[#5d6567] hover:bg-[#fbfbfb]">Back to Edit</button>
+                 <button onClick={() => setShowPayment(true)} className="flex-[2] py-3 bg-gradient-to-r from-[#10b981] to-[#10b981] hover:from-[#059669] hover:to-[#059669] text-white rounded-xl font-bold shadow-lg shadow-[#10b981]/20 flex items-center justify-center gap-2">
                     <DollarSign className="w-4 h-4" /> Pay Now
                  </button>
               </div>

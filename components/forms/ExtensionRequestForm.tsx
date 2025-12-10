@@ -77,42 +77,42 @@ export const ExtensionRequestForm: React.FC<ExtensionRequestFormProps> = ({
   const paymentInsufficient = parseFloat(amountPaid) < balanceDue * 0.9;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+    <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md border border-[#dcdede] p-6">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Calendar className="w-6 h-6 text-blue-600" />
+        <h2 className="text-2xl font-bold text-[#0f1012] flex items-center gap-2">
+          <Calendar className="w-6 h-6 text-[#469fe8]" />
           Extension Request (Form 27-EXT)
         </h2>
-        <p className="text-gray-600 mt-2">
+        <p className="text-[#5d6567] mt-2">
           Request a 6-month extension to file your {taxYear} business tax return
         </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="bg-[#ebf4ff] border border-[#469fe8]/20 rounded-lg p-4 mb-6">
         <div className="flex items-start gap-3">
-          <FileText className="w-5 h-5 text-blue-600 mt-0.5" />
+          <FileText className="w-5 h-5 text-[#469fe8] mt-0.5" />
           <div>
-            <h3 className="font-semibold text-blue-900">Business Information</h3>
-            <p className="text-sm text-blue-800">{businessName}</p>
-            <p className="text-sm text-blue-700">FEIN: {fein}</p>
-            {address && <p className="text-sm text-blue-700">{address}</p>}
+            <h3 className="font-semibold text-[#0f1012]">Business Information</h3>
+            <p className="text-sm text-[#102124]">{businessName}</p>
+            <p className="text-sm text-[#5d6567]">FEIN: {fein}</p>
+            {address && <p className="text-sm text-[#5d6567]">{address}</p>}
           </div>
         </div>
       </div>
 
       <div className="space-y-4 mb-6">
         <div>
-          <label htmlFor="estimatedTax" className="block text-sm font-medium text-gray-700 mb-1">
-            Estimated Tax Liability <span className="text-red-500">*</span>
+          <label htmlFor="estimatedTax" className="block text-sm font-medium text-[#102124] mb-1">
+            Estimated Tax Liability <span className="text-[#ec1656]">*</span>
           </label>
           <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#babebf]" />
             <input
               type="number"
               id="estimatedTax"
               value={estimatedTax}
               onChange={(e) => setEstimatedTax(e.target.value)}
-              className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-transparent"
               placeholder="0.00"
               step="0.01"
               min="0"

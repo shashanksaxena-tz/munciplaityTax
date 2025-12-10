@@ -78,7 +78,7 @@ export const FormGenerationButton: React.FC<FormGenerationButtonProps> = ({
     return (
       <button
         onClick={handleDownload}
-        className={`flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors ${className}`}
+        className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded hover:from-[#059669] hover:to-[#047857] transition-all ${className}`}
       >
         <Download className="w-4 h-4" />
         Download {formName}
@@ -90,7 +90,7 @@ export const FormGenerationButton: React.FC<FormGenerationButtonProps> = ({
     <button
       onClick={handleGenerate}
       disabled={isGenerating || disabled}
-      className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors ${className}`}
+      className={`flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white rounded hover:from-[#7f09c5] hover:to-[#3a8bd4] disabled:opacity-50 disabled:cursor-not-allowed transition-all ${className}`}
     >
       {isGenerating ? (
         <>

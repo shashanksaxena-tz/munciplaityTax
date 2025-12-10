@@ -19,9 +19,9 @@ export const PaymentConfirmation: React.FC<PaymentConfirmationProps> = ({
 
   return (
     <div className="p-12 text-center">
-      <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
-      <p className="font-medium text-slate-600">{message}</p>
-      <p className="text-xs text-slate-400 mt-2">Do not close this window.</p>
+      <Loader2 className="w-12 h-12 text-[#970bed] animate-spin mx-auto mb-4" />
+      <p className="font-medium text-[#5d6567]">{message}</p>
+      <p className="text-xs text-[#babebf] mt-2">Do not close this window.</p>
     </div>
   );
 };

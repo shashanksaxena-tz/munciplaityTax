@@ -88,16 +88,13 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 {/* Backdrop */}
-                <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose} />
+                <div className="fixed inset-0 transition-opacity bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
                 {/* Modal */}
-                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full border border-[#dcdede]">
                     <form onSubmit={handleSubmit}>
                         {/* Header */}
-                        <div className={`px-6 py-4 ${profile.type === 'BUSINESS'
-                                ? 'bg-gradient-to-r from-blue-600 to-blue-700'
-                                : 'bg-gradient-to-r from-purple-600 to-purple-700'
-                            }`}>
+                        <div className="bg-gradient-to-r from-[#970bed] to-[#469fe8] px-6 py-4">
                             <h3 className="text-lg font-semibold text-white">Edit Profile</h3>
                             <p className="text-sm text-white opacity-90 mt-1">
                                 {profile.type === 'BUSINESS' ? 'Business Profile' : 'Individual Profile'}
@@ -214,18 +211,18 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
                         </div>
 
                         {/* Footer */}
-                        <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+                        <div className="bg-[#f8f9fa] px-6 py-4 flex justify-end space-x-3">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+                                className="px-4 py-2 border border-[#dcdede] rounded-lg text-[#5d6567] hover:bg-white transition"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                disabled={isLoading}
-                                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition flex items-center"
+                                disabled={loading}
+                                className="px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white rounded-lg hover:from-[#7f09c5] hover:to-[#3a8bd4] disabled:opacity-50 transition flex items-center"
                             >
                                 {isLoading ? (
                                     <>

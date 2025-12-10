@@ -34,10 +34,10 @@ export const FieldSourceTooltip: React.FC<FieldSourceTooltipProps> = ({
     : 10;
 
   const getConfidenceColor = () => {
-    if (confidence === undefined) return 'text-slate-600 bg-slate-100';
-    if (confidence >= 0.9) return 'text-green-700 bg-green-100';
-    if (confidence >= 0.7) return 'text-amber-700 bg-amber-100';
-    return 'text-red-700 bg-red-100';
+    if (confidence === undefined) return 'text-[#5d6567] bg-[#f8f9fa]';
+    if (confidence >= 0.9) return 'text-[#10b981] bg-[#d5faeb]';
+    if (confidence >= 0.7) return 'text-[#f59e0b] bg-[#fff5e6]';
+    return 'text-[#ec1656] bg-[#fff5f5]';
   };
 
   const getConfidenceLabel = () => {
@@ -49,18 +49,18 @@ export const FieldSourceTooltip: React.FC<FieldSourceTooltipProps> = ({
 
   return (
     <div
-      className="absolute z-50 bg-white rounded-lg shadow-xl border border-slate-200 p-4 min-w-[240px] max-w-[320px] transition-opacity duration-200"
+      className="absolute z-50 bg-white rounded-lg shadow-xl border border-[#dcdede] p-4 min-w-[240px] max-w-[320px] transition-opacity duration-200"
       style={{
         left: `${tooltipLeft}px`,
         top: `${tooltipTop}px`
       }}
     >
       {/* Header */}
-      <div className="flex items-start gap-2 mb-3 pb-3 border-b border-slate-100">
-        <FileText className="w-5 h-5 text-indigo-600 mt-0.5" />
+      <div className="flex items-start gap-2 mb-3 pb-3 border-b border-[#dcdede]">
+        <FileText className="w-5 h-5 text-[#469fe8] mt-0.5" />
         <div>
-          <div className="font-bold text-slate-800">{fieldName}</div>
-          <div className="text-xs text-slate-500">{formType}</div>
+          <div className="font-bold text-[#0f1012]">{fieldName}</div>
+          <div className="text-xs text-[#5d6567]">{formType}</div>
         </div>
       </div>
 
@@ -68,10 +68,10 @@ export const FieldSourceTooltip: React.FC<FieldSourceTooltipProps> = ({
       <div className="space-y-2">
         {/* Page Location */}
         <div className="flex items-center gap-2 text-sm">
-          <MapPin className="w-4 h-4 text-slate-400" />
-          <span className="text-slate-600">Page {pageNumber}</span>
+          <MapPin className="w-4 h-4 text-[#babebf]" />
+          <span className="text-[#5d6567]">Page {pageNumber}</span>
           {boundingBox && (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-[#babebf]">
               ({Math.round(boundingBox.x * 100)}%, {Math.round(boundingBox.y * 100)}%)
             </span>
           )}
@@ -80,7 +80,7 @@ export const FieldSourceTooltip: React.FC<FieldSourceTooltipProps> = ({
         {/* Confidence */}
         {confidence !== undefined && (
           <div className="flex items-center gap-2 text-sm">
-            <Gauge className="w-4 h-4 text-slate-400" />
+            <Gauge className="w-4 h-4 text-[#babebf]" />
             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getConfidenceColor()}`}>
               {Math.round(confidence * 100)}% - {getConfidenceLabel()}
             </span>
@@ -89,13 +89,13 @@ export const FieldSourceTooltip: React.FC<FieldSourceTooltipProps> = ({
 
         {/* Raw vs Processed Values */}
         {(rawValue || processedValue) && (
-          <div className="mt-3 pt-3 border-t border-slate-100">
+          <div className="mt-3 pt-3 border-t border-[#dcdede]">
             {rawValue && (
               <div className="flex items-start gap-2 text-sm mb-2">
-                <Info className="w-4 h-4 text-slate-400 mt-0.5" />
+                <Info className="w-4 h-4 text-[#babebf] mt-0.5" />
                 <div>
-                  <div className="text-xs text-slate-500 mb-0.5">Raw Text Detected:</div>
-                  <div className="text-slate-700 font-mono text-xs bg-slate-50 px-2 py-1 rounded">
+                  <div className="text-xs text-[#5d6567] mb-0.5">Raw Text Detected:</div>
+                  <div className="text-[#102124] font-mono text-xs bg-[#f8f9fa] px-2 py-1 rounded">
                     {rawValue}
                   </div>
                 </div>

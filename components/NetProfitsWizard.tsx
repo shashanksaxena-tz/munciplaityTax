@@ -65,42 +65,42 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
       )}
 
       <div className="flex items-center gap-4 mb-8">
-        <button onClick={onBack} className="p-2 hover:bg-slate-100 rounded-full"><ChevronLeft className="w-5 h-5 text-slate-500" /></button>
-        <h2 className="text-xl font-bold">Form 27: Net Profits Return (Smart Wizard)</h2>
+        <button onClick={onBack} className="p-2 hover:bg-[#fbfbfb] rounded-full"><ChevronLeft className="w-5 h-5 text-[#5d6567]" /></button>
+        <h2 className="text-xl font-bold text-[#0f1012]">Form 27: Net Profits Return (Smart Wizard)</h2>
       </div>
 
       <div className="flex gap-2 mb-6">
-        {[1, 2, 3, 4].map(s => <div key={s} className={`h-2 flex-1 rounded-full ${s <= step ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>)}
+        {[1, 2, 3, 4].map(s => <div key={s} className={`h-2 flex-1 rounded-full ${s <= step ? 'bg-gradient-to-r from-[#970bed] to-[#469fe8]' : 'bg-[#dcdede]'}`}></div>)}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+      <div className="bg-white rounded-2xl shadow-sm border border-[#dcdede] p-8">
 
         {/* Step 1: Upload */}
         {step === 1 && (
           <div className="space-y-6 text-center">
-            <h3 className="text-lg font-bold">1. Upload Federal Return</h3>
-            <p className="text-slate-500">Upload Form 1120 (Corp) or 1065 (Partnership) to auto-fill Schedule X & Y.</p>
-            <div className="max-w-xl mx-auto border-2 border-dashed rounded-xl p-8">
+            <h3 className="text-lg font-bold text-[#0f1012]">1. Upload Federal Return</h3>
+            <p className="text-[#5d6567]">Upload Form 1120 (Corp) or 1065 (Partnership) to auto-fill Schedule X & Y.</p>
+            <div className="max-w-xl mx-auto border-2 border-dashed border-[#dcdede] rounded-xl p-8">
               <UploadSection onDataExtracted={handleExtraction} />
             </div>
-            <button onClick={() => setStep(2)} className="text-indigo-600 font-bold hover:underline">Skip Upload (Manual Entry)</button>
+            <button onClick={() => setStep(2)} className="text-[#970bed] font-bold hover:text-[#7f09c5] hover:underline">Skip Upload (Manual Entry)</button>
           </div>
         )}
 
         {/* Step 2: Schedule X Reconciliation (EXPANDED: 27 fields) */}
         {step === 2 && (
           <div className="space-y-6 animate-slideLeft">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <Table2 className="w-5 h-5 text-indigo-600" /> 
+            <h3 className="font-bold text-lg flex items-center gap-2 text-[#0f1012]">
+              <Table2 className="w-5 h-5 text-[#469fe8]" /> 
               2. Schedule X Reconciliation (Federal to Municipal)
             </h3>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-[#5d6567]">
               Reconcile federal taxable income with municipal taxable income using comprehensive M-1 adjustments.
             </p>
             
             {/* Federal Taxable Income Input */}
-            <div className="bg-blue-50 p-5 rounded-xl border border-blue-200">
-              <label className="block text-sm font-bold text-slate-700 mb-2">
+            <div className="bg-[#ebf4ff] p-5 rounded-xl border border-[#469fe8]/30">
+              <label className="block text-sm font-bold text-[#102124] mb-2">
                 Federal Taxable Income (Form 1120 Line 30 / Form 1065 Line 22)
               </label>
               <input 
@@ -110,10 +110,10 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
                   const updated = { ...schX, fedTaxableIncome: parseFloat(e.target.value) || 0 };
                   setSchX(recalculateTotals(updated));
                 }}
-                className="w-full border p-3 rounded-xl text-lg font-mono font-bold" 
+                className="w-full border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none p-3 rounded-xl text-lg font-mono font-bold" 
                 placeholder="0.00"
               />
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-[#5d6567] mt-1">
                 Enter net income from your federal return before municipal adjustments
               </p>
             </div>
@@ -127,12 +127,12 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
             />
 
             <div className="flex justify-end gap-2">
-              <button onClick={() => setStep(1)} className="px-4 py-2 border rounded-lg">
+              <button onClick={() => setStep(1)} className="px-4 py-2 border border-[#dcdede] text-[#5d6567] hover:bg-[#fbfbfb] rounded-lg">
                 Back
               </button>
               <button 
                 onClick={() => setStep(3)} 
-                className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold"
+                className="bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white px-6 py-2 rounded-lg font-bold"
               >
                 Next: Allocation & Credits
               </button>
@@ -143,48 +143,48 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
         {/* Step 3: Schedule Y & Credits */}
         {step === 3 && (
           <div className="space-y-6 animate-slideLeft">
-            <h3 className="font-bold text-lg">3. Allocation & Credits</h3>
+            <h3 className="font-bold text-lg text-[#0f1012]">3. Allocation & Credits</h3>
             <table className="w-full text-sm text-left">
-              <thead><tr className="bg-slate-100"><th className="p-2">Factor</th><th className="p-2">Dublin Amount</th><th className="p-2">Everywhere Amount</th></tr></thead>
+              <thead><tr className="bg-[#fbfbfb]"><th className="p-2 text-[#5d6567] font-medium">Factor</th><th className="p-2 text-[#5d6567] font-medium">Dublin Amount</th><th className="p-2 text-[#5d6567] font-medium">Everywhere Amount</th></tr></thead>
               <tbody>
                 <tr>
-                  <td className="p-2 font-medium">1. Property (Cost)</td>
-                  <td className="p-2"><input type="number" className="border w-full p-1" value={schY.property.dublin} onChange={e => setSchY({ ...schY, property: { ...schY.property, dublin: parseFloat(e.target.value) } })} /></td>
-                  <td className="p-2"><input type="number" className="border w-full p-1" value={schY.property.everywhere} onChange={e => setSchY({ ...schY, property: { ...schY.property, everywhere: parseFloat(e.target.value) } })} /></td>
+                  <td className="p-2 font-medium text-[#0f1012]">1. Property (Cost)</td>
+                  <td className="p-2"><input type="number" className="border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none w-full p-1" value={schY.property.dublin} onChange={e => setSchY({ ...schY, property: { ...schY.property, dublin: parseFloat(e.target.value) } })} /></td>
+                  <td className="p-2"><input type="number" className="border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none w-full p-1" value={schY.property.everywhere} onChange={e => setSchY({ ...schY, property: { ...schY.property, everywhere: parseFloat(e.target.value) } })} /></td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-medium">2. Payroll (Wages)</td>
-                  <td className="p-2"><input type="number" className="border w-full p-1" value={schY.payroll.dublin} onChange={e => setSchY({ ...schY, payroll: { ...schY.payroll, dublin: parseFloat(e.target.value) } })} /></td>
-                  <td className="p-2"><input type="number" className="border w-full p-1" value={schY.payroll.everywhere} onChange={e => setSchY({ ...schY, payroll: { ...schY.payroll, everywhere: parseFloat(e.target.value) } })} /></td>
+                  <td className="p-2 font-medium text-[#0f1012]">2. Payroll (Wages)</td>
+                  <td className="p-2"><input type="number" className="border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none w-full p-1" value={schY.payroll.dublin} onChange={e => setSchY({ ...schY, payroll: { ...schY.payroll, dublin: parseFloat(e.target.value) } })} /></td>
+                  <td className="p-2"><input type="number" className="border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none w-full p-1" value={schY.payroll.everywhere} onChange={e => setSchY({ ...schY, payroll: { ...schY.payroll, everywhere: parseFloat(e.target.value) } })} /></td>
                 </tr>
                 <tr>
-                  <td className="p-2 font-medium">3. Sales (Gross Receipts)</td>
-                  <td className="p-2"><input type="number" className="border w-full p-1" value={schY.sales.dublin} onChange={e => setSchY({ ...schY, sales: { ...schY.sales, dublin: parseFloat(e.target.value) } })} /></td>
-                  <td className="p-2"><input type="number" className="border w-full p-1" value={schY.sales.everywhere} onChange={e => setSchY({ ...schY, sales: { ...schY.sales, everywhere: parseFloat(e.target.value) } })} /></td>
+                  <td className="p-2 font-medium text-[#0f1012]">3. Sales (Gross Receipts)</td>
+                  <td className="p-2"><input type="number" className="border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none w-full p-1" value={schY.sales.dublin} onChange={e => setSchY({ ...schY, sales: { ...schY.sales, dublin: parseFloat(e.target.value) } })} /></td>
+                  <td className="p-2"><input type="number" className="border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none w-full p-1" value={schY.sales.everywhere} onChange={e => setSchY({ ...schY, sales: { ...schY.sales, everywhere: parseFloat(e.target.value) } })} /></td>
                 </tr>
               </tbody>
             </table>
 
-            <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-              <h4 className="font-bold text-amber-800 text-sm mb-2 flex items-center gap-2"><TrendingDown className="w-4 h-4" /> Net Operating Loss (NOL)</h4>
+            <div className="bg-[#f59e0b]/10 p-4 rounded-xl border border-[#f59e0b]/30">
+              <h4 className="font-bold text-[#f59e0b] text-sm mb-2 flex items-center gap-2"><TrendingDown className="w-4 h-4" /> Net Operating Loss (NOL)</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-amber-700 uppercase">Available Carryforward</label>
-                  <input type="number" value={nolCarryforward} onChange={e => setNolCarryforward(parseFloat(e.target.value))} className="w-full border border-amber-300 p-2 rounded" placeholder="0.00" />
+                  <label className="text-xs font-bold text-[#102124] uppercase">Available Carryforward</label>
+                  <input type="number" value={nolCarryforward} onChange={e => setNolCarryforward(parseFloat(e.target.value))} className="w-full border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none p-2 rounded" placeholder="0.00" />
                 </div>
-                <div className="text-xs text-amber-600 flex items-center">
+                <div className="text-xs text-[#5d6567] flex items-center">
                   Prior year losses can offset up to 50% of current income.
                 </div>
               </div>
             </div>
 
             <div className="flex gap-4">
-              <div className="flex-1"><label className="text-sm font-bold">Estimates Paid</label><input type="number" value={estimates} onChange={e => setEstimates(parseFloat(e.target.value))} className="w-full border p-2 rounded" /></div>
-              <div className="flex-1"><label className="text-sm font-bold">Prior Credits</label><input type="number" value={priorCredit} onChange={e => setPriorCredit(parseFloat(e.target.value))} className="w-full border p-2 rounded" /></div>
+              <div className="flex-1"><label className="text-sm font-bold text-[#102124]">Estimates Paid</label><input type="number" value={estimates} onChange={e => setEstimates(parseFloat(e.target.value))} className="w-full border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none p-2 rounded" /></div>
+              <div className="flex-1"><label className="text-sm font-bold text-[#102124]">Prior Credits</label><input type="number" value={priorCredit} onChange={e => setPriorCredit(parseFloat(e.target.value))} className="w-full border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none p-2 rounded" /></div>
             </div>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setStep(2)} className="px-4 py-2 border rounded">Back</button>
-              <button onClick={handleCalculate} className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold">Calculate Tax</button>
+              <button onClick={() => setStep(2)} className="px-4 py-2 border border-[#dcdede] text-[#5d6567] hover:bg-[#fbfbfb] rounded">Back</button>
+              <button onClick={handleCalculate} className="bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white px-6 py-2 rounded-lg font-bold">Calculate Tax</button>
             </div>
           </div>
         )}
@@ -192,35 +192,35 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
         {/* Step 4: Result */}
         {step === 4 && result && (
           <div className="space-y-6 animate-slideLeft text-center">
-            <h3 className="text-2xl font-bold">Tax Calculation Complete</h3>
-            <div className="bg-slate-50 p-6 rounded-xl inline-block text-left min-w-[300px] space-y-2">
-              <div className="flex justify-between"><span>Adj. Fed Income:</span> <b>${result.adjustedFedTaxableIncome.toLocaleString()}</b></div>
-              <div className="flex justify-between"><span>Allocation %:</span> <b>{(result.allocation.averagePct * 100).toFixed(4)}%</b></div>
-              <div className="flex justify-between border-b pb-2"><span>Allocated Income:</span> <b>${result.allocatedTaxableIncome.toLocaleString()}</b></div>
+            <h3 className="text-2xl font-bold text-[#0f1012]">Tax Calculation Complete</h3>
+            <div className="bg-[#fbfbfb] border border-[#dcdede] p-6 rounded-xl inline-block text-left min-w-[300px] space-y-2">
+              <div className="flex justify-between text-[#5d6567]"><span>Adj. Fed Income:</span> <b className="text-[#0f1012]">${result.adjustedFedTaxableIncome.toLocaleString()}</b></div>
+              <div className="flex justify-between text-[#5d6567]"><span>Allocation %:</span> <b className="text-[#0f1012]">{(result.allocation.averagePct * 100).toFixed(4)}%</b></div>
+              <div className="flex justify-between border-b border-[#dcdede] pb-2 text-[#5d6567]"><span>Allocated Income:</span> <b className="text-[#0f1012]">${result.allocatedTaxableIncome.toLocaleString()}</b></div>
 
               {result.nolApplied > 0 && (
-                <div className="flex justify-between text-amber-600"><span>NOL Applied:</span> <b>-${result.nolApplied.toLocaleString()}</b></div>
+                <div className="flex justify-between text-[#f59e0b]"><span>NOL Applied:</span> <b>-${result.nolApplied.toLocaleString()}</b></div>
               )}
-              <div className="flex justify-between font-medium"><span>Net Taxable Income:</span> <b>${result.taxableIncomeAfterNOL.toLocaleString()}</b></div>
+              <div className="flex justify-between font-medium text-[#5d6567]"><span>Net Taxable Income:</span> <b className="text-[#0f1012]">${result.taxableIncomeAfterNOL.toLocaleString()}</b></div>
 
-              <div className="border-t pt-2 mt-2 flex justify-between text-lg"><span>Tax Due (2%):</span> <b>${result.taxDue.toLocaleString()}</b></div>
-              <div className="flex justify-between text-green-600"><span>Credits:</span> <b>-${(result.estimatedPayments + result.priorYearCredit).toLocaleString()}</b></div>
+              <div className="border-t border-[#dcdede] pt-2 mt-2 flex justify-between text-lg text-[#5d6567]"><span>Tax Due (2%):</span> <b className="text-[#0f1012]">${result.taxDue.toLocaleString()}</b></div>
+              <div className="flex justify-between text-[#10b981]"><span>Credits:</span> <b>-${(result.estimatedPayments + result.priorYearCredit).toLocaleString()}</b></div>
 
               {(result.penaltyUnderpayment > 0 || result.interest > 0) && (
-                <div className="bg-red-50 p-2 rounded mt-2 text-xs text-red-700">
+                <div className="bg-[#ec1656]/10 border border-[#ec1656]/30 p-2 rounded mt-2 text-xs text-[#ec1656]">
                   {result.penaltyUnderpayment > 0 && <div className="flex justify-between"><span>Penalty:</span> <b>+${result.penaltyUnderpayment.toLocaleString()}</b></div>}
                   {result.interest > 0 && <div className="flex justify-between"><span>Interest:</span> <b>+${result.interest.toLocaleString()}</b></div>}
                 </div>
               )}
 
-              <div className="border-t pt-2 mt-2 flex justify-between text-xl font-bold text-indigo-900"><span>Balance Due:</span> <b>${result.balanceDue.toLocaleString()}</b></div>
+              <div className="border-t border-[#dcdede] pt-2 mt-2 flex justify-between text-xl font-bold"><span className="text-[#5d6567]">Balance Due:</span> <b className="text-[#970bed]">${result.balanceDue.toLocaleString()}</b></div>
             </div>
             <div className="flex justify-center gap-4">
-              <button onClick={() => setStep(3)} className="px-6 py-3 border rounded-xl">Edit</button>
+              <button onClick={() => setStep(3)} className="px-6 py-3 border border-[#dcdede] text-[#5d6567] hover:bg-[#fbfbfb] rounded-xl">Edit</button>
               {result.balanceDue > 0 ? (
-                <button onClick={() => setShowPayment(true)} className="px-6 py-3 bg-green-600 text-white font-bold rounded-xl flex items-center gap-2"><DollarSign className="w-4 h-4" /> Pay Now</button>
+                <button onClick={() => setShowPayment(true)} className="px-6 py-3 bg-gradient-to-r from-[#10b981] to-[#10b981] hover:from-[#059669] hover:to-[#059669] text-white font-bold rounded-xl flex items-center gap-2"><DollarSign className="w-4 h-4" /> Pay Now</button>
               ) : (
-                <button onClick={() => onComplete({ ...result, paymentStatus: 'PAID' })} className="px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl">Submit</button>
+                <button onClick={() => onComplete({ ...result, paymentStatus: 'PAID' })} className="px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white font-bold rounded-xl">Submit</button>
               )}
             </div>
           </div>
@@ -232,7 +232,7 @@ export const NetProfitsWizard: React.FC<Props> = ({ profile, onBack, onComplete 
 
 const Input = ({ label, val, set }: any) => (
   <div>
-    <label className="text-xs font-bold text-slate-500 uppercase block mb-1">{label}</label>
-    <input type="number" value={val} onChange={e => set(parseFloat(e.target.value))} className="w-full border border-slate-300 rounded p-1.5" />
+    <label className="text-xs font-bold text-[#102124] uppercase block mb-1">{label}</label>
+    <input type="number" value={val} onChange={e => set(parseFloat(e.target.value))} className="w-full border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 outline-none rounded p-1.5" />
   </div>
 );

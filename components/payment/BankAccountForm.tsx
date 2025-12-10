@@ -29,6 +29,9 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
   onAutoFillComplete,
 }) => {
   const [showTestACH, setShowTestACH] = React.useState(false);
+  
+  // Delay to ensure form updates before callback
+  const AUTOFILL_CALLBACK_DELAY = 50;
 
   const handleSelectTestACH = (account: TestACHAccount) => {
     onAchRoutingChange(account.routingNumber);
@@ -37,7 +40,7 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
     if (onAutoFillComplete) {
       setTimeout(() => {
         onAutoFillComplete();
-      }, 50);
+      }, AUTOFILL_CALLBACK_DELAY);
     }
   };
 
@@ -45,12 +48,12 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
     <div className="space-y-4">
       {/* Test ACH Helper - only show if testMode is true */}
       {testMode && testAccounts.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="bg-[#ebf4ff] border border-[#dfedff] rounded-lg p-3">
           <button 
             type="button"
             onClick={() => setShowTestACH(!showTestACH)}
             disabled={disabled}
-            className="w-full flex items-center justify-between text-sm font-medium text-blue-800 disabled:opacity-50"
+            className="w-full flex items-center justify-between text-sm font-medium text-[#469fe8] disabled:opacity-50"
           >
             <span>📋 Test ACH Accounts (click to auto-fill)</span>
             <span className="text-xs">{showTestACH ? '▲' : '▼'}</span>
@@ -58,7 +61,7 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
           {showTestACH && (
             <div className="mt-3 space-y-2 text-xs">
               {isLoading && (
-                <div className="text-slate-500 py-2">Loading test accounts...</div>
+                <div className="text-[#5d6567] py-2">Loading test accounts...</div>
               )}
               {!isLoading && testAccounts.map((account, idx) => {
                 const result = getResultDisplay(account.expectedResult);
@@ -66,8 +69,8 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
                   <div 
                     key={idx} 
                     onClick={() => !disabled && handleSelectTestACH(account)}
-                    className={`py-1 border-b border-blue-100 last:border-0 rounded px-1 transition-colors ${
-                      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-blue-100'
+                    className={`py-1 border-b border-[#ebf4ff] last:border-0 rounded px-1 transition-colors ${
+                      disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-[#dfedff]'
                     }`}
                     title={disabled ? '' : `Click to auto-fill: ${account.description}`}
                   >
@@ -85,16 +88,16 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
 
       {/* Routing Number */}
       <div>
-        <label className="text-xs font-bold text-slate-500 uppercase">Routing Number</label>
+        <label className="text-xs font-bold text-[#102124] uppercase">Routing Number</label>
         <div className="relative mt-1">
-          <Building className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+          <Building className="absolute left-3 top-2.5 w-4 h-4 text-[#babebf]" />
           <input 
             type="text" 
             placeholder="9 Digits" 
             value={achRouting}
             onChange={(e) => onAchRoutingChange(e.target.value)}
             disabled={disabled}
-            className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none disabled:bg-slate-100 disabled:cursor-not-allowed" 
+            className="w-full pl-9 pr-3 py-2 border border-[#dcdede] rounded-xl focus:ring-2 focus:ring-[#970bed]/20 focus:border-[#970bed] outline-none disabled:bg-[#f0f0f0] disabled:cursor-not-allowed" 
             required 
             maxLength={9}
             pattern="[0-9]*"
@@ -104,14 +107,14 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
 
       {/* Account Number */}
       <div>
-        <label className="text-xs font-bold text-slate-500 uppercase">Account Number</label>
+        <label className="text-xs font-bold text-[#102124] uppercase">Account Number</label>
         <input 
           type="text" 
           placeholder="Account #" 
           value={achAccount}
           onChange={(e) => onAchAccountChange(e.target.value)}
           disabled={disabled}
-          className="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg outline-none disabled:bg-slate-100 disabled:cursor-not-allowed" 
+          className="w-full px-3 py-2 mt-1 border border-[#dcdede] rounded-xl focus:ring-2 focus:ring-[#970bed]/20 focus:border-[#970bed] outline-none disabled:bg-[#f0f0f0] disabled:cursor-not-allowed" 
           required 
           maxLength={17}
           pattern="[0-9]*"

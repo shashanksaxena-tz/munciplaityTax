@@ -18,37 +18,37 @@ export const FormStatusBadge: React.FC<FormStatusBadgeProps> = ({ status, classN
       case FormStatus.DRAFT:
         return {
           label: 'Draft',
-          color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+          color: 'bg-[#fff5e6] text-[#f59e0b] border-[#f59e0b]/30',
           icon: FileClock,
         };
       case FormStatus.FINAL:
         return {
           label: 'Final',
-          color: 'bg-blue-100 text-blue-800 border-blue-300',
+          color: 'bg-[#ebf4ff] text-[#469fe8] border-[#469fe8]/30',
           icon: FileCheck,
         };
       case FormStatus.SUBMITTED:
         return {
           label: 'Submitted',
-          color: 'bg-green-100 text-green-800 border-green-300',
+          color: 'bg-[#d5faeb] text-[#10b981] border-[#10b981]/30',
           icon: FileUp,
         };
       case FormStatus.AMENDED:
         return {
           label: 'Amended',
-          color: 'bg-purple-100 text-purple-800 border-purple-300',
+          color: 'bg-[#f3e8ff] text-[#970bed] border-[#970bed]/30',
           icon: FileEdit,
         };
       case FormStatus.SUPERSEDED:
         return {
           label: 'Superseded',
-          color: 'bg-gray-100 text-gray-800 border-gray-300',
+          color: 'bg-[#f8f9fa] text-[#5d6567] border-[#dcdede]',
           icon: FileX,
         };
       default:
         return {
           label: status,
-          color: 'bg-gray-100 text-gray-800 border-gray-300',
+          color: 'bg-[#f8f9fa] text-[#5d6567] border-[#dcdede]',
           icon: FileCheck,
         };
     }
