@@ -166,6 +166,9 @@ export const ReconciliationIssuesList: React.FC<ReconciliationIssuesListProps> =
             )}
 
             {/* Resolution Section */}
+            {/* Note: CRITICAL severity issues cannot be marked as resolved through the UI
+                 because they require immediate action and should only be resolved after
+                 proper remediation has been completed (e.g., filing amended returns) */}
             {!issue.resolved && issue.severity !== ReconciliationIssueSeverity.CRITICAL && (
               <div className="space-y-2 pt-2">
                 <textarea

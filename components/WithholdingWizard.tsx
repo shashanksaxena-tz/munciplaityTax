@@ -35,8 +35,47 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
   const [loadingReconciliation, setLoadingReconciliation] = useState(false);
   const [showReconciliation, setShowReconciliation] = useState(false);
   
-  // Mock filings data for demo (in production, this would come from backend)
-  const mockFilings: WithholdingReturnData[] = useMemo(() => [], []);
+  // Mock filings data for demo (in production, this would come from backend/session)
+  // This represents past W-1 filings for the year
+  const mockFilings: WithholdingReturnData[] = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    
+    // Generate sample quarterly filings for demonstration
+    if (profile.filingFrequency === FilingFrequency.QUARTERLY) {
+      return [
+        {
+          id: '1',
+          dateFiled: `${currentYear}-04-15`,
+          period: { year: currentYear, period: 'Q1', startDate: `${currentYear}-01-01`, endDate: `${currentYear}-03-31`, dueDate: `${currentYear}-04-30` },
+          grossWages: 125000,
+          adjustments: 0,
+          taxDue: 2500,
+          penalty: 0,
+          interest: 0,
+          totalAmountDue: 2500,
+          isReconciled: true,
+          paymentStatus: 'PAID',
+          confirmationNumber: 'W1-Q1-2024-001'
+        },
+        {
+          id: '2',
+          dateFiled: `${currentYear}-07-20`,
+          period: { year: currentYear, period: 'Q2', startDate: `${currentYear}-04-01`, endDate: `${currentYear}-06-30`, dueDate: `${currentYear}-07-31` },
+          grossWages: 132000,
+          adjustments: -1000,
+          taxDue: 2620,
+          penalty: 0,
+          interest: 0,
+          totalAmountDue: 2620,
+          isReconciled: true,
+          paymentStatus: 'PAID',
+          confirmationNumber: 'W1-Q2-2024-002'
+        }
+      ];
+    }
+    
+    return [];
+  }, [profile.filingFrequency]);
 
   const availablePeriods = useMemo(() => {
      if (profile.filingFrequency === FilingFrequency.DAILY) return [];
@@ -67,8 +106,13 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
   const loadReconciliation = async () => {
     setLoadingReconciliation(true);
     try {
-      // In production, use actual employer ID from profile
-      const employerId = profile.fein; // or profile.accountNumber
+      // Use FEIN as employer ID (Federal Employer Identification Number)
+      const employerId = profile.fein;
+      if (!employerId) {
+        console.warn('No FEIN available for reconciliation');
+        setReconciliationIssues([]);
+        return;
+      }
       const taxYear = new Date().getFullYear();
       const issues = await reconcileW1Filings(employerId, taxYear);
       setReconciliationIssues(issues);
