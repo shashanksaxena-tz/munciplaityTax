@@ -1231,14 +1231,14 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                 placeholder="Search rules by name or code..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm"
               />
             </div>
           </div>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm bg-white"
+            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm bg-white"
           >
             <option value="">All Categories</option>
             {CATEGORIES.map(cat => (
@@ -1248,7 +1248,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
           <select
             value={entityTypeFilter}
             onChange={(e) => setEntityTypeFilter(e.target.value)}
-            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm bg-white"
+            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm bg-white"
           >
             <option value="">All Entity Types</option>
             <option value="INDIVIDUAL">Individual</option>
@@ -1260,7 +1260,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm bg-white"
+            className="px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] focus:border-[#970bed]/50 outline-none text-sm bg-white"
           >
             <option value="">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -1606,7 +1606,7 @@ export const RuleManagementDashboard: React.FC<RuleManagementDashboardProps> = (
                     </ul>
                   </div>
                   <div className="p-4 bg-[#ebf4ff] rounded-lg border border-[#970bed]/20">
-                    <h5 className="font-semibold text-indigo-800">ALLOCATION</h5>
+                    <h5 className="font-semibold text-[#970bed]">ALLOCATION</h5>
                     <p className="text-sm text-[#970bed] mt-1">Business income allocation/apportionment methods</p>
                     <ul className="text-sm text-[#970bed] mt-2 space-y-1">
                       <li>• ALLOCATION_METHOD - 3-factor, single-sales, etc.</li>
@@ -1909,7 +1909,7 @@ const RuleFormModal: React.FC<{
                 value={formData.ruleCode}
                 onChange={(e) => setFormData({ ...formData, ruleCode: e.target.value.toUpperCase() })}
                 placeholder="e.g., MUNICIPAL_TAX_RATE"
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             </div>
@@ -1922,7 +1922,7 @@ const RuleFormModal: React.FC<{
                 value={formData.ruleName}
                 onChange={(e) => setFormData({ ...formData, ruleName: e.target.value })}
                 placeholder="e.g., Dublin Municipal Tax Rate"
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             </div>
@@ -1936,7 +1936,7 @@ const RuleFormModal: React.FC<{
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value as RuleCategory })}
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none bg-white"
               >
                 {CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -1950,7 +1950,7 @@ const RuleFormModal: React.FC<{
               <select
                 value={formData.valueType}
                 onChange={(e) => setFormData({ ...formData, valueType: e.target.value as RuleValueType })}
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none bg-white"
               >
                 {VALUE_TYPES.map(type => (
                   <option key={type} value={type}>{type}</option>
@@ -1967,7 +1967,7 @@ const RuleFormModal: React.FC<{
               <select
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none bg-white"
               >
                 <option value="true">Yes / True</option>
                 <option value="false">No / False</option>
@@ -1979,7 +1979,7 @@ const RuleFormModal: React.FC<{
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
                 placeholder={formData.valueType === 'PERCENTAGE' ? 'e.g., 2.5' : 'Enter value'}
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             )}
@@ -1997,7 +1997,7 @@ const RuleFormModal: React.FC<{
                 type="date"
                 value={formData.effectiveDate}
                 onChange={(e) => setFormData({ ...formData, effectiveDate: e.target.value })}
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
                 required
               />
             </div>
@@ -2009,7 +2009,7 @@ const RuleFormModal: React.FC<{
                 type="date"
                 value={formData.endDate}
                 onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
               />
             </div>
           </div>
@@ -2031,7 +2031,7 @@ const RuleFormModal: React.FC<{
                         setFormData({ ...formData, entityTypes: formData.entityTypes.filter(t => t !== type) });
                       }
                     }}
-                    className="rounded border-[#dcdede] text-[#970bed] focus:ring-indigo-500"
+                    className="rounded border-[#dcdede] text-[#970bed] focus:ring-[#970bed]"
                   />
                   <span className="text-sm text-[#102124]">{type}</span>
                 </label>
@@ -2047,7 +2047,7 @@ const RuleFormModal: React.FC<{
               value={formData.changeReason}
               onChange={(e) => setFormData({ ...formData, changeReason: e.target.value })}
               placeholder="Describe why this rule is being created/updated..."
-              className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
               rows={2}
               required
             />
@@ -2062,7 +2062,7 @@ const RuleFormModal: React.FC<{
               value={formData.ordinanceReference}
               onChange={(e) => setFormData({ ...formData, ordinanceReference: e.target.value })}
               placeholder="e.g., Dublin Ord. 2024-001"
-              className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full px-4 py-2 border border-[#dcdede] rounded-lg focus:ring-2 focus:ring-[#970bed] outline-none"
             />
           </div>
 

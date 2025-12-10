@@ -94,8 +94,8 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
           className={`
             relative border-2 border-dashed rounded-xl p-6 text-center transition-all
             ${isDragging 
-              ? 'border-indigo-500 bg-[#ebf4ff]' 
-              : 'border-[#dcdede] hover:border-slate-400 hover:bg-[#f8f9fa]'
+              ? 'border-[#970bed]/50 bg-[#ebf4ff]' 
+              : 'border-[#dcdede] hover:border-[#babebf] hover:bg-[#f8f9fa]'
             }
           `}
         >

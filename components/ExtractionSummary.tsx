@@ -290,7 +290,7 @@ export const ExtractionSummary: React.FC<ExtractionSummaryProps> = ({
             </button>
             <button 
               onClick={onConfirm}
-              className="flex-[2] px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white font-bold rounded-xl shadow-lg shadow-indigo-200 hover:from-[#7f09c5] hover:to-[#3a8bd4] hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+              className="flex-[2] px-6 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white font-bold rounded-xl shadow-lg shadow-[#970bed]/20 hover:from-[#7f09c5] hover:to-[#3a8bd4] hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
             >
               Proceed to Review <ArrowRight className="w-5 h-5" />
             </button>

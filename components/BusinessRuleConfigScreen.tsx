@@ -97,7 +97,7 @@ const InputGroup = ({ label, value, onChange, step = 1, tooltip }: any) => (
       step={step}
       value={value} 
       onChange={e=>onChange(parseFloat(e.target.value))} 
-      className="w-full border border-[#dcdede] p-2 rounded-lg outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" 
+      className="w-full border border-[#dcdede] p-2 rounded-lg outline-none focus:border-[#970bed]/50 focus:ring-1 focus:ring-[#970bed] text-sm" 
     />
   </div>
 );

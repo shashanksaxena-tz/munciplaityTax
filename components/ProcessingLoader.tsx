@@ -203,7 +203,7 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
                     key={idx}
                     style={{ animationDelay: `${idx * 100}ms` }}
                     className={`p-3 rounded-xl border transition-all duration-300 animate-slideIn ${isCurrentForm
-                      ? 'bg-[#ebf4ff] border-[#970bed]/30 scale-[1.02] shadow-md ring-2 ring-indigo-200'
+                      ? 'bg-[#ebf4ff] border-[#970bed]/30 scale-[1.02] shadow-md ring-2 ring-[#970bed]/20'
                       : 'bg-[#f8f9fa] border-[#dcdede] hover:border-[#dcdede]'
                       }`}
                   >
@@ -245,8 +245,8 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
         )}
 
         {/* Fact Card */}
-        <div className="mt-10 bg-gradient-to-br from-slate-50 to-indigo-50/50 border border-indigo-100 rounded-xl p-6 pt-8 relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-indigo-100 px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 z-10">
+        <div className="mt-10 bg-gradient-to-br from-[#f8f9fa] to-[#ebf4ff]/50 border border-[#970bed]/10 rounded-xl p-6 pt-8 relative">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-[#970bed]/10 px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 z-10">
             <Lightbulb className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
             <span className="text-xs font-bold text-[#5d6567] uppercase tracking-wider">Dublin Tax Insight</span>
           </div>
@@ -262,7 +262,7 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === factIndex % 5 ? 'bg-indigo-400 w-4' : 'bg-slate-300'
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${i === factIndex % 5 ? 'bg-[#469fe8] w-4' : 'bg-[#dcdede]'
                   }`}
               />
             ))}
@@ -274,7 +274,7 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
           <div className="mt-6 flex flex-col items-center gap-3">
             <button
               onClick={onContinue}
-              className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
+              className="px-8 py-3 bg-gradient-to-r from-[#970bed] to-[#970bed] text-white font-semibold rounded-xl hover:from-[#7f09c5] hover:to-[#7f09c5] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
             >
               <CheckCircle className="w-5 h-5" />
               Continue to Review

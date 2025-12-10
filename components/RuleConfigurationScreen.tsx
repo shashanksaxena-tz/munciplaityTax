@@ -299,17 +299,17 @@ export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = (
                 <input
                   type="text" placeholder="New City Name"
                   value={newCityName} onChange={(e) => setNewCityName(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-[#dcdede] rounded-lg text-sm outline-none focus:border-indigo-500"
+                  className="flex-1 px-3 py-2 border border-[#dcdede] rounded-lg text-sm outline-none focus:border-[#970bed]/50"
                 />
                 <input
                   type="number" placeholder="Rate (e.g. 0.025)" step="0.001"
                   value={newCityRate} onChange={(e) => setNewCityRate(e.target.value)}
-                  className="w-32 px-3 py-2 border border-[#dcdede] rounded-lg text-sm outline-none focus:border-indigo-500"
+                  className="w-32 px-3 py-2 border border-[#dcdede] rounded-lg text-sm outline-none focus:border-[#970bed]/50"
                 />
                 <button
                   onClick={handleAddCity}
                   disabled={!newCityName || !newCityRate}
-                  className="bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] disabled:bg-slate-300 text-white p-2 rounded-lg transition-colors"
+                  className="bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] disabled:bg-[#dcdede] text-white p-2 rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                 </button>

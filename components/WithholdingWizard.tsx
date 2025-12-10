@@ -149,7 +149,7 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
                        <input 
                          type="number" 
                          value={wages || ''} onChange={e => setWages(parseFloat(e.target.value))}
-                         className="w-full pl-9 pr-3 py-2 border border-[#dcdede] rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg"
+                         className="w-full pl-9 pr-3 py-2 border border-[#dcdede] rounded-lg outline-none focus:ring-2 focus:ring-[#970bed] font-mono text-lg"
                          placeholder="0.00"
                        />
                     </div>
