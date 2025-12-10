@@ -236,7 +236,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
             <div className="flex gap-3">
               <button
                 onClick={() => setShowApproveDialog(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-lg hover:from-[#059669] hover:to-[#047857]"
               >
                 <CheckCircle className="w-5 h-5" />
                 Approve
@@ -279,9 +279,9 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
               <div>
                 <p className="text-sm text-gray-600">Risk Score</p>
                 <p className={`font-semibold ${
-                  (queueEntry?.riskScore || 0) >= 61 ? 'text-red-600' :
-                  (queueEntry?.riskScore || 0) >= 21 ? 'text-yellow-600' :
-                  'text-green-600'
+                  (queueEntry?.riskScore || 0) >= 61 ? 'text-[#ec1656]' :
+                  (queueEntry?.riskScore || 0) >= 21 ? 'text-[#f59e0b]' :
+                  'text-[#10b981]'
                 }`}>
                   {queueEntry?.riskScore || 0}
                 </p>
@@ -407,7 +407,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
             <div className="flex items-center gap-3">
               <button
                 onClick={handleApprove}
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-[#10b981] to-[#059669] text-white rounded-lg hover:from-[#059669] hover:to-[#047857]"
               >
                 Approve
               </button>
@@ -505,7 +505,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <FileQuestion className="w-6 h-6 text-blue-600" />
+              <FileQuestion className="w-6 h-6 text-[#469fe8]" />
               Request Additional Documentation
             </h3>
             <p className="text-gray-600 mb-4 text-sm">
@@ -548,7 +548,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
                 />
                 <p
                   className={`text-xs mt-1 ${
-                    docRequestDescription.length < 20 ? 'text-red-500' : 'text-green-600'
+                    docRequestDescription.length < 20 ? 'text-red-500' : 'text-[#10b981]'
                   }`}
                 >
                   {docRequestDescription.length < 20

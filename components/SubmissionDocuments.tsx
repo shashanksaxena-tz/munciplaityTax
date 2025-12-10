@@ -77,9 +77,9 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Paperclip className="w-5 h-5 text-slate-400" />
-          <h3 className="text-lg font-semibold text-slate-800">Supporting Documents</h3>
-          <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600 rounded-full">
+          <Paperclip className="w-5 h-5 text-[#babebf]" />
+          <h3 className="text-lg font-semibold text-[#0f1012]">Supporting Documents</h3>
+          <span className="px-2 py-0.5 text-xs font-medium bg-[#f0f0f0] text-[#5d6567] rounded-full">
             {documents.length} document{documents.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -94,8 +94,8 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
           className={`
             relative border-2 border-dashed rounded-xl p-6 text-center transition-all
             ${isDragging 
-              ? 'border-indigo-500 bg-indigo-50' 
-              : 'border-slate-300 hover:border-slate-400 hover:bg-slate-50'
+              ? 'border-indigo-500 bg-[#ebf4ff]' 
+              : 'border-[#dcdede] hover:border-slate-400 hover:bg-[#f8f9fa]'
             }
           `}
         >
@@ -106,18 +106,18 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-          <Upload className={`w-8 h-8 mx-auto mb-2 ${isDragging ? 'text-indigo-500' : 'text-slate-400'}`} />
-          <p className="text-sm text-slate-600">
-            <span className="font-medium text-indigo-600">Click to upload</span> or drag and drop
+          <Upload className={`w-8 h-8 mx-auto mb-2 ${isDragging ? 'text-indigo-500' : 'text-[#babebf]'}`} />
+          <p className="text-sm text-[#5d6567]">
+            <span className="font-medium text-[#970bed]">Click to upload</span> or drag and drop
           </p>
-          <p className="text-xs text-slate-500 mt-1">PDF or images up to 10MB</p>
+          <p className="text-xs text-[#5d6567] mt-1">PDF or images up to 10MB</p>
         </div>
       )}
 
       {/* Document List */}
       <div className="space-y-3">
         {documents.length === 0 ? (
-          <div className="text-center py-8 text-slate-500">
+          <div className="text-center py-8 text-[#5d6567]">
             <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
             <p className="text-sm">No supporting documents attached</p>
             {!readOnly && (
@@ -132,11 +132,11 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
             return (
               <div 
                 key={doc.id}
-                className="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 transition-colors"
+                className="bg-white border border-[#dcdede] rounded-xl p-4 hover:border-[#dcdede] transition-colors"
               >
                 <div className="flex items-start gap-4">
                   {/* Thumbnail or Icon */}
-                  <div className="flex-shrink-0 w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center">
+                  <div className="flex-shrink-0 w-12 h-12 bg-[#f0f0f0] rounded-lg flex items-center justify-center">
                     {doc.thumbnailUrl ? (
                       <img 
                         src={doc.thumbnailUrl} 
@@ -144,14 +144,14 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
                         className="w-full h-full object-cover rounded-lg"
                       />
                     ) : (
-                      <FileText className="w-6 h-6 text-slate-400" />
+                      <FileText className="w-6 h-6 text-[#babebf]" />
                     )}
                   </div>
                   
                   {/* Document Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-slate-800 truncate">{doc.fileName}</h4>
+                      <h4 className="font-medium text-[#0f1012] truncate">{doc.fileName}</h4>
                       {linkedForms.length > 0 && (
                         <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
                           <Link className="w-3 h-3" />
@@ -160,7 +160,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
                       )}
                     </div>
                     
-                    <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                    <div className="flex items-center gap-3 mt-1 text-xs text-[#5d6567]">
                       <span>{formatFileSize(doc.fileSize)}</span>
                       <span>•</span>
                       <span>Uploaded {formatDate(doc.uploadedAt)}</span>
@@ -172,7 +172,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
                         {linkedForms.map((form, idx) => (
                           <span 
                             key={idx}
-                            className="px-2 py-0.5 text-xs bg-slate-100 text-slate-600 rounded"
+                            className="px-2 py-0.5 text-xs bg-[#f0f0f0] text-[#5d6567] rounded"
                           >
                             {form.formType}
                           </span>
@@ -183,20 +183,20 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
                     {/* Corrections linked to this document */}
                     {showAuditTrail && corrections.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-slate-100">
-                        <p className="text-xs font-medium text-slate-500 mb-2">
+                        <p className="text-xs font-medium text-[#5d6567] mb-2">
                           Corrections using this document:
                         </p>
                         <div className="space-y-1">
                           {corrections.slice(0, 3).map((correction, idx) => (
                             <div key={idx} className="flex items-center gap-2 text-xs">
                               <AlertTriangle className="w-3 h-3 text-amber-500" />
-                              <span className="text-slate-600">
+                              <span className="text-[#5d6567]">
                                 <strong>{correction.fieldName}</strong>: {String(correction.originalValue)} → {String(correction.correctedValue)}
                               </span>
                             </div>
                           ))}
                           {corrections.length > 3 && (
-                            <p className="text-xs text-slate-400">+{corrections.length - 3} more</p>
+                            <p className="text-xs text-[#babebf]">+{corrections.length - 3} more</p>
                           )}
                         </div>
                       </div>
@@ -208,7 +208,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
                     {onViewDocument && (
                       <button
                         onClick={() => onViewDocument(doc)}
-                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        className="p-2 text-[#babebf] hover:text-[#970bed] hover:bg-[#ebf4ff] rounded-lg transition-colors"
                         title="View document"
                       >
                         <Eye className="w-5 h-5" />
@@ -217,7 +217,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
                     {!readOnly && onRemove && (
                       <button
                         onClick={() => onRemove(doc.id)}
-                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-[#babebf] hover:text-[#ec1656] hover:bg-[#ec1656]/10 rounded-lg transition-colors"
                         title="Remove document"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -233,7 +233,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
 
       {/* Warning for missing documents */}
       {!readOnly && documents.length === 0 && forms.length > 0 && (
-        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+        <div className="flex items-start gap-3 p-4 bg-[#f59e0b]/10 border border-amber-200 rounded-xl">
           <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium text-amber-800">No supporting documents attached</p>
@@ -247,11 +247,11 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
 
       {/* Auditor Info (read-only mode) */}
       {readOnly && documents.length > 0 && (
-        <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+        <div className="flex items-start gap-3 p-4 bg-[#f8f9fa] border border-[#dcdede] rounded-xl">
           <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-slate-800">Documents permanently attached</p>
-            <p className="text-sm text-slate-600 mt-1">
+            <p className="font-medium text-[#0f1012]">Documents permanently attached</p>
+            <p className="text-sm text-[#5d6567] mt-1">
               These documents are linked to this submission and cannot be modified. 
               Click any document to view or download.
             </p>
