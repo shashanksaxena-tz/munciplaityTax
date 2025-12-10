@@ -193,6 +193,11 @@ public class PaymentService {
                 .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
     }
     
+    public PaymentTransaction getPaymentByTransactionId(UUID transactionId) {
+        return paymentTransactionRepository.findById(transactionId)
+                .orElseThrow(() -> new IllegalArgumentException("Payment not found"));
+    }
+    
     public PaymentReceipt generatePaymentReceipt(UUID paymentId) {
         PaymentTransaction payment = getPaymentByPaymentId(paymentId);
         

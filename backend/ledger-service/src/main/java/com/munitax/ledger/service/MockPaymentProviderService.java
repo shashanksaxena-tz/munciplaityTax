@@ -56,8 +56,8 @@ public class MockPaymentProviderService {
         String cardNumber = request.getCardNumber().replaceAll("[^0-9]", "");
         
         // Test card scenarios
-        if (cardNumber.equals("4111111111111111") || cardNumber.equals("5555555555554444") 
-                || cardNumber.equals("378282246310005")) {
+        if (cardNumber.equals("4242424242424242") || cardNumber.equals("4111111111111111") 
+                || cardNumber.equals("5555555555554444") || cardNumber.equals("378282246310005")) {
             // Approved test cards (Visa, Mastercard, Amex)
             response.setStatus(PaymentStatus.APPROVED);
             response.setProviderTransactionId("mock_ch_" + UUID.randomUUID().toString().substring(0, 8));
@@ -150,6 +150,12 @@ public class MockPaymentProviderService {
         log.info("Returning test payment methods for TEST mode");
         
         List<TestCreditCard> testCards = List.of(
+            TestCreditCard.builder()
+                    .cardNumber("4242-4242-4242-4242")
+                    .cardType("VISA")
+                    .expectedResult("APPROVED")
+                    .description("Stripe-compatible Visa test card - always approved")
+                    .build(),
             TestCreditCard.builder()
                     .cardNumber("4111-1111-1111-1111")
                     .cardType("VISA")

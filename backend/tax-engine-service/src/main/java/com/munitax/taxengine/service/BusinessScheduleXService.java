@@ -16,7 +16,7 @@ import java.util.List;
  * Service for Business Schedule X operations including backward compatibility conversion (T005, Research R2).
  * 
  * Handles:
- * - Detection of old 6-field format vs new 27-field format
+ * - Detection of old 6-field format vs new 29-field format
  * - Runtime conversion from old format to new nested structure
  * - Preservation of data during migration
  */
@@ -26,7 +26,7 @@ public class BusinessScheduleXService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
-     * Convert old 6-field format to new 27-field format (Research R2 runtime conversion)
+     * Convert old 6-field format to new 29-field format (Research R2 runtime conversion)
      * 
      * Old format:
      * {
@@ -48,7 +48,7 @@ public class BusinessScheduleXService {
      * }
      *
      * @param json JSONB data from database
-     * @return Converted BusinessScheduleXDetails in new 27-field format
+     * @return Converted BusinessScheduleXDetails in new 29-field format
      */
     public BusinessScheduleXDetails convertFromOldFormat(JsonNode json) {
         if (json == null) {
@@ -93,6 +93,8 @@ public class BusinessScheduleXService {
             0.0, // domesticProductionActivities
             0.0, // stockCompensationAdjustment
             0.0, // inventoryMethodChange
+            0.0, // clubDues
+            0.0, // pensionProfitSharingLimits
             // Old field: "other" → addBacks.otherAddBacks (if positive)
             (json.has("other") && json.get("other").asDouble() > 0) ? json.get("other").asDouble() : 0.0,
             null, // otherAddBacksDescription
@@ -174,7 +176,7 @@ public class BusinessScheduleXService {
     }
     
     /**
-     * Save BusinessScheduleXDetails (always in new 27-field format)
+     * Save BusinessScheduleXDetails (always in new 29-field format)
      * This method ensures we always save in the new format, even if input was old format
      *
      * @param scheduleX Schedule X details to save

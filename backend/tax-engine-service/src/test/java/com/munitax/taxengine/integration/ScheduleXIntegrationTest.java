@@ -70,6 +70,8 @@ class ScheduleXIntegrationTest {
             0.0,      // domesticProductionActivities
             0.0,      // stockCompensationAdjustment
             0.0,      // inventoryMethodChange
+            0.0,      // clubDues
+            0.0,      // pensionProfitSharingLimits
             0.0,      // otherAddBacks
             null,     // otherAddBacksDescription
             0.0       // wagesCredit (deprecated)
@@ -160,6 +162,8 @@ class ScheduleXIntegrationTest {
             0.0,      // domesticProductionActivities
             0.0,      // stockCompensationAdjustment
             0.0,      // inventoryMethodChange
+            0.0,      // clubDues
+            0.0,      // pensionProfitSharingLimits
             0.0,      // otherAddBacks
             null,     // otherAddBacksDescription
             0.0       // wagesCredit
@@ -255,6 +259,8 @@ class ScheduleXIntegrationTest {
             0.0,      // domesticProductionActivities
             0.0,      // stockCompensationAdjustment
             0.0,      // inventoryMethodChange
+            0.0,      // clubDues
+            0.0,      // pensionProfitSharingLimits
             0.0,      // otherAddBacks
             null,     // otherAddBacksDescription
             0.0       // wagesCredit

@@ -12,10 +12,10 @@
  * - Add extractScheduleM1Fields() method
  * - Parse Form 1120 Schedule M-1 lines 1-10
  * - Parse Form 4562 depreciation schedules
- * - Return ScheduleXExtractionResult with 27 fields
+ * - Return ScheduleXExtractionResult with 29 fields
  * 
  * T024: Update ExtractionPromptBuilder.java
- * - Add prompts for each of 27 Schedule X fields
+ * - Add prompts for each of 29 Schedule X fields
  * - Include bounding box extraction requirements
  * - Add field-specific validation prompts
  * 
