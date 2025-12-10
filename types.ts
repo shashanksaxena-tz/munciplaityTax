@@ -826,7 +826,7 @@ export enum ExtractionStatus {
 export interface SubmissionDocument {
   id: string;
   submissionId: string;
-  documentId: string;
+  documentId?: string; // Optional for backward compatibility
   fileName: string;
   fileSize: number;
   mimeType: string;

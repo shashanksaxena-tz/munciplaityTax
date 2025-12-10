@@ -24,7 +24,7 @@ import { useToast } from '../contexts/ToastContext';
 import { SubmissionDocumentsList } from './SubmissionDocumentsList';
 import { DocumentViewer } from './DocumentViewer';
 import { ExtractionProvenanceDisplay } from './ExtractionProvenanceDisplay';
-import { parseFieldProvenance } from '../utils/documentUtils';
+import { parseFieldProvenance, downloadDocument } from '../utils/documentUtils';
 
 interface ReturnReviewPanelProps {
   returnId: string;
@@ -223,24 +223,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
 
   const handleDocumentDownload = async (document: SubmissionDocument) => {
     try {
-      const response = await fetch(
-        `/api/v1/submissions/${returnId}/documents/${document.id}`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to download document');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = window.document.createElement('a');
-      a.href = url;
-      a.download = document.fileName;
-      window.document.body.appendChild(a);
-      a.click();
-      window.document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      
+      await downloadDocument(returnId, document.id, document.fileName);
       showToast('success', 'Document downloaded successfully');
     } catch (error) {
       console.error('Error downloading document:', error);

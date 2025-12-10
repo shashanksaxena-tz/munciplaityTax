@@ -3,7 +3,7 @@ import { Download, FileText, AlertCircle } from 'lucide-react';
 import { PdfViewer } from './PdfViewer/PdfViewer';
 import { SubmissionDocument, FormProvenance, BoundingBox } from '../types';
 import { useToast } from '../contexts/ToastContext';
-import { parseFieldProvenance } from '../utils/documentUtils';
+import { parseFieldProvenance, downloadDocument } from '../utils/documentUtils';
 
 interface DocumentViewerProps {
   document: SubmissionDocument;
@@ -32,7 +32,7 @@ export function DocumentViewer({
 
   useEffect(() => {
     loadDocument();
-  }, [document.id]);
+  }, [document.id, document.fieldProvenance, submissionId]);
 
   const loadDocument = async () => {
     setLoading(true);
@@ -80,24 +80,7 @@ export function DocumentViewer({
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(
-        `/api/v1/submissions/${submissionId}/documents/${document.id}`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to download document');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = window.document.createElement('a');
-      a.href = url;
-      a.download = document.fileName;
-      window.document.body.appendChild(a);
-      a.click();
-      window.document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      
+      await downloadDocument(submissionId, document.id, document.fileName);
       showToast('success', 'Document downloaded successfully');
     } catch (err) {
       console.error('Error downloading document:', err);
@@ -146,6 +129,7 @@ export function DocumentViewer({
           <button
             onClick={handleDownload}
             className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#469fe8] hover:bg-[#e0f4ff] rounded-lg transition-colors"
+            aria-label="Download document"
           >
             <Download className="w-4 h-4" />
             Download

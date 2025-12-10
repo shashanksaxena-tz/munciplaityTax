@@ -24,7 +24,10 @@ export function SubmissionDocumentsList({
   };
 
   const formatDate = (dateStr: string): string => {
-    return new Date(dateStr).toLocaleString('en-US', {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr; // Return original if invalid
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -105,6 +108,15 @@ export function SubmissionDocumentsList({
                 isSelected ? 'bg-[#e0f4ff] border-l-4 border-[#469fe8]' : ''
               }`}
               onClick={() => onDocumentSelect(doc)}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isSelected}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onDocumentSelect(doc);
+                }
+              }}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -156,6 +168,7 @@ export function SubmissionDocumentsList({
                   }}
                   className="ml-3 p-2 text-[#469fe8] hover:bg-[#e0f4ff] rounded-lg transition-colors flex-shrink-0"
                   title="Download document"
+                  aria-label="Download document"
                 >
                   <Download className="w-5 h-5" />
                 </button>

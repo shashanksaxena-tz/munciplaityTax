@@ -84,6 +84,14 @@ export function ExtractionProvenanceDisplay({
                     <div
                       key={fieldIdx}
                       onClick={() => onFieldClick?.(field, formProv)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onFieldClick?.(field, formProv);
+                        }
+                      }}
                       className={`p-3 rounded-lg border cursor-pointer transition-all ${
                         isSelected 
                           ? 'border-[#469fe8] bg-[#e0f4ff] shadow-sm' 
