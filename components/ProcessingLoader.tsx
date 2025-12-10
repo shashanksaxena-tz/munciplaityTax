@@ -180,9 +180,9 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
               <User className="w-5 h-5 text-[#469fe8]" />
             </div>
             <div className="flex-1">
-              <div className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Detected Taxpayer</div>
-              <div className="text-lg font-bold text-slate-800 mb-1">{taxpayerName}</div>
-              <div className="text-sm text-slate-600 italic">"{personalizedMessage}"</div>
+              <div className="text-xs text-[#469fe8] font-semibold uppercase tracking-wider">Detected Taxpayer</div>
+              <div className="text-lg font-bold text-[#0f1012] mb-1">{taxpayerName}</div>
+              <div className="text-sm text-[#5d6567] italic">"{personalizedMessage}"</div>
             </div>
           </div>
         )}
@@ -190,7 +190,7 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
         {/* Detected Forms */}
         {detectedForms.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
+            <h3 className="text-sm font-bold text-[#5d6567] uppercase tracking-wider mb-3">
               Detected Forms ({detectedForms.length})
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -203,21 +203,21 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
                     key={idx}
                     style={{ animationDelay: `${idx * 100}ms` }}
                     className={`p-3 rounded-xl border transition-all duration-300 animate-slideIn ${isCurrentForm
-                      ? 'bg-indigo-50 border-indigo-300 scale-[1.02] shadow-md ring-2 ring-indigo-200'
-                      : 'bg-slate-50 border-slate-200 hover:border-slate-300'
+                      ? 'bg-[#ebf4ff] border-[#970bed]/30 scale-[1.02] shadow-md ring-2 ring-indigo-200'
+                      : 'bg-[#f8f9fa] border-[#dcdede] hover:border-[#dcdede]'
                       }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <FileText className={`w-4 h-4 ${isCurrentForm ? 'text-indigo-600' : 'text-slate-400'}`} />
-                      <span className="font-bold text-sm text-slate-800">{form}</span>
+                      <FileText className={`w-4 h-4 ${isCurrentForm ? 'text-[#970bed]' : 'text-[#babebf]'}`} />
+                      <span className="font-bold text-sm text-[#0f1012]">{form}</span>
                     </div>
                     {provenance && (
-                      <div className="text-xs text-slate-500 mb-1">
+                      <div className="text-xs text-[#5d6567] mb-1">
                         Page {provenance.pageNumber} • {Math.round(provenance.formConfidence * 100)}% match
                       </div>
                     )}
                     {isCurrentForm && (
-                      <div className="mt-2 flex items-center gap-1 text-xs text-indigo-600 font-medium">
+                      <div className="mt-2 flex items-center gap-1 text-xs text-[#970bed] font-medium">
                         <Loader2 className="w-3 h-3 animate-spin" />
                         <span>Extracting data...</span>
                       </div>
@@ -232,11 +232,11 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
         {/* Extraction Log */}
         {logs.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">Activity Log</h3>
-            <div className="bg-slate-50 rounded-xl p-4 max-h-32 overflow-y-auto">
+            <h3 className="text-sm font-bold text-[#5d6567] uppercase tracking-wider mb-3">Activity Log</h3>
+            <div className="bg-[#f8f9fa] rounded-xl p-4 max-h-32 overflow-y-auto">
               {logs.slice(-5).map((log, idx) => (
-                <div key={idx} className="flex items-center gap-2 text-sm text-slate-600 py-1">
-                  <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" />
+                <div key={idx} className="flex items-center gap-2 text-sm text-[#5d6567] py-1">
+                  <CheckCircle className="w-3 h-3 text-[#10b981] flex-shrink-0" />
                   <span>{log}</span>
                 </div>
               ))}
@@ -248,11 +248,11 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
         <div className="mt-10 bg-gradient-to-br from-slate-50 to-indigo-50/50 border border-indigo-100 rounded-xl p-6 pt-8 relative">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white border border-indigo-100 px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 z-10">
             <Lightbulb className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Dublin Tax Insight</span>
+            <span className="text-xs font-bold text-[#5d6567] uppercase tracking-wider">Dublin Tax Insight</span>
           </div>
 
           <div className="min-h-[80px] flex items-center justify-center">
-            <p className="text-slate-700 text-sm leading-relaxed italic text-center transition-opacity duration-300">
+            <p className="text-[#102124] text-sm leading-relaxed italic text-center transition-opacity duration-300">
               "{FACTS[factIndex]}"
             </p>
           </div>
@@ -279,12 +279,12 @@ export const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ extractionUp
               <CheckCircle className="w-5 h-5" />
               Continue to Review
             </button>
-            <p className="text-xs text-slate-500 italic">Click to view your extracted data</p>
+            <p className="text-xs text-[#5d6567] italic">Click to view your extracted data</p>
           </div>
         )}
 
         {/* Security Notice */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400">
+        <div className="mt-6 flex items-center justify-center gap-2 text-xs text-[#babebf]">
           <Shield className="w-3 h-3" />
           <span>Your data is processed securely • API keys are never stored</span>
         </div>

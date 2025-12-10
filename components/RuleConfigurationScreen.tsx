@@ -185,14 +185,14 @@ export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = (
                   <option value={W2QualifyingWagesRule.BOX_18_LOCAL}>Always Use Box 18 (Local)</option>
                   <option value={W2QualifyingWagesRule.BOX_1_FEDERAL}>Always Use Box 1 (Federal)</option>
                 </select>
-                <p className="text-xs text-slate-500">Determines which W-2 box determines the municipal tax base.</p>
+                <p className="text-xs text-[#5d6567]">Determines which W-2 box determines the municipal tax base.</p>
               </div>
 
-              <div className="h-px bg-slate-100"></div>
+              <div className="h-px bg-[#f0f0f0]"></div>
 
               {/* Inclusion Toggles */}
               <div>
-                <label className="text-sm font-medium text-slate-700 block mb-3">Taxable Income Inclusions</label>
+                <label className="text-sm font-medium text-[#102124] block mb-3">Taxable Income Inclusions</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <ToggleOption label="Schedule C (Business)" checked={rules.incomeInclusion.scheduleC} onChange={() => toggleIncomeRule('scheduleC')} />
                   <ToggleOption label="Schedule E (Rentals)" checked={rules.incomeInclusion.scheduleE} onChange={() => toggleIncomeRule('scheduleE')} />
@@ -206,16 +206,16 @@ export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = (
 
           {/* Rounding & Precision */}
           <section>
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[#babebf] uppercase tracking-wider mb-4 flex items-center gap-2">
               <Hash className="w-4 h-4" /> Rounding & Precision
             </h3>
-            <div className="bg-white border border-slate-200 rounded-xl p-5">
+            <div className="bg-white border border-[#dcdede] rounded-xl p-5">
               <ToggleOption
                 label="Round Tax Due to Whole Dollars"
                 checked={rules.enableRounding}
                 onChange={() => onUpdateRules({ ...rules, enableRounding: !rules.enableRounding })}
               />
-              <p className="text-xs text-slate-500 mt-2">When enabled, the final municipal tax liability and balance due will be rounded to the nearest whole dollar (e.g. $10.50 &rarr; $11).</p>
+              <p className="text-xs text-[#5d6567] mt-2">When enabled, the final municipal tax liability and balance due will be rounded to the nearest whole dollar (e.g. $10.50 &rarr; $11).</p>
             </div>
           </section>
 
@@ -283,33 +283,33 @@ export const RuleConfigurationScreen: React.FC<RuleConfigurationScreenProps> = (
                         value={rate}
                         step="0.001"
                         onChange={(e) => handleCityRateChange(city, e.target.value)}
-                        className="w-20 text-right px-2 py-1 border border-slate-200 rounded text-sm bg-white"
+                        className="w-20 text-right px-2 py-1 border border-[#dcdede] rounded text-sm bg-white"
                       />
-                      <button onClick={() => handleDeleteCity(city)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                      <button onClick={() => handleDeleteCity(city)} className="text-[#dcdede] hover:text-[#ec1656] opacity-0 group-hover:opacity-100 transition-all">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                 ))}
-                {filteredCities.length === 0 && <div className="p-4 text-center text-slate-500 text-sm">No cities found matching "{searchTerm}"</div>}
+                {filteredCities.length === 0 && <div className="p-4 text-center text-[#5d6567] text-sm">No cities found matching "{searchTerm}"</div>}
               </div>
 
               {/* Add New */}
-              <div className="border-t border-slate-200 p-3 bg-white flex gap-2">
+              <div className="border-t border-[#dcdede] p-3 bg-white flex gap-2">
                 <input
                   type="text" placeholder="New City Name"
                   value={newCityName} onChange={(e) => setNewCityName(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-500"
+                  className="flex-1 px-3 py-2 border border-[#dcdede] rounded-lg text-sm outline-none focus:border-indigo-500"
                 />
                 <input
                   type="number" placeholder="Rate (e.g. 0.025)" step="0.001"
                   value={newCityRate} onChange={(e) => setNewCityRate(e.target.value)}
-                  className="w-32 px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-500"
+                  className="w-32 px-3 py-2 border border-[#dcdede] rounded-lg text-sm outline-none focus:border-indigo-500"
                 />
                 <button
                   onClick={handleAddCity}
                   disabled={!newCityName || !newCityRate}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white p-2 rounded-lg transition-colors"
+                  className="bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] disabled:bg-slate-300 text-white p-2 rounded-lg transition-colors"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -328,10 +328,10 @@ const ToggleOption = ({ label, checked, onChange }: any) => (
     onClick={onChange}
     className={`
       flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all
-      ${checked ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-200 hover:border-slate-300'}
+      ${checked ? 'bg-[#ebf4ff] border-[#970bed]/20' : 'bg-white border-[#dcdede] hover:border-[#dcdede]'}
     `}
   >
-    <span className={`text-sm font-medium ${checked ? 'text-indigo-700' : 'text-slate-600'}`}>{label}</span>
-    {checked ? <ToggleRight className="w-6 h-6 text-indigo-600" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+    <span className={`text-sm font-medium ${checked ? 'text-[#970bed]' : 'text-[#5d6567]'}`}>{label}</span>
+    {checked ? <ToggleRight className="w-6 h-6 text-[#970bed]" /> : <ToggleLeft className="w-6 h-6 text-[#babebf]" />}
   </div>
 );

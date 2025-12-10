@@ -139,7 +139,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
               </div>
             </div>
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Taxpayer Profile</h4>
+              <h4 className="text-xs font-bold text-[#babebf] uppercase tracking-wider mb-2">Taxpayer Profile</h4>
               <InputGroup label="Primary Name" value={profile.name} onChange={(v: any) => onUpdateProfile({ ...profile, name: v })} isText tooltip="Primary taxpayer's legal name." />
               <InputGroup label="Primary SSN" value={profile.ssn || ''} onChange={(v: any) => onUpdateProfile({ ...profile, ssn: v })} isText tooltip="Last 4 digits of SSN." />
 

@@ -106,7 +106,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-          <Upload className={`w-8 h-8 mx-auto mb-2 ${isDragging ? 'text-indigo-500' : 'text-[#babebf]'}`} />
+          <Upload className={`w-8 h-8 mx-auto mb-2 ${isDragging ? 'text-[#469fe8]' : 'text-[#babebf]'}`} />
           <p className="text-sm text-[#5d6567]">
             <span className="font-medium text-[#970bed]">Click to upload</span> or drag and drop
           </p>
@@ -118,7 +118,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
       <div className="space-y-3">
         {documents.length === 0 ? (
           <div className="text-center py-8 text-[#5d6567]">
-            <FileText className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+            <FileText className="w-12 h-12 mx-auto mb-3 text-[#dcdede]" />
             <p className="text-sm">No supporting documents attached</p>
             {!readOnly && (
               <p className="text-xs mt-1">Upload documents to provide evidence for your return</p>
@@ -153,7 +153,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-[#0f1012] truncate">{doc.fileName}</h4>
                       {linkedForms.length > 0 && (
-                        <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                        <span className="flex items-center gap-1 px-2 py-0.5 text-xs font-medium bg-[#d5faeb] text-[#10b981] rounded-full">
                           <Link className="w-3 h-3" />
                           {linkedForms.length} form{linkedForms.length !== 1 ? 's' : ''} linked
                         </span>
@@ -182,7 +182,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
 
                     {/* Corrections linked to this document */}
                     {showAuditTrail && corrections.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-slate-100">
+                      <div className="mt-3 pt-3 border-t border-[#dcdede]">
                         <p className="text-xs font-medium text-[#5d6567] mb-2">
                           Corrections using this document:
                         </p>
@@ -233,11 +233,11 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
 
       {/* Warning for missing documents */}
       {!readOnly && documents.length === 0 && forms.length > 0 && (
-        <div className="flex items-start gap-3 p-4 bg-[#f59e0b]/10 border border-amber-200 rounded-xl">
+        <div className="flex items-start gap-3 p-4 bg-[#f59e0b]/10 border border-[#f59e0b]/20 rounded-xl">
           <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-amber-800">No supporting documents attached</p>
-            <p className="text-sm text-amber-700 mt-1">
+            <p className="font-medium text-[#f59e0b]">No supporting documents attached</p>
+            <p className="text-sm text-[#f59e0b] mt-1">
               Submissions without supporting documents may take longer to process. 
               Consider uploading your W-2s, 1099s, and other tax documents.
             </p>
@@ -248,7 +248,7 @@ export const SubmissionDocuments: React.FC<SubmissionDocumentsProps> = ({
       {/* Auditor Info (read-only mode) */}
       {readOnly && documents.length > 0 && (
         <div className="flex items-start gap-3 p-4 bg-[#f8f9fa] border border-[#dcdede] rounded-xl">
-          <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+          <CheckCircle className="w-5 h-5 text-[#10b981] flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-medium text-[#0f1012]">Documents permanently attached</p>
             <p className="text-sm text-[#5d6567] mt-1">
