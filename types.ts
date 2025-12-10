@@ -830,8 +830,8 @@ export interface SubmissionDocument {
   fileName: string;
   fileSize: number;
   mimeType: string;
-  uploadedAt: string;
-  uploadDate?: string; // Alternative field name for compatibility
+  uploadedAt: string; // Primary field - ISO 8601 timestamp string
+  uploadDate?: string; // Deprecated: Use uploadedAt instead. Kept for backward compatibility with older API responses
   base64Data?: string; // For viewing
   thumbnailUrl?: string;
   formType?: string;

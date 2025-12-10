@@ -24,6 +24,7 @@ import { useToast } from '../contexts/ToastContext';
 import { SubmissionDocumentsList } from './SubmissionDocumentsList';
 import { DocumentViewer } from './DocumentViewer';
 import { ExtractionProvenanceDisplay } from './ExtractionProvenanceDisplay';
+import { parseFieldProvenance } from '../utils/documentUtils';
 
 interface ReturnReviewPanelProps {
   returnId: string;
@@ -440,14 +441,7 @@ export function ReturnReviewPanel({ returnId, userId, onBack }: ReturnReviewPane
           {/* Extraction Provenance */}
           {selectedDocument && selectedDocument.fieldProvenance && (
             <ExtractionProvenanceDisplay
-              provenance={(() => {
-                try {
-                  const parsed = JSON.parse(selectedDocument.fieldProvenance);
-                  return Array.isArray(parsed) ? parsed : [];
-                } catch {
-                  return [];
-                }
-              })()}
+              provenance={parseFieldProvenance(selectedDocument.fieldProvenance)}
               onFieldClick={handleFieldClick}
               selectedFieldName={selectedFieldProvenance?.field.fieldName}
             />

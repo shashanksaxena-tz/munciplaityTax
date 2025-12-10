@@ -3,6 +3,7 @@ import { Download, FileText, AlertCircle } from 'lucide-react';
 import { PdfViewer } from './PdfViewer/PdfViewer';
 import { SubmissionDocument, FormProvenance, BoundingBox } from '../types';
 import { useToast } from '../contexts/ToastContext';
+import { parseFieldProvenance } from '../utils/documentUtils';
 
 interface DocumentViewerProps {
   document: SubmissionDocument;
@@ -39,16 +40,8 @@ export function DocumentViewer({
 
     try {
       // Load document provenance for field highlighting
-      if (document.fieldProvenance) {
-        try {
-          const parsed = JSON.parse(document.fieldProvenance);
-          if (Array.isArray(parsed)) {
-            setProvenance(parsed);
-          }
-        } catch (e) {
-          console.warn('Failed to parse field provenance:', e);
-        }
-      }
+      const parsedProvenance = parseFieldProvenance(document.fieldProvenance);
+      setProvenance(parsedProvenance);
 
       // In production, this would fetch the actual PDF from the backend
       // For now, we'll use a placeholder or mock data

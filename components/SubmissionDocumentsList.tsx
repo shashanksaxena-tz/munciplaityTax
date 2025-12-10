@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, Download, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 import { SubmissionDocument, ExtractionStatus } from '../types';
+import { getDocumentUploadDate } from '../utils/documentUtils';
 
 interface SubmissionDocumentsListProps {
   documents: SubmissionDocument[];
@@ -93,7 +94,7 @@ export function SubmissionDocumentsList({
       
       <div className="divide-y divide-[#dcdede]">
         {documents.map((doc) => {
-          const uploadDate = doc.uploadedAt || doc.uploadDate || '';
+          const uploadDate = getDocumentUploadDate(doc);
           const extractionStatus = getExtractionStatusDisplay(doc);
           const isSelected = selectedDocumentId === doc.id;
 

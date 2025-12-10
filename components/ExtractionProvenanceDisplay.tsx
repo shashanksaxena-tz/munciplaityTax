@@ -1,6 +1,7 @@
 import React from 'react';
 import { FileText, MapPin, Sparkles } from 'lucide-react';
 import { FormProvenance, FieldProvenance } from '../types';
+import { isDifferentValue } from '../utils/documentUtils';
 
 interface ExtractionProvenanceDisplayProps {
   provenance: FormProvenance[];
@@ -104,7 +105,7 @@ export function ExtractionProvenanceDisplay({
                                 <span className="font-medium">Raw:</span> {field.rawValue}
                               </div>
                             )}
-                            {field.processedValue && field.processedValue !== field.rawValue && (
+                            {field.processedValue && isDifferentValue(field.processedValue, field.rawValue) && (
                               <div className="text-xs text-[#102124]">
                                 <span className="font-medium">Processed:</span> {field.processedValue}
                               </div>
