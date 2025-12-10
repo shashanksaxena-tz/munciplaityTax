@@ -518,13 +518,253 @@ flowchart TB
 
 ---
 
+## Known Limitations
+
+### Individual Tax Filing Flow (Section 1)
+
+#### Payment Processing Not Integrated
+
+**Issue:** The data flow diagram shows a complete tax filing process, but the payment step is not integrated in the frontend application.
+
+**Current Data Flow:**
+```
+User → Frontend → Tax Calculation → Session Storage → PDF Generation ✅
+                                   ↓
+                            Payment Processing ❌ (Not Implemented)
+                                   ↓
+                            Ledger Updates
+                                   ↓
+                            Receipt Generation
+```
+
+**Impact on Data Flow:**
+- Tax calculation data flows correctly through the system
+- Session data is properly stored
+- PDF generation works as expected
+- **Payment data flow is incomplete:**
+  - Payment requests don't flow from frontend to backend
+  - No payment transaction records created in real-time
+  - Ledger entries must be created manually by staff
+
+**Workaround Data Flow:**
+```
+1. User completes tax calculation → Session Storage
+2. User generates PDF → Downloads to local machine
+3. User submits payment externally (check/wire/in-person)
+4. Municipality staff manually enters payment:
+   - Staff → Ledger Service → Journal Entry Creation
+   - Staff → Payment Transaction Record
+   - Journal Entry → Account Balance Update
+```
+
+**Backend Endpoints Available (Unused):**
+- `POST /api/v1/payments/process` - Would create payment transaction and journal entries
+- `POST /api/v1/payments/{id}/confirm` - Would confirm payment completion
+- `GET /api/v1/payments/{paymentId}/receipt` - Would generate receipt data
+
+**Data Not Flowing:**
+- Payment method details (card/ACH)
+- Real-time payment confirmation
+- Automated receipt generation
+- Automated account balance updates
+
+**Tracking Issues:**
+- [shashanksaxena-tz/munciplaityTax#94](https://github.com/shashanksaxena-tz/munciplaityTax/issues/94) - Complete payment data flow
+- [shashanksaxena-tz/munciplaityTax#102](https://github.com/shashanksaxena-tz/munciplaityTax/issues/102) - Payment confirmation data flow
+
+**Backend Reference:**  
+`backend/ledger-service/src/main/java/com/munitax/ledger/controller/PaymentController.java`
+
+---
+
+### Auditor Workflow Data Flow (Section 4)
+
+#### Document Request Data Flow Not Implemented
+
+**Issue:** While the backend supports document request data flows, the frontend does not utilize these endpoints.
+
+**Missing Data Flows:**
+```
+Auditor → Document Request → Database ❌
+                ↓
+        Taxpayer Notification ❌
+                ↓
+        Document Upload by Taxpayer ❌
+                ↓
+        Document Storage ❌
+                ↓
+        Auditor Review ❌
+```
+
+**Current Workaround:**
+```
+Auditor → Email/Phone Request → Taxpayer
+                ↓
+        Email Attachment or In-Person
+                ↓
+        Manual File Storage
+                ↓
+        Auditor Review (External Files)
+```
+
+**Impact:**
+- No structured document request data
+- No tracking of request status in database
+- No audit trail of document submissions
+- Manual process breaks automated workflow
+
+**Tracking Issue:**
+- [shashanksaxena-tz/munciplaityTax#XX](https://github.com/shashanksaxena-tz/munciplaityTax/issues/XX) - Implement document request data flow
+
+---
+
+### Ledger & Reconciliation Data Flows
+
+#### Reconciliation Report Data Not Accessible
+
+**Issue:** Reconciliation data flows to the database but no frontend retrieval mechanism exists.
+
+**Backend Data Flow (Working):**
+```
+W-1 Filings → Database
+W-2 Forms → Database
+W-3 Reconciliation → Calculation Service
+                    ↓
+            Reconciliation Report → Database ✅
+```
+
+**Frontend Data Flow (Missing):**
+```
+Municipality Dashboard ❌
+        ↓
+Reconciliation Service ❌
+        ↓
+Report Display ❌
+```
+
+**Available Endpoints (Unused):**
+- `GET /api/v1/reconciliation/report/{tenantId}/{municipalityId}`
+- `GET /api/v1/reconciliation/{tenantId}/{municipalityId}/filer/{filerId}`
+
+**Impact:**
+- Reconciliation data exists but not accessible to users
+- No visibility into withholding tax discrepancies
+- Manual report generation required
+
+**Tracking Issue:**
+- [shashanksaxena-tz/munciplaityTax#XX](https://github.com/shashanksaxena-tz/munciplaityTax/issues/XX) - Add municipality reconciliation dashboard
+
+---
+
+### Data Storage Flow Limitations
+
+#### Audit Trail Data Generated But Not Displayed
+
+**Issue:** Audit trail data is correctly stored in the database but no UI exists to retrieve and display it.
+
+**Backend Storage Flow (Working):**
+```
+All Actions → Audit Trail Service → Digital Signature → PostgreSQL ✅
+```
+
+**Frontend Retrieval Flow (Missing):**
+```
+User Request ❌ → API Call ❌ → Audit Trail Display ❌
+```
+
+**Impact:**
+- Complete audit trail exists in database
+- No user-facing way to view historical actions
+- Compliance reporting difficult
+
+**Workaround:**
+- Direct database queries
+- Manual export of audit_trail table
+- Custom SQL reports
+
+**Tracking Issue:**
+- [shashanksaxena-tz/munciplaityTax#XX](https://github.com/shashanksaxena-tz/munciplaityTax/issues/XX) - Implement audit trail viewer
+
+---
+
+### Integration Data Flows (Section 6)
+
+#### Email Notification Flow Not Implemented
+
+**Issue:** The diagram shows email notifications but this integration is not implemented.
+
+**Documented Flow:**
+```
+Ledger → Notification Data → Email Service → User
+```
+
+**Current Reality:**
+```
+Ledger → Database Only (no notifications sent)
+```
+
+**Impact:**
+- Users don't receive automated notifications for:
+  - Payment confirmations
+  - Submission acknowledgments
+  - Document requests
+  - Audit status changes
+
+**Workaround:**
+- Manual email communication
+- Users must check application for status updates
+
+---
+
+## Data Flow Best Practices
+
+When implementing missing data flows, follow these patterns:
+
+### 1. Payment Data Flow Pattern
+```typescript
+// Frontend Service
+const payment = await api.payments.process(paymentData);
+// Backend creates: PaymentTransaction, JournalEntry, AccountBalance update
+const receipt = await api.payments.getReceipt(payment.id);
+// Display receipt to user
+```
+
+### 2. Audit Trail Flow Pattern
+```typescript
+// Any action that needs audit trail
+await api.audit.logAction({
+  entityType: 'SUBMISSION',
+  action: 'APPROVE',
+  userId: currentUser.id,
+  details: {...}
+});
+// Backend: Create audit entry, calculate signature, store immutably
+```
+
+### 3. Document Request Flow Pattern
+```typescript
+// Auditor requests documents
+const request = await api.audit.requestDocuments(returnId, {
+  documentTypes: ['W2', '1099'],
+  dueDate: '2025-12-31',
+  reason: 'Verification needed'
+});
+// Taxpayer uploads
+await api.audit.uploadRequestedDocuments(requestId, files);
+// Auditor reviews
+const documents = await api.audit.getRequestedDocuments(requestId);
+```
+
+---
+
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2025-12-01 | Initial data flow documentation |
+| 1.1 | 2025-12-10 | Added Known Limitations section |
 
 ---
 
 **Document Owner:** Development Team  
-**Last Updated:** December 1, 2025
+**Last Updated:** December 10, 2025
