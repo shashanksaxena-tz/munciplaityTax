@@ -1,7 +1,16 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { CreditCard, Lock, Building, CheckCircle, Loader2, AlertCircle, Info } from 'lucide-react';
+import { Lock, Info } from 'lucide-react';
 import { PaymentRecord } from '../types';
+import {
+  PaymentMethodSelector,
+  CreditCardForm,
+  BankAccountForm,
+  PaymentConfirmation,
+  PaymentReceipt,
+  PaymentMethod,
+  PaymentResponse,
+  TestPaymentMethods,
+} from './payment';
 
 interface PaymentGatewayProps {
   amount: number;
@@ -12,54 +21,6 @@ interface PaymentGatewayProps {
   onCancel: () => void;
 }
 
-interface PaymentResponse {
-  status: 'APPROVED' | 'DECLINED' | 'ERROR';
-  transactionId: string;
-  providerTransactionId: string;
-  authorizationCode?: string;
-  receiptNumber?: string;
-  journalEntryId?: string;
-  failureReason?: string;
-  amount: number;
-  testMode: boolean;
-  timestamp: string;
-}
-
-// TypeScript interfaces for test payment methods API response
-interface TestCreditCard {
-  cardNumber: string;
-  cardType: 'VISA' | 'MASTERCARD' | 'AMEX';
-  expectedResult: 'APPROVED' | 'DECLINED' | 'ERROR';
-  description: string;
-}
-
-interface TestACHAccount {
-  routingNumber: string;
-  accountNumber: string;
-  expectedResult: 'APPROVED' | 'DECLINED';
-  description: string;
-}
-
-interface TestPaymentMethods {
-  creditCards: TestCreditCard[];
-  achAccounts: TestACHAccount[];
-  testMode: boolean;
-}
-
-// Helper function to map expected result to display text and color
-const getResultDisplay = (result: string): { text: string; color: string } => {
-  switch (result) {
-    case 'APPROVED':
-      return { text: 'Approved ✓', color: 'text-green-600' };
-    case 'DECLINED':
-      return { text: 'Declined (Insufficient Funds)', color: 'text-red-600' };
-    case 'ERROR':
-      return { text: 'Error (Processing)', color: 'text-orange-600' };
-    default:
-      return { text: result, color: 'text-slate-600' };
-  }
-};
-
 export const PaymentGateway: React.FC<PaymentGatewayProps> = ({ 
   amount, 
   recipient, 
@@ -68,13 +29,10 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
   onSuccess, 
   onCancel 
 }) => {
-  const [method, setMethod] = useState<'CARD' | 'ACH'>('CARD');
+  const [method, setMethod] = useState<PaymentMethod>('CARD');
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'ENTRY' | 'PROCESSING' | 'SUCCESS' | 'ERROR'>('ENTRY');
   const [paymentResponse, setPaymentResponse] = useState<PaymentResponse | null>(null);
-  const [showTestCards, setShowTestCards] = useState(false);
-  const [showTestACH, setShowTestACH] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
   
   // Test methods state (fetched from API)
   const [testMethods, setTestMethods] = useState<TestPaymentMethods | null>(null);
@@ -88,8 +46,7 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
   const [achRouting, setAchRouting] = useState('');
   const [achAccount, setAchAccount] = useState('');
   
-  // Refs for auto-focus after auto-fill
-  const expiryInputRef = useRef<HTMLInputElement>(null);
+  // Ref for submit button focus after auto-fill
   const submitButtonRef = useRef<HTMLButtonElement>(null);
 
   // Fetch test methods from API on component mount
@@ -115,19 +72,8 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
     fetchTestMethods();
   }, []);
 
-  // Auto-fill handlers for test cards and ACH accounts
-  const handleSelectTestCard = (card: TestCreditCard) => {
-    setCardNumber(card.cardNumber);
-    // Auto-focus expiry field after card auto-fill
-    setTimeout(() => {
-      expiryInputRef.current?.focus();
-    }, 50);
-  };
-
-  const handleSelectTestACH = (account: TestACHAccount) => {
-    setAchRouting(account.routingNumber);
-    setAchAccount(account.accountNumber);
-    // Auto-focus submit button after ACH auto-fill (both fields filled)
+  // Auto-focus submit button after ACH auto-fill
+  const handleACHAutoFillComplete = () => {
     setTimeout(() => {
       submitButtonRef.current?.focus();
     }, 50);
@@ -137,7 +83,6 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
     e.preventDefault();
     setIsProcessing(true);
     setStep('PROCESSING');
-    setErrorMessage('');
     
     try {
       const paymentRequest = {
@@ -183,90 +128,36 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
         }, 2000);
       } else {
         setStep('ERROR');
-        setErrorMessage(data.failureReason || 'Payment failed');
       }
     } catch (error) {
       setIsProcessing(false);
       setStep('ERROR');
-      setErrorMessage('Network error. Please try again.');
+      setPaymentResponse({
+        status: 'ERROR',
+        transactionId: '',
+        providerTransactionId: '',
+        failureReason: 'Network error. Please try again.',
+        amount,
+        testMode: testMethods?.testMode || false,
+        timestamp: new Date().toISOString(),
+      });
     }
   };
 
   const handleRetry = () => {
     setStep('ENTRY');
     setPaymentResponse(null);
-    setErrorMessage('');
   };
 
-  if (step === 'SUCCESS' && paymentResponse) {
-     return (
-       <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-         <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 text-center">Payment Successful!</h3>
-            <p className="text-slate-500 mt-2 text-center">Your payment of <strong>${amount.toLocaleString()}</strong> has been processed.</p>
-            
-            {/* Receipt Details */}
-            <div className="mt-6 bg-slate-50 rounded-lg p-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600">Receipt Number:</span>
-                <span className="font-mono font-bold text-slate-800">{paymentResponse.receiptNumber}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Transaction ID:</span>
-                <span className="font-mono text-slate-800">{paymentResponse.providerTransactionId}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Amount:</span>
-                <span className="font-bold text-slate-800">${paymentResponse.amount.toFixed(2)}</span>
-              </div>
-              {paymentResponse.authorizationCode && (
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Authorization:</span>
-                  <span className="font-mono text-slate-800">{paymentResponse.authorizationCode}</span>
-                </div>
-              )}
-              {paymentResponse.journalEntryId && (
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Journal Entry:</span>
-                  <span className="font-mono text-xs text-slate-600">{paymentResponse.journalEntryId}</span>
-                </div>
-              )}
-              {paymentResponse.testMode && (
-                <div className="flex justify-center pt-2 border-t border-slate-200">
-                  <span className="text-xs text-orange-600 font-bold">⚠️ TEST MODE - No Real Charges</span>
-                </div>
-              )}
-            </div>
-         </div>
-       </div>
-     );
-  }
-
-  if (step === 'ERROR') {
+  // Show receipt for success or error
+  if ((step === 'SUCCESS' || step === 'ERROR') && paymentResponse) {
     return (
-      <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
-          </div>
-          <h3 className="text-xl font-bold text-slate-800 text-center">Payment Failed</h3>
-          <p className="text-slate-600 mt-2 text-center">{errorMessage}</p>
-          {paymentResponse?.testMode && (
-            <p className="text-xs text-orange-600 text-center mt-2">⚠️ TEST MODE - No real charges attempted</p>
-          )}
-          <div className="flex gap-3 mt-6">
-            <button onClick={onCancel} className="flex-1 py-3 border border-slate-300 rounded-xl font-medium text-slate-600 hover:bg-slate-50">
-              Cancel
-            </button>
-            <button onClick={handleRetry} className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700">
-              Try Again
-            </button>
-          </div>
-        </div>
-      </div>
+      <PaymentReceipt
+        response={paymentResponse}
+        amount={amount}
+        onRetry={step === 'ERROR' ? handleRetry : undefined}
+        onClose={step === 'ERROR' ? onCancel : undefined}
+      />
     );
   }
 
@@ -298,179 +189,41 @@ export const PaymentGateway: React.FC<PaymentGatewayProps> = ({
          </div>
 
          {step === 'PROCESSING' ? (
-           <div className="p-12 text-center">
-              <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
-              <p className="font-medium text-slate-600">Processing Transaction...</p>
-              <p className="text-xs text-slate-400 mt-2">Do not close this window.</p>
-           </div>
+           <PaymentConfirmation isProcessing={isProcessing} />
          ) : (
            <form onSubmit={handlePay} className="p-6 space-y-6">
               {/* Method Switcher */}
-              <div className="flex p-1 bg-slate-100 rounded-lg">
-                 <button 
-                   type="button" 
-                   onClick={() => setMethod('CARD')}
-                   className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${method === 'CARD' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-                 >
-                   Credit / Debit
-                 </button>
-                 <button 
-                   type="button" 
-                   onClick={() => setMethod('ACH')}
-                   className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${method === 'ACH' ? 'bg-white shadow text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
-                 >
-                   Bank Account (ACH)
-                 </button>
-              </div>
+              <PaymentMethodSelector
+                selectedMethod={method}
+                onMethodChange={setMethod}
+                disabled={isProcessing}
+              />
 
               {method === 'CARD' ? (
-                <div className="space-y-4">
-                   {/* Test Cards Helper - only show if testMode is true */}
-                   {testMethods?.testMode && (
-                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                       <button 
-                         type="button"
-                         onClick={() => setShowTestCards(!showTestCards)}
-                         className="w-full flex items-center justify-between text-sm font-medium text-blue-800"
-                       >
-                         <span>📋 Test Card Numbers (click to auto-fill)</span>
-                         <span className="text-xs">{showTestCards ? '▲' : '▼'}</span>
-                       </button>
-                       {showTestCards && (
-                         <div className="mt-3 space-y-2 text-xs">
-                           {testMethodsLoading && (
-                             <div className="text-slate-500 py-2">Loading test cards...</div>
-                           )}
-                           {testMethodsError && (
-                             <div className="text-red-600 py-2">{testMethodsError}</div>
-                           )}
-                           {testMethods?.creditCards.map((card, idx) => {
-                             const result = getResultDisplay(card.expectedResult);
-                             return (
-                               <div 
-                                 key={idx} 
-                                 onClick={() => handleSelectTestCard(card)}
-                                 className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0 cursor-pointer hover:bg-blue-100 rounded px-1 transition-colors"
-                                 title={`Click to auto-fill: ${card.description}`}
-                               >
-                                 <span className="font-mono">{card.cardNumber}</span>
-                                 <span className={`font-medium ${result.color}`}>{result.text}</span>
-                               </div>
-                             );
-                           })}
-                         </div>
-                       )}
-                     </div>
-                   )}
-
-                   <div>
-                     <label className="text-xs font-bold text-slate-500 uppercase">Card Number</label>
-                     <div className="relative mt-1">
-                       <CreditCard className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                       <input 
-                         type="text" 
-                         placeholder="0000 0000 0000 0000" 
-                         value={cardNumber}
-                         onChange={(e) => setCardNumber(e.target.value)}
-                         className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" 
-                         required 
-                       />
-                     </div>
-                   </div>
-                   <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-bold text-slate-500 uppercase">Expiry</label>
-                        <input 
-                          ref={expiryInputRef}
-                          type="text" 
-                          placeholder="MM/YY" 
-                          value={cardExpiry}
-                          onChange={(e) => setCardExpiry(e.target.value)}
-                          className="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg outline-none" 
-                          required 
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-slate-500 uppercase">CVC</label>
-                        <input 
-                          type="text" 
-                          placeholder="123" 
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value)}
-                          className="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg outline-none" 
-                          required 
-                        />
-                      </div>
-                   </div>
-                </div>
+                <CreditCardForm
+                  cardNumber={cardNumber}
+                  cardExpiry={cardExpiry}
+                  cardCvv={cardCvv}
+                  onCardNumberChange={setCardNumber}
+                  onCardExpiryChange={setCardExpiry}
+                  onCardCvvChange={setCardCvv}
+                  testCards={testMethods?.creditCards || []}
+                  testMode={testMethods?.testMode || false}
+                  isLoading={testMethodsLoading}
+                  disabled={isProcessing}
+                />
               ) : (
-                <div className="space-y-4">
-                   {/* Test ACH Helper - only show if testMode is true */}
-                   {testMethods?.testMode && (
-                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                       <button 
-                         type="button"
-                         onClick={() => setShowTestACH(!showTestACH)}
-                         className="w-full flex items-center justify-between text-sm font-medium text-blue-800"
-                       >
-                         <span>📋 Test ACH Accounts (click to auto-fill)</span>
-                         <span className="text-xs">{showTestACH ? '▲' : '▼'}</span>
-                       </button>
-                       {showTestACH && (
-                         <div className="mt-3 space-y-2 text-xs">
-                           {testMethodsLoading && (
-                             <div className="text-slate-500 py-2">Loading test accounts...</div>
-                           )}
-                           {testMethodsError && (
-                             <div className="text-red-600 py-2">{testMethodsError}</div>
-                           )}
-                           {testMethods?.achAccounts.map((account, idx) => {
-                             const result = getResultDisplay(account.expectedResult);
-                             return (
-                               <div 
-                                 key={idx} 
-                                 onClick={() => handleSelectTestACH(account)}
-                                 className="py-1 border-b border-blue-100 last:border-0 cursor-pointer hover:bg-blue-100 rounded px-1 transition-colors"
-                                 title={`Click to auto-fill: ${account.description}`}
-                               >
-                                 <div className="flex justify-between items-center">
-                                   <span className="font-mono">{account.routingNumber} / {account.accountNumber}</span>
-                                   <span className={`font-medium ${result.color}`}>{result.text}</span>
-                                 </div>
-                               </div>
-                             );
-                           })}
-                         </div>
-                       )}
-                     </div>
-                   )}
-
-                   <div>
-                     <label className="text-xs font-bold text-slate-500 uppercase">Routing Number</label>
-                     <div className="relative mt-1">
-                       <Building className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                       <input 
-                         type="text" 
-                         placeholder="9 Digits" 
-                         value={achRouting}
-                         onChange={(e) => setAchRouting(e.target.value)}
-                         className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" 
-                         required 
-                       />
-                     </div>
-                   </div>
-                   <div>
-                     <label className="text-xs font-bold text-slate-500 uppercase">Account Number</label>
-                     <input 
-                       type="text" 
-                       placeholder="Account #" 
-                       value={achAccount}
-                       onChange={(e) => setAchAccount(e.target.value)}
-                       className="w-full px-3 py-2 mt-1 border border-slate-300 rounded-lg outline-none" 
-                       required 
-                     />
-                   </div>
-                </div>
+                <BankAccountForm
+                  achRouting={achRouting}
+                  achAccount={achAccount}
+                  onAchRoutingChange={setAchRouting}
+                  onAchAccountChange={setAchAccount}
+                  testAccounts={testMethods?.achAccounts || []}
+                  testMode={testMethods?.testMode || false}
+                  isLoading={testMethodsLoading}
+                  disabled={isProcessing}
+                  onAutoFillComplete={handleACHAutoFillComplete}
+                />
               )}
 
               <div className="flex gap-3 pt-2">
