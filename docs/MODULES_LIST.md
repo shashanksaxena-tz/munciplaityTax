@@ -6,6 +6,20 @@ This document provides a detailed breakdown of all modules in the MuniTax system
 
 ---
 
+## 🔴 CRITICAL ISSUE: Rule Service Integration Disconnect
+
+> **⚠️ CRITICAL ARCHITECTURAL DISCONNECT**
+>
+> The Rule Service is **NOT integrated** with tax calculators. While rules can be created, approved, and stored in the database, they are **never applied during tax calculations**. Tax rates and rules are **hardcoded** in:
+> - `backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/IndividualTaxCalculator.java`
+> - `backend/tax-engine-service/src/main/java/com/munitax/taxengine/service/BusinessTaxCalculator.java`
+>
+> **Status:** Architectural disconnect - Rule service exists but is unused.
+>
+> **Resolution:** See Issue [#95](https://github.com/shashanksaxena-tz/munciplaityTax/issues/95) for integration work.
+
+---
+
 ## Module Architecture Overview
 
 ```mermaid
@@ -402,7 +416,14 @@ pdf-service/
 
 **Package:** `com.munitax.rules`
 
-> **⚠️ Note:** See `/RULE_ENGINE_DISCONNECT_ANALYSIS.md` for known integration issues with this service.
+> 🔴 **CRITICAL ISSUE:** The Rule Service is **NOT integrated** with tax calculators.
+> While rules can be created, approved, and stored in the database, they are
+> **never applied during tax calculations**. Tax rates and rules are **hardcoded**
+> in `IndividualTaxCalculator.java` and `BusinessTaxCalculator.java`.
+> 
+> **Status:** Architectural disconnect - Rule service exists but is unused.
+> 
+> **Resolution:** See Issue [#95](https://github.com/shashanksaxena-tz/munciplaityTax/issues/95) for integration work.
 
 ```
 rule-service/
