@@ -936,17 +936,44 @@ export interface ImpactEstimate {
 // ===== SUBMISSION DOCUMENT TYPES (Spec 015) =====
 
 /**
+ * Extraction status for uploaded documents
+ */
+export enum ExtractionStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  NOT_APPLICABLE = 'NOT_APPLICABLE'
+}
+
+/**
  * Links an uploaded PDF document to a tax return submission
  */
 export interface SubmissionDocument {
   id: string;
   submissionId: string;
+  documentId?: string; // Optional for backward compatibility
   fileName: string;
   fileSize: number;
   mimeType: string;
-  uploadedAt: string;
+  uploadedAt: string; // Primary field - ISO 8601 timestamp string
+  uploadDate?: string; // Deprecated: Use uploadedAt instead. Kept for backward compatibility with older API responses
   base64Data?: string; // For viewing
   thumbnailUrl?: string;
+  formType?: string;
+  pageCount?: number;
+  extractionConfidence?: number;
+  extractionResult?: string; // JSON string
+  fieldProvenance?: string; // JSON string
+  extractionStatus?: ExtractionStatus;
+  tenantId?: string;
+}
+
+/**
+ * Submission document with parsed provenance data
+ */
+export interface SubmissionDocumentWithProvenance extends SubmissionDocument {
+  parsedProvenance?: FormProvenance[];
 }
 
 /**
