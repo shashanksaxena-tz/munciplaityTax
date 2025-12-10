@@ -384,6 +384,45 @@ export interface DiscrepancySummary {
 
 export interface PaymentRecord { id: string; date: string; amount: number; confirmationNumber: string; method: 'CREDIT_CARD' | 'ACH'; status: 'SUCCESS' | 'FAILED'; }
 
+// ===== RECONCILIATION TYPES (W-1 Filing Reconciliation) =====
+
+export enum ReconciliationIssueType {
+  WAGE_MISMATCH_FEDERAL = 'WAGE_MISMATCH_FEDERAL',
+  WAGE_MISMATCH_LOCAL = 'WAGE_MISMATCH_LOCAL',
+  WITHHOLDING_RATE_INVALID = 'WITHHOLDING_RATE_INVALID',
+  CUMULATIVE_MISMATCH = 'CUMULATIVE_MISMATCH',
+  MISSING_FILING = 'MISSING_FILING',
+  DUPLICATE_FILING = 'DUPLICATE_FILING',
+  LATE_FILING = 'LATE_FILING'
+}
+
+export enum ReconciliationIssueSeverity {
+  CRITICAL = 'CRITICAL',
+  HIGH = 'HIGH',
+  MEDIUM = 'MEDIUM',
+  LOW = 'LOW'
+}
+
+export interface ReconciliationIssue {
+  id: string;
+  employerId: string;
+  taxYear: number;
+  period: string;
+  issueType: ReconciliationIssueType;
+  severity: ReconciliationIssueSeverity;
+  description: string;
+  expectedValue?: number;
+  actualValue?: number;
+  variance?: number;
+  variancePercentage?: number;
+  dueDate?: string;
+  filingDate?: string;
+  recommendedAction: string;
+  resolved: boolean;
+  resolutionNote?: string;
+  resolvedDate?: string;
+}
+
 export interface RealTimeExtractionUpdate {
   status: 'SCANNING' | 'ANALYZING' | 'EXTRACTING' | 'COMPLETE' | 'ERROR';
   progress: number;

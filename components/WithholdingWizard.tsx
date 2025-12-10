@@ -1,10 +1,13 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { BusinessProfile, WithholdingPeriod, WithholdingReturnData, FilingFrequency } from '../types';
-import { calculateWithholding, reconcilePayroll, getAvailablePeriods, getDailyPeriod } from '../utils/businessUtils';
-import { ArrowRight, Upload, DollarSign, ChevronLeft } from 'lucide-react';
+import { BusinessProfile, WithholdingPeriod, WithholdingReturnData, FilingFrequency, ReconciliationIssue } from '../types';
+import { calculateWithholding, reconcilePayroll, getAvailablePeriods, getDailyPeriod, reconcileW1Filings } from '../utils/businessUtils';
+import { ArrowRight, Upload, DollarSign, ChevronLeft, FileCheck } from 'lucide-react';
 import { DiscrepancyView } from './DiscrepancyView';
 import { PaymentGateway } from './PaymentGateway';
+import { ReconciliationIssuesList } from './ReconciliationIssuesList';
+import { PeriodHistoryTable } from './PeriodHistoryTable';
+import { CumulativeTotalsPanel } from './CumulativeTotalsPanel';
 
 interface WithholdingWizardProps {
   profile: BusinessProfile;
@@ -26,6 +29,14 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
   
   const [calculation, setCalculation] = useState<WithholdingReturnData | null>(null);
   const [showPayment, setShowPayment] = useState(false);
+  
+  // Step 4 - Reconciliation
+  const [reconciliationIssues, setReconciliationIssues] = useState<ReconciliationIssue[]>([]);
+  const [loadingReconciliation, setLoadingReconciliation] = useState(false);
+  const [showReconciliation, setShowReconciliation] = useState(false);
+  
+  // Mock filings data for demo (in production, this would come from backend)
+  const mockFilings: WithholdingReturnData[] = useMemo(() => [], []);
 
   const availablePeriods = useMemo(() => {
      if (profile.filingFrequency === FilingFrequency.DAILY) return [];
@@ -52,6 +63,40 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
     ? reconcilePayroll(calculation.grossWages, uploadedWages) 
     : null;
 
+  // Function to load reconciliation data
+  const loadReconciliation = async () => {
+    setLoadingReconciliation(true);
+    try {
+      // In production, use actual employer ID from profile
+      const employerId = profile.fein; // or profile.accountNumber
+      const taxYear = new Date().getFullYear();
+      const issues = await reconcileW1Filings(employerId, taxYear);
+      setReconciliationIssues(issues);
+    } catch (error) {
+      console.error('Failed to load reconciliation:', error);
+    } finally {
+      setLoadingReconciliation(false);
+    }
+  };
+
+  // Load reconciliation when showing reconciliation view
+  useEffect(() => {
+    if (showReconciliation) {
+      loadReconciliation();
+    }
+  }, [showReconciliation]);
+
+  const handleResolveIssue = (issueId: string, note: string) => {
+    // Update the issue locally (in production, would call backend API)
+    setReconciliationIssues(prev => 
+      prev.map(issue => 
+        issue.id === issueId 
+          ? { ...issue, resolved: true, resolutionNote: note, resolvedDate: new Date().toISOString().split('T')[0] }
+          : issue
+      )
+    );
+  };
+
   return (
     <div className="max-w-3xl mx-auto py-8 animate-fadeIn">
       {showPayment && calculation && (
@@ -73,10 +118,17 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
 
       <div className="flex items-center gap-4 mb-8">
         <button onClick={onBack} className="p-2 hover:bg-[#fbfbfb] rounded-full"><ChevronLeft className="w-5 h-5 text-[#5d6567]"/></button>
-        <div>
+        <div className="flex-1">
            <h2 className="text-xl font-bold text-[#0f1012]">File Withholding (Form W-1)</h2>
            <p className="text-sm text-[#5d6567]">Frequency: {profile.filingFrequency}</p>
         </div>
+        <button
+          onClick={() => setShowReconciliation(true)}
+          className="px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-xl font-medium shadow-sm flex items-center gap-2"
+        >
+          <FileCheck className="w-4 h-4" />
+          View Reconciliation
+        </button>
       </div>
 
       <div className="flex gap-2 mb-6">
@@ -203,6 +255,83 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
            </div>
         )}
       </div>
+
+      {/* Reconciliation Modal/Overlay */}
+      {showReconciliation && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center overflow-y-auto p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full my-8 animate-slideUp">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-[#970bed] to-[#469fe8] p-6 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <FileCheck className="w-6 h-6" />
+                    W-1 Filing Reconciliation
+                  </h2>
+                  <p className="text-white/80 text-sm mt-1">
+                    {profile.businessName} - Tax Year {new Date().getFullYear()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowReconciliation(false)}
+                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
+                >
+                  <ChevronLeft className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+              {loadingReconciliation ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-[#970bed]"></div>
+                  <p className="text-gray-600 mt-4">Loading reconciliation data...</p>
+                </div>
+              ) : (
+                <>
+                  {/* Cumulative Totals Panel */}
+                  <CumulativeTotalsPanel 
+                    filings={mockFilings}
+                    taxYear={new Date().getFullYear()}
+                  />
+
+                  {/* Reconciliation Issues */}
+                  <div>
+                    <ReconciliationIssuesList 
+                      issues={reconciliationIssues}
+                      onResolveIssue={handleResolveIssue}
+                    />
+                  </div>
+
+                  {/* Period History Table */}
+                  <div>
+                    <PeriodHistoryTable 
+                      filings={mockFilings}
+                      onSelectPeriod={(filing) => {
+                        console.log('Selected filing:', filing);
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 border-t border-gray-200 p-4 rounded-b-2xl flex justify-between items-center">
+              <div className="text-sm text-gray-600">
+                Last updated: {new Date().toLocaleString()}
+              </div>
+              <button
+                onClick={() => setShowReconciliation(false)}
+                className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
