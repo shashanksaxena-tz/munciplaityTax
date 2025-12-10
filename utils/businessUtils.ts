@@ -1,4 +1,4 @@
-import { FilingFrequency, WithholdingPeriod, WithholdingReturnData, DiscrepancyReport, ReconciliationReturnData } from "../types";
+import { FilingFrequency, WithholdingPeriod, WithholdingReturnData, DiscrepancyReport, ReconciliationReturnData, ReconciliationIssue } from "../types";
 
 const MUNICIPAL_RATE = 0.020;
 
@@ -26,6 +26,41 @@ export const calculateWithholding = (gross: number, adj: number, period: Withhol
 export const reconcilePayroll = (manual: number, upload: number): DiscrepancyReport => ({
     hasDiscrepancies: Math.abs(manual - upload) > 1, issues: []
 });
+
+/**
+ * Reconcile W-1 filings by calling backend API
+ * @param employerId - Employer/Business ID
+ * @param taxYear - Tax year to reconcile
+ * @returns Promise with list of reconciliation issues
+ */
+export const reconcileW1Filings = async (
+    employerId: string, 
+    taxYear: number
+): Promise<ReconciliationIssue[]> => {
+    try {
+        const response = await fetch('/api/v1/w1-filings/reconcile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                employerId,
+                taxYear,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Reconciliation failed: ${response.statusText}`);
+        }
+
+        const issues: ReconciliationIssue[] = await response.json();
+        return issues;
+    } catch (error) {
+        console.error('Error reconciling W-1 filings:', error);
+        // Return empty array on error - component will show "no issues"
+        return [];
+    }
+};
 
 export const reconcileW3 = (w1: number, w2: number, year: number): ReconciliationReturnData => ({
     id: crypto.randomUUID(), dateFiled: new Date().toISOString(), taxYear: year, totalW1Tax: w1, totalW2Tax: w2, discrepancy: w1 - w2, status: Math.abs(w1 - w2) < 1 ? 'BALANCED' : 'UNBALANCED'
