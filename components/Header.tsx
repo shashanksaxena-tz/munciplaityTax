@@ -91,7 +91,7 @@ export const Header: React.FC = () => {
                                             window.location.href = '/login';
                                         }
                                     }}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition flex items-center gap-2"
+                                    className="px-4 py-2 text-sm font-medium text-[#102124] hover:text-[#ec1656] hover:bg-[#ec1656]/10 rounded-lg transition flex items-center gap-2"
                                 >
                                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -103,13 +103,13 @@ export const Header: React.FC = () => {
                             <div className="flex items-center space-x-4">
                                 <Link
                                     to="/login"
-                                    className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition"
+                                    className="text-sm font-medium text-[#102124] hover:text-[#970bed] transition"
                                 >
                                     Sign In
                                 </Link>
                                 <Link
                                     to="/register"
-                                    className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition"
+                                    className="px-4 py-2 bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white text-sm font-medium rounded-lg hover:from-[#7f09c5] hover:to-[#3a8bd4] transition"
                                 >
                                     Register
                                 </Link>

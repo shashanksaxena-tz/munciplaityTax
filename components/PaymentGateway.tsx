@@ -50,13 +50,13 @@ interface TestPaymentMethods {
 const getResultDisplay = (result: string): { text: string; color: string } => {
   switch (result) {
     case 'APPROVED':
-      return { text: 'Approved ✓', color: 'text-green-600' };
+      return { text: 'Approved ✓', color: 'text-[#10b981]' };
     case 'DECLINED':
-      return { text: 'Declined (Insufficient Funds)', color: 'text-red-600' };
+      return { text: 'Declined (Insufficient Funds)', color: 'text-[#ec1656]' };
     case 'ERROR':
       return { text: 'Error (Processing)', color: 'text-orange-600' };
     default:
-      return { text: result, color: 'text-slate-600' };
+      return { text: result, color: 'text-[#5d6567]' };
   }
 };
 

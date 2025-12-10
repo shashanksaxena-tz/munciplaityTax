@@ -60,13 +60,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
     <div className="max-w-6xl mx-auto px-4 py-8 animate-fadeIn">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-slate-900">Tax Returns Dashboard</h2>
-           <p className="text-slate-500">Manage multiple taxpayer profiles and filings.</p>
+           <h2 className="text-2xl font-bold text-[#0f1012]">Tax Returns Dashboard</h2>
+           <p className="text-[#5d6567]">Manage multiple taxpayer profiles and filings.</p>
         </div>
         <div className="flex gap-3">
           <button 
             onClick={onRegisterBusiness}
-            className="flex items-center gap-2 px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white rounded-xl shadow-lg transition-all font-medium"
+            className="flex items-center gap-2 px-6 py-3 bg-[#0f1012] hover:bg-[#0f1012] text-white rounded-xl shadow-lg transition-all font-medium"
           >
             <Briefcase className="w-5 h-5" /> Register Business
           </button>
@@ -131,16 +131,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
         )}
       </div>
 
-      <h3 className="text-lg font-semibold text-slate-800 mb-4">Your Tax Returns</h3>
+      <h3 className="text-lg font-semibold text-[#0f1012] mb-4">Your Tax Returns</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sessions.length === 0 ? (
-          <div className="col-span-full py-16 text-center border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50">
-            <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-slate-400" />
+          <div className="col-span-full py-16 text-center border-2 border-dashed border-[#dcdede] rounded-2xl bg-[#f8f9fa]">
+            <div className="w-16 h-16 bg-[#dcdede] rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-8 h-8 text-[#babebf]" />
             </div>
-            <h3 className="text-lg font-medium text-slate-700">No Returns Found</h3>
-            <p className="text-slate-500 mb-6">Create a new return to get started.</p>
+            <h3 className="text-lg font-medium text-[#102124]">No Returns Found</h3>
+            <p className="text-[#5d6567] mb-6">Create a new return to get started.</p>
           </div>
         ) : (
           sessions.map(session => (
@@ -151,9 +151,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
             >
                <div className="flex justify-between items-start mb-4">
                   <div className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
-                    session.status === TaxReturnStatus.SUBMITTED ? 'bg-green-50 text-green-700 border-green-100' :
-                    session.status === TaxReturnStatus.AMENDED ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                    'bg-slate-100 text-slate-600 border-slate-200'
+                    session.status === TaxReturnStatus.SUBMITTED ? 'bg-[#d5faeb] text-[#10b981] border-green-100' :
+                    session.status === TaxReturnStatus.AMENDED ? 'bg-[#f59e0b]/10 text-[#f59e0b] border-amber-100' :
+                    'bg-[#f0f0f0] text-[#5d6567] border-[#dcdede]'
                   }`}>
                     {session.status}
                   </div>
@@ -168,27 +168,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ onSelectSession, onRegiste
                        {session.type === 'BUSINESS' ? <Briefcase className="w-5 h-5" /> : <User className="w-5 h-5" />}
                      </div>
                      <div>
-                        <div className="font-bold text-slate-900 line-clamp-1">{getDisplayName(session)}</div>
-                        <div className="text-xs text-slate-500">{getDisplayId(session)}</div>
+                        <div className="font-bold text-[#0f1012] line-clamp-1">{getDisplayName(session)}</div>
+                        <div className="text-xs text-[#5d6567]">{getDisplayId(session)}</div>
                      </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                     <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                        <span className="block text-xs text-slate-400">Tax Year</span>
-                        <span className="font-medium text-slate-700 flex items-center gap-1"><Calendar className="w-3 h-3"/> {session.settings.taxYear}</span>
+                     <div className="bg-[#f8f9fa] p-2 rounded border border-[#dcdede]">
+                        <span className="block text-xs text-[#babebf]">Tax Year</span>
+                        <span className="font-medium text-[#102124] flex items-center gap-1"><Calendar className="w-3 h-3"/> {session.settings.taxYear}</span>
                      </div>
-                     <div className="bg-slate-50 p-2 rounded border border-slate-100">
-                        <span className="block text-xs text-slate-400">Type</span>
-                        <span className="font-medium text-slate-700 flex items-center gap-1">
+                     <div className="bg-[#f8f9fa] p-2 rounded border border-[#dcdede]">
+                        <span className="block text-xs text-[#babebf]">Type</span>
+                        <span className="font-medium text-[#102124] flex items-center gap-1">
                           {session.type === 'BUSINESS' ? 'Business' : 'Individual'}
                         </span>
                      </div>
                   </div>
                </div>
 
-               <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-sm">
-                  <span className="text-slate-400 text-xs">Modified: {new Date(session.lastModifiedDate).toLocaleDateString()}</span>
+               <div className="pt-4 border-t border-[#dcdede] flex items-center justify-between text-sm">
+                  <span className="text-[#babebf] text-xs">Modified: {new Date(session.lastModifiedDate).toLocaleDateString()}</span>
                   <div className="flex items-center gap-1 text-[#970bed] font-medium group-hover:translate-x-1 transition-transform">
                     Continue <ArrowRight className="w-4 h-4" />
                   </div>

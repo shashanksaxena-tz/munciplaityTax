@@ -48,11 +48,11 @@ export const FormSchemaViewer: React.FC = () => {
 
   const getWeightColor = (weight: string) => {
     switch (weight) {
-      case 'CRITICAL': return 'bg-red-100 text-red-700 border-red-200';
+      case 'CRITICAL': return 'bg-[#ec1656]/10 text-[#ec1656] border-[#ec1656]/20';
       case 'HIGH': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'MEDIUM': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'LOW': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'MEDIUM': return 'bg-[#ebf4ff] text-[#469fe8] border-[#469fe8]/20';
+      case 'LOW': return 'bg-[#f0f0f0] text-[#102124] border-[#dcdede]';
+      default: return 'bg-[#f0f0f0] text-[#102124] border-[#dcdede]';
     }
   };
 
@@ -71,17 +71,17 @@ export const FormSchemaViewer: React.FC = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <Settings className="w-8 h-8 text-indigo-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Form Schema Configuration</h1>
+          <Settings className="w-8 h-8 text-[#970bed]" />
+          <h1 className="text-3xl font-bold text-[#0f1012]">Form Schema Configuration</h1>
         </div>
-        <p className="text-gray-600">
+        <p className="text-[#5d6567]">
           Single source of truth for form field definitions across UI and extraction service
         </p>
       </div>
 
       {/* Form Type Selector */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+      <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-6 mb-6">
+        <label className="block text-sm font-medium text-[#102124] mb-3">
           Select Form Type
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -91,8 +91,8 @@ export const FormSchemaViewer: React.FC = () => {
               onClick={() => setSelectedFormType(formType)}
               className={`px-4 py-3 rounded-lg font-medium transition-all ${
                 selectedFormType === formType
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  ? 'bg-gradient-to-r from-[#970bed] to-[#469fe8] text-white shadow-md'
+                  : 'bg-[#f8f9fa] text-[#102124] hover:bg-[#f0f0f0] border border-[#dcdede]'
               }`}
             >
               {formType}
@@ -104,24 +104,24 @@ export const FormSchemaViewer: React.FC = () => {
       {/* Stats Summary */}
       {!isLoading && fields.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Total Fields</div>
-            <div className="text-2xl font-bold text-gray-900">{fields.length}</div>
+          <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-4">
+            <div className="text-sm text-[#5d6567] mb-1">Total Fields</div>
+            <div className="text-2xl font-bold text-[#0f1012]">{fields.length}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Display in UI</div>
-            <div className="text-2xl font-bold text-indigo-600">
+          <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-4">
+            <div className="text-sm text-[#5d6567] mb-1">Display in UI</div>
+            <div className="text-2xl font-bold text-[#970bed]">
               {fields.filter(f => f.displayInUI).length}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Required Fields</div>
-            <div className="text-2xl font-bold text-red-600">
+          <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-4">
+            <div className="text-sm text-[#5d6567] mb-1">Required Fields</div>
+            <div className="text-2xl font-bold text-[#ec1656]">
               {fields.filter(f => f.required).length}
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="text-sm text-gray-600 mb-1">Critical Weight</div>
+          <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-4">
+            <div className="text-sm text-[#5d6567] mb-1">Critical Weight</div>
             <div className="text-2xl font-bold text-orange-600">
               {fields.filter(f => f.weight === 'CRITICAL').length}
             </div>
@@ -131,48 +131,48 @@ export const FormSchemaViewer: React.FC = () => {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
-          <div className="animate-pulse text-gray-400 mb-2">Loading schema...</div>
+        <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] p-12 text-center">
+          <div className="animate-pulse text-[#babebf] mb-2">Loading schema...</div>
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-          <div className="text-red-700">{error}</div>
+        <div className="bg-[#ec1656]/10 border border-[#ec1656]/20 rounded-lg p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-[#ec1656] flex-shrink-0" />
+          <div className="text-[#ec1656]">{error}</div>
         </div>
       )}
 
       {/* Fields Table */}
       {!isLoading && !error && fields.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm border border-[#dcdede] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-[#f8f9fa] border-b border-[#dcdede]">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Order
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Field ID
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Label
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Box/Line
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Weight
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-center text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Required
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-center text-xs font-medium text-[#102124] uppercase tracking-wider">
                     Display
                   </th>
                 </tr>
@@ -181,24 +181,24 @@ export const FormSchemaViewer: React.FC = () => {
                 {fields.map((field, index) => (
                   <tr
                     key={field.id}
-                    className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    className={index % 2 === 0 ? 'bg-white' : 'bg-[#f8f9fa]'}
                   >
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-sm text-[#5d6567]">
                       {field.displayOrder}
                     </td>
                     <td className="px-4 py-3">
-                      <code className="text-sm font-mono text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                      <code className="text-sm font-mono text-[#970bed] bg-[#ebf4ff] px-2 py-1 rounded">
                         {field.id}
                       </code>
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 text-sm font-medium text-[#0f1012]">
                       {field.label}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-[#5d6567]">
                       {field.boxNumber || field.lineNumber || '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1 text-sm text-gray-700">
+                      <span className="inline-flex items-center gap-1 text-sm text-[#102124]">
                         <span className="text-base">{getTypeIcon(field.type)}</span>
                         {field.type}
                       </span>
@@ -210,14 +210,14 @@ export const FormSchemaViewer: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-center">
                       {field.required ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600 mx-auto" />
+                        <CheckCircle2 className="w-5 h-5 text-[#10b981] mx-auto" />
                       ) : (
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {field.displayInUI ? (
-                        <CheckCircle2 className="w-5 h-5 text-blue-600 mx-auto" />
+                        <CheckCircle2 className="w-5 h-5 text-[#469fe8] mx-auto" />
                       ) : (
                         <span className="text-gray-300">—</span>
                       )}
@@ -232,9 +232,9 @@ export const FormSchemaViewer: React.FC = () => {
 
       {/* Legend */}
       {!isLoading && fields.length > 0 && (
-        <div className="mt-6 bg-gray-50 rounded-lg border border-gray-200 p-4">
-          <div className="text-sm font-medium text-gray-700 mb-3">Legend</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
+        <div className="mt-6 bg-[#f8f9fa] rounded-lg border border-[#dcdede] p-4">
+          <div className="text-sm font-medium text-[#102124] mb-3">Legend</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-[#5d6567]">
             <div>
               <span className="font-medium">Display in UI:</span> Field is shown in extraction review panel
             </div>

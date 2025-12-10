@@ -78,8 +78,8 @@ export const BusinessRuleConfigScreen: React.FC<Props> = ({ rules, onUpdate, onC
         </div>
         
         <div className="mt-4 pt-4 border-t flex gap-2 bg-white sticky bottom-0">
-           <button onClick={()=>onUpdate(DEFAULT_BUSINESS_RULES)} className="p-2 border rounded-lg hover:bg-slate-50 text-slate-500" title="Reset Defaults"><RotateCcw className="w-5 h-5"/></button>
-           <button onClick={onClose} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg transition-colors">Save Configuration</button>
+           <button onClick={()=>onUpdate(DEFAULT_BUSINESS_RULES)} className="p-2 border rounded-lg hover:bg-[#f8f9fa] text-[#5d6567]" title="Reset Defaults"><RotateCcw className="w-5 h-5"/></button>
+           <button onClick={onClose} className="flex-1 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white font-bold py-2 rounded-lg transition-colors">Save Configuration</button>
         </div>
       </div>
     </div>
@@ -88,16 +88,16 @@ export const BusinessRuleConfigScreen: React.FC<Props> = ({ rules, onUpdate, onC
 
 const InputGroup = ({ label, value, onChange, step = 1, tooltip }: any) => (
   <div>
-    <label className="text-sm font-bold text-slate-700 block mb-1 flex justify-between">
+    <label className="text-sm font-bold text-[#102124] block mb-1 flex justify-between">
       {label}
-      {tooltip && <span className="text-xs font-normal text-slate-400 italic">{tooltip}</span>}
+      {tooltip && <span className="text-xs font-normal text-[#babebf] italic">{tooltip}</span>}
     </label>
     <input 
       type="number" 
       step={step}
       value={value} 
       onChange={e=>onChange(parseFloat(e.target.value))} 
-      className="w-full border border-slate-300 p-2 rounded-lg outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm" 
+      className="w-full border border-[#dcdede] p-2 rounded-lg outline-none focus:border-[#970bed]/50 focus:ring-1 focus:ring-[#970bed] text-sm" 
     />
   </div>
 );

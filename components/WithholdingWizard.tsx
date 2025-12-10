@@ -138,24 +138,24 @@ export const WithholdingWizard: React.FC<WithholdingWizardProps> = ({ profile, o
           <div className="p-8 space-y-6 animate-slideLeft">
              <div className="bg-[#fbfbfb] border border-[#dcdede] p-4 rounded-xl">
                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-slate-800">2. Enter Payroll Data</h3>
-                  <span className="text-xs font-mono bg-white border border-slate-200 px-2 py-1 rounded text-slate-600">{selectedPeriod?.period}</span>
+                  <h3 className="font-bold text-[#0f1012]">2. Enter Payroll Data</h3>
+                  <span className="text-xs font-mono bg-white border border-[#dcdede] px-2 py-1 rounded text-[#5d6567]">{selectedPeriod?.period}</span>
                </div>
                <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Total Gross Wages</label>
+                    <label className="block text-xs font-bold uppercase text-[#5d6567] mb-1">Total Gross Wages</label>
                     <div className="relative">
-                       <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                       <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-[#babebf]" />
                        <input 
                          type="number" 
                          value={wages || ''} onChange={e => setWages(parseFloat(e.target.value))}
-                         className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-lg"
+                         className="w-full pl-9 pr-3 py-2 border border-[#dcdede] rounded-lg outline-none focus:ring-2 focus:ring-[#970bed] font-mono text-lg"
                          placeholder="0.00"
                        />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-500 mb-1">Adjustments (+/-)</label>
+                    <label className="block text-xs font-bold uppercase text-[#5d6567] mb-1">Adjustments (+/-)</label>
                     <input 
                          type="number" 
                          value={adjustments || ''} onChange={e => setAdjustments(parseFloat(e.target.value))}
