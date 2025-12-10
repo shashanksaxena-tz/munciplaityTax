@@ -26,6 +26,7 @@ export const ReconciliationWizard: React.FC<ReconciliationWizardProps> = ({ prof
     eSignature: '',
     eSignatureDate: ''
   });
+  const [isSignatureDateSet, setIsSignatureDateSet] = useState(false);
 
   const currentYear = new Date().getFullYear() - 1;
   const yearFilings = filings.filter(f => f.period.year === currentYear);
@@ -309,9 +310,9 @@ export const ReconciliationWizard: React.FC<ReconciliationWizardProps> = ({ prof
           Back
         </button>
         <button
-          onClick={() => {
-            fetchDiscrepancies();
+          onClick={async () => {
             setStep('discrepancies');
+            await fetchDiscrepancies();
           }}
           disabled={!formData.totalW2Tax || !formData.w2FormCount}
           className="flex-1 py-3 bg-gradient-to-r from-[#970bed] to-[#469fe8] hover:from-[#7f09c5] hover:to-[#3a8bd4] text-white rounded-xl font-bold disabled:opacity-50"
@@ -491,16 +492,27 @@ export const ReconciliationWizard: React.FC<ReconciliationWizardProps> = ({ prof
                 <input
                   type="text"
                   value={formData.eSignature}
-                  onChange={e => setFormData({...formData, eSignature: e.target.value, eSignatureDate: new Date().toISOString()})}
+                  onChange={e => {
+                    const newSignature = e.target.value;
+                    if (newSignature && !isSignatureDateSet) {
+                      setFormData({...formData, eSignature: newSignature, eSignatureDate: new Date().toISOString()});
+                      setIsSignatureDateSet(true);
+                    } else if (!newSignature) {
+                      setFormData({...formData, eSignature: '', eSignatureDate: ''});
+                      setIsSignatureDateSet(false);
+                    } else {
+                      setFormData({...formData, eSignature: newSignature});
+                    }
+                  }}
                   className="w-full px-4 py-3 border border-[#dcdede] focus:border-[#970bed] focus:ring-[#970bed]/20 focus:ring-2 rounded-xl outline-none"
                   placeholder="Full Name"
                 />
               </div>
-              {formData.eSignature && (
+              {formData.eSignature && formData.eSignatureDate && (
                 <div className="text-sm text-[#5d6567]">
                   By signing, you certify that the information provided is accurate and complete.
                   <div className="mt-2 font-medium">
-                    Date: {new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    Date: {new Date(formData.eSignatureDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               )}
