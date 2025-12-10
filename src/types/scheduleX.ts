@@ -1,8 +1,8 @@
 /**
- * TypeScript interfaces for expanded Business Schedule X (27 fields)
+ * TypeScript interfaces for expanded Business Schedule X (29 fields)
  * Corresponds to backend BusinessScheduleXDetails.java model
  * 
- * Feature: Comprehensive Business Schedule X Reconciliation (25+ Fields)
+ * Feature: Comprehensive Business Schedule X Reconciliation (29 Fields)
  * Functional Requirements: FR-001 through FR-038
  */
 
@@ -15,7 +15,7 @@ export interface BusinessScheduleXDetails {
 }
 
 /**
- * Add-backs (20 fields) - adjustments that increase federal taxable income for municipal purposes
+ * Add-backs (22 fields) - adjustments that increase federal taxable income for municipal purposes
  */
 export interface AddBacks {
   // Old fields (maintained for backward compatibility)
@@ -40,6 +40,8 @@ export interface AddBacks {
   domesticProductionActivities: number;// FR-017 - DPAD Section 199
   stockCompensationAdjustment: number; // FR-018 - Book vs tax stock compensation
   inventoryMethodChange: number;       // FR-019 - Section 481(a) adjustment
+  clubDues: number;                    // FR-020A - Non-deductible club dues
+  pensionProfitSharingLimits: number;  // FR-020B - Excess pension/profit-sharing contributions
   otherAddBacks: number;               // FR-020 - Catch-all field
   otherAddBacksDescription?: string | null;  // Required if otherAddBacks > 0
 }
@@ -65,7 +67,7 @@ export interface Deductions {
  * Calculated fields (read-only) - computed from addBacks and deductions
  */
 export interface CalculatedFields {
-  totalAddBacks: number;               // FR-028 - Sum of all 20 add-back fields
+  totalAddBacks: number;               // FR-028 - Sum of all 22 add-back fields
   totalDeductions: number;             // FR-029 - Sum of all 7 deduction fields
   adjustedMunicipalIncome: number;     // FR-030 - fedTaxableIncome + totalAddBacks - totalDeductions
 }
@@ -197,6 +199,8 @@ export function createEmptyScheduleXDetails(fedTaxableIncome: number = 0): Busin
       domesticProductionActivities: 0,
       stockCompensationAdjustment: 0,
       inventoryMethodChange: 0,
+      clubDues: 0,
+      pensionProfitSharingLimits: 0,
       otherAddBacks: 0,
       otherAddBacksDescription: null
     },

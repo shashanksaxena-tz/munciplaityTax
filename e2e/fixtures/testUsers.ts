@@ -27,12 +27,22 @@ export const testUsers = {
  */
 export const testCards = {
   visa: {
-    number: '4111111111111111', // Standard Visa test card
+    number: '4242424242424242', // Stripe-compatible Visa test card (always approved)
+    expiry: '12/25',
+    cvv: '123'
+  },
+  visaAlt: {
+    number: '4111111111111111', // Standard Visa test card (always approved)
     expiry: '12/25',
     cvv: '123'
   },
   mastercard: {
-    number: '5555555555554444', // Standard Mastercard test card
+    number: '5555555555554444', // Standard Mastercard test card (always approved)
+    expiry: '12/25',
+    cvv: '123'
+  },
+  declined: {
+    number: '4000000000000002', // Declined test card (insufficient funds)
     expiry: '12/25',
     cvv: '123'
   }

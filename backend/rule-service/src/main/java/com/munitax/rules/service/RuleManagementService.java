@@ -107,9 +107,12 @@ public class RuleManagementService {
         TaxRule rule = ruleRepository.findById(ruleId)
             .orElseThrow(() -> new RuleNotFoundException("Rule not found: " + ruleId));
         
-        // Only validate retroactive changes if the effective date is being changed to the past
+        // Only validate retroactive changes if the effective date is being changed
+        // AND the new effective date is in the past
+        // Setting endDate on an already-effective rule is allowed (to close it out)
         if (request.getEffectiveDate() != null && 
-            request.getEffectiveDate().isBefore(LocalDate.now())) {
+            request.getEffectiveDate().isBefore(LocalDate.now()) &&
+            !request.getEffectiveDate().equals(rule.getEffectiveDate())) {
             validationService.validateNotRetroactive(rule);
         }
         

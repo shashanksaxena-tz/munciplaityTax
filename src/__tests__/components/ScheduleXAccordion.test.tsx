@@ -1,8 +1,8 @@
 /**
  * Component tests for ScheduleXAccordion
- * Tests rendering of all 27 fields and conditional rendering for entity types
+ * Tests rendering of all 29 fields and conditional rendering for entity types
  * 
- * Feature: Comprehensive Business Schedule X Reconciliation (25+ Fields)
+ * Feature: Comprehensive Business Schedule X Reconciliation (29 Fields)
  */
 
 import { describe, it, expect, vi } from 'vitest';
