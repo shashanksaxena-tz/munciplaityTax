@@ -179,6 +179,93 @@ export interface ReconciliationReturnData {
   confirmationNumber?: string;
 }
 
+// ===== W-3 RECONCILIATION TYPES (Year-End Reconciliation) =====
+
+export enum W3SubmissionStatus {
+  DRAFT = 'DRAFT',
+  IN_REVIEW = 'IN_REVIEW',
+  SUBMITTED = 'SUBMITTED',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
+/**
+ * W-3 Year-End Reconciliation Data
+ * Matches backend W3ReconciliationResponse
+ */
+export interface W3ReconciliationData {
+  id: string;
+  tenantId: string;
+  businessId: string;
+  taxYear: number;
+  totalW1Tax: number;
+  totalW2Tax: number;
+  discrepancy: number;
+  status: 'BALANCED' | 'UNBALANCED';
+  w1FilingCount: number;
+  w2FormCount: number;
+  totalEmployees?: number;
+  lateFilingPenalty: number;
+  missingFilingPenalty: number;
+  totalPenalties: number;
+  dueDate: string;
+  filingDate?: string;
+  isSubmitted: boolean;
+  confirmationNumber?: string;
+  notes?: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  w1FilingIds: string[];
+}
+
+/**
+ * W-3 Discrepancy Details
+ * Matches backend W3DiscrepancyResponse
+ */
+export interface W3DiscrepancyData {
+  totalW1Tax: number;
+  totalW2Tax: number;
+  discrepancy: number;
+  discrepancyPercentage: number;
+  status: 'BALANCED' | 'UNBALANCED';
+  w1FilingCount: number;
+  w2FormCount: number;
+  missingW1Filings: number;
+  expectedW1Filings: number;
+  lateFilingPenalty: number;
+  missingFilingPenalty: number;
+  totalPenalties: number;
+  description: string;
+  recommendedAction: string;
+}
+
+/**
+ * W-3 Form Data for editing
+ */
+export interface W3FormData {
+  totalW2Tax: number;
+  w2FormCount: number;
+  totalEmployees: number;
+  notes: string;
+  eSignature: string;
+  eSignatureDate: string;
+}
+
+/**
+ * Discrepancy Resolution Item
+ */
+export interface W3DiscrepancyResolution {
+  id: string;
+  discrepancyType: 'MISSING_FILING' | 'WAGE_MISMATCH' | 'TAX_CALCULATION_ERROR' | 'OTHER';
+  description: string;
+  amount: number;
+  explanation: string;
+  supportingDocuments: string[];
+  resolved: boolean;
+  resolvedDate?: string;
+}
+
 // --- FORM INTERFACES ---
 
 export interface BaseTaxForm {
