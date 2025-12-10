@@ -252,6 +252,8 @@ export function recalculateTotals(scheduleX: BusinessScheduleXDetails): Business
     scheduleX.addBacks.domesticProductionActivities +
     scheduleX.addBacks.stockCompensationAdjustment +
     scheduleX.addBacks.inventoryMethodChange +
+    scheduleX.addBacks.clubDues +
+    scheduleX.addBacks.pensionProfitSharingLimits +
     scheduleX.addBacks.otherAddBacks;
 
   const totalDeductions =
