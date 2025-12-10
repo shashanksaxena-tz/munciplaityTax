@@ -11,6 +11,7 @@ This document provides a comprehensive list of features in the MuniTax system, o
 | Status | Description |
 |--------|-------------|
 | ✅ **IMPLEMENTED** | Feature is complete and working |
+| ⚠️ **PARTIAL/LIMITED** | Feature exists but has significant limitations or gaps |
 | 🚧 **IN PROGRESS** | Feature is partially implemented |
 | ⏳ **PLANNED** | Feature is planned but not started |
 | ❌ **NOT PLANNED** | Feature is not in current roadmap |
@@ -42,11 +43,11 @@ This document provides a comprehensive list of features in the MuniTax system, o
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| Schedule X (Reconciliation) | ✅ | 27-field book-tax reconciliation |
+| Schedule X (Reconciliation) | ⚠️ | Partially Complete - UI has 31 fields, backend supports 29 fields (originally 6 fields, 22% complete) |
 | Schedule Y (Allocation) | ✅ | 3-factor apportionment formula |
 | NOL Carryforward | ✅ | Net Operating Loss tracking with 50% cap |
 | W-1 Withholding Filing | ✅ | Employer withholding returns |
-| W-3 Reconciliation | 🚧 | Year-end withholding reconciliation |
+| W-3 Reconciliation | ⚠️ | Backend only with mock implementation - fetchW1FilingsForYear() returns zero amounts |
 | Form 27 (Net Profits) | ✅ | Business net profits return |
 | Multi-State Apportionment | ⏳ | Property/Payroll/Sales allocation |
 | JEDD Zone Support | ⏳ | Joint Economic Development Districts |
@@ -147,10 +148,10 @@ This document provides a comprehensive list of features in the MuniTax system, o
 |---------|--------|-------------|
 | Auditor Assignment | ✅ | Assign returns to auditors |
 | Reassignment | ✅ | Transfer to different auditor |
-| Split-Screen Review | 🚧 | PDF + extracted data side by side |
+| Split-Screen Review | ❌ | NOT STARTED - No code exists for PDF + extracted data side by side |
 | Audit Report View | ✅ | Risk assessment and flags |
-| Taxpayer History | 🚧 | Prior year comparison |
-| Document Requests | ✅ | Request additional docs |
+| Taxpayer History | ❌ | NOT STARTED - No code exists for prior year comparison |
+| Document Requests | ⚠️ | BACKEND ONLY - Backend model and API exist, but no UI component |
 | Document Tracking | ✅ | Track request status |
 
 ### Decision Actions
@@ -192,7 +193,7 @@ This document provides a comprehensive list of features in the MuniTax system, o
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| Dynamic Rule Loading | ✅ | Rules from database |
+| Dynamic Rule Loading | ❌ | NOT WORKING - Rules stored in database but not applied in calculations |
 | Temporal Effective Dating | ✅ | Start/end date ranges |
 | Multi-Tenant Rules | ✅ | Per-municipality configuration |
 | Rule Versioning | ✅ | Track rule changes |
@@ -234,7 +235,7 @@ This document provides a comprehensive list of features in the MuniTax system, o
 | Credit Card Payments | ⏳ | Real payment gateway |
 | ACH Payments | ⏳ | Bank transfer |
 | Payment Confirmation | ✅ | Confirmation numbers |
-| Receipt Generation | 🚧 | Payment receipts |
+| Receipt Generation | ❌ | NOT STARTED - No code exists for payment receipts |
 
 ### Ledger Management
 
@@ -378,10 +379,10 @@ This document provides a comprehensive list of features in the MuniTax system, o
 - Ledger System
 
 ### In Progress
-- W-3 Reconciliation
-- Split-Screen Auditor Review
+- Schedule X Expansion (UI has 31 fields, originally 6 fields)
+- W-3 Reconciliation (Backend only, mock implementation)
 - Advanced Risk Scoring
-- Receipt Generation
+- Dynamic Rule Loading (Rules not applied in calculations)
 
 ### Planned (Phase 4+)
 - Multi-State Apportionment
@@ -393,15 +394,67 @@ This document provides a comprehensive list of features in the MuniTax system, o
 - Bulk Actions
 - Auto-Save
 
+### Not Started
+- Split-Screen Auditor Review
+- Taxpayer History (Prior Year Comparison)
+- Receipt Generation
+
+---
+
+## Known Limitations
+
+This section documents incomplete features and their current status:
+
+### Schedule X (Reconciliation)
+- **Status**: ⚠️ Partially Complete
+- **Current State**: UI has 31 fields defined, backend supports 29 fields
+- **Original State**: 6 fields (22% complete)
+- **Limitation**: While the UI and data models support comprehensive M-1 reconciliation, the original implementation only covered 6 basic fields
+
+### Dynamic Rule Loading
+- **Status**: ❌ NOT WORKING
+- **Current State**: Rules are stored in database with full infrastructure (temporal dating, versioning, approval workflow)
+- **Limitation**: Rules are not being applied during tax calculations - calculations use hardcoded values instead of database rules
+- **Impact**: Changes to tax rules in the admin UI do not affect calculated tax amounts
+
+### W-3 Reconciliation
+- **Status**: ⚠️ BACKEND ONLY (Mock Implementation)
+- **Current State**: Backend models, services, and APIs exist
+- **Limitation**: `fetchW1FilingsForYear()` method returns zero amounts (mock implementation)
+- **Impact**: All reconciliations show incorrect discrepancies; integration with tax-engine-service required
+- **Code Location**: `W3ReconciliationService.java` lines 345-379
+
+### Document Requests
+- **Status**: ⚠️ BACKEND ONLY
+- **Current State**: Backend model (`DocumentRequest.java`) and repository exist
+- **Limitation**: No UI component to create, view, or manage document requests
+- **Impact**: Feature is accessible only via direct API calls
+
+### Split-Screen Review
+- **Status**: ❌ NOT STARTED
+- **Current State**: No code exists
+- **Limitation**: Auditors cannot view PDF and extracted data side-by-side
+
+### Taxpayer History
+- **Status**: ❌ NOT STARTED
+- **Current State**: No code exists
+- **Limitation**: No prior year comparison available for auditors
+
+### Receipt Generation
+- **Status**: ❌ NOT STARTED
+- **Current State**: No code exists
+- **Limitation**: No payment receipt generation or download capability
+
 ---
 
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1 | 2025-12-10 | Updated feature statuses to reflect actual implementation; added Known Limitations section |
 | 1.0 | 2025-12-01 | Initial features documentation |
 
 ---
 
 **Document Owner:** Product Team  
-**Last Updated:** December 1, 2025
+**Last Updated:** December 10, 2025
