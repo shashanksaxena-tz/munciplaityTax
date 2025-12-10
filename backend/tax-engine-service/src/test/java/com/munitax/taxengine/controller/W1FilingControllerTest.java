@@ -183,7 +183,7 @@ class W1FilingControllerTest {
 
         // When/Then
         mockMvc.perform(get("/api/v1/w1-filings/reconciliation/{employerId}", employerId)
-                .param("taxYear", taxYear.toString()))
+                .param("taxYear", Integer.toString(taxYear)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].employerId").value(employerId.toString()))
             .andExpect(jsonPath("$[0].taxYear").value(taxYear))
