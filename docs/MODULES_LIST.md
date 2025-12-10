@@ -248,7 +248,7 @@ extraction-service/
     └── ExtractionResult.java    # Extraction response
 ```
 
-**Port:** 8083
+**Port:** 8084
 
 **Endpoints:**
 - `GET /extraction/stream?fileName={name}` - SSE extraction stream
@@ -281,7 +281,7 @@ submission-service/
     └── RiskScoringService.java  # Risk calculation
 ```
 
-**Port:** 8084
+**Port:** 8082
 
 **Endpoints:**
 - `POST /api/v1/submissions` - Submit return

@@ -26,9 +26,9 @@ graph TB
     subgraph "Core Microservices"
         AUTH[Auth Service<br/>Port 8081]
         TENANT[Tenant Service<br/>Port 8082]
-        SUBMISSION[Submission Service<br/>Port 8084]
+        SUBMISSION[Submission Service<br/>Port 8082]
         TAX[Tax Engine Service<br/>Port 8085]
-        EXTRACT[Extraction Service<br/>Port 8083]
+        EXTRACT[Extraction Service<br/>Port 8084]
         PDF[PDF Service<br/>Port 8086]
         RULE[Rule Service<br/>Port 8087]
         LEDGER[Ledger Service<br/>Port 8088]
@@ -172,8 +172,8 @@ graph LR
 | **Gateway Service** | 8080 | API routing, rate limiting, request/response transformation |
 | **Auth Service** | 8081 | User authentication, JWT token management, role-based access control |
 | **Tenant Service** | 8082 | Multi-tenant management, session storage, address validation |
-| **Extraction Service** | 8083 | AI-powered document extraction using Google Gemini |
-| **Submission Service** | 8084 | Tax return submissions, auditor workflow, audit trail |
+| **Extraction Service** | 8084 | AI-powered document extraction using Google Gemini |
+| **Submission Service** | 8082 | Tax return submissions, auditor workflow, audit trail |
 | **Tax Engine Service** | 8085 | Individual and business tax calculations, discrepancy detection |
 | **PDF Service** | 8086 | Tax form PDF generation using Apache PDFBox |
 | **Rule Service** | 8087 | Dynamic tax rule configuration, temporal rule management |

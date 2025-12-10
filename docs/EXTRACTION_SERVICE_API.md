@@ -151,7 +151,7 @@ data: {
 #### Example Request (cURL)
 
 ```bash
-curl -X POST "http://localhost:8083/api/v1/extraction/extract" \
+curl -X POST "http://localhost:8084/api/v1/extraction/extract" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -H "X-Gemini-Api-Key: YOUR_GEMINI_API_KEY" \
   -F "file=@/path/to/tax_forms.pdf"
