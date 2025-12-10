@@ -32,13 +32,16 @@ export const CreditCardForm: React.FC<CreditCardFormProps> = ({
 }) => {
   const [showTestCards, setShowTestCards] = React.useState(false);
   const expiryInputRef = useRef<HTMLInputElement>(null);
+  
+  // Delay to ensure form updates before focusing next field
+  const AUTOFILL_FOCUS_DELAY = 50;
 
   const handleSelectTestCard = (card: TestCreditCard) => {
     onCardNumberChange(card.cardNumber);
     // Auto-focus expiry field after card auto-fill
     setTimeout(() => {
       expiryInputRef.current?.focus();
-    }, 50);
+    }, AUTOFILL_FOCUS_DELAY);
   };
 
   return (

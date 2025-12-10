@@ -29,7 +29,7 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
           </div>
           <h3 className="text-xl font-bold text-[#0f1012] text-center">Payment Successful!</h3>
           <p className="text-[#5d6567] mt-2 text-center">
-            Your payment of <strong>${amount.toLocaleString()}</strong> has been processed.
+            Your payment of <strong>${response.amount.toLocaleString()}</strong> has been processed.
           </p>
           
           {/* Receipt Details */}
@@ -69,7 +69,7 @@ export const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
             <div className="mt-6">
               <button 
                 onClick={onClose}
-                className="w-full py-3 bg-gradient-to-r from-[#10b981] to-[#10b981] hover:from-[#059669] hover:to-[#059669] text-white rounded-xl font-bold shadow-lg shadow-[#10b981]/20 transition-all"
+                className="w-full py-3 bg-[#10b981] hover:bg-[#059669] text-white rounded-xl font-bold shadow-lg shadow-[#10b981]/20 transition-all"
               >
                 Continue
               </button>

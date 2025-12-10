@@ -29,6 +29,9 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
   onAutoFillComplete,
 }) => {
   const [showTestACH, setShowTestACH] = React.useState(false);
+  
+  // Delay to ensure form updates before callback
+  const AUTOFILL_CALLBACK_DELAY = 50;
 
   const handleSelectTestACH = (account: TestACHAccount) => {
     onAchRoutingChange(account.routingNumber);
@@ -37,7 +40,7 @@ export const BankAccountForm: React.FC<BankAccountFormProps> = ({
     if (onAutoFillComplete) {
       setTimeout(() => {
         onAutoFillComplete();
-      }, 50);
+      }, AUTOFILL_CALLBACK_DELAY);
     }
   };
 
