@@ -42,6 +42,8 @@ describe('Schedule X Calculations', () => {
         domesticProductionActivities: 0,
         stockCompensationAdjustment: 0,
         inventoryMethodChange: 0,
+        clubDues: 0,
+        pensionProfitSharingLimits: 0,
         otherAddBacks: 0,
         otherAddBacksDescription: null,
       };
@@ -75,6 +77,8 @@ describe('Schedule X Calculations', () => {
         domesticProductionActivities: 0,
         stockCompensationAdjustment: 0,
         inventoryMethodChange: 0,
+        clubDues: 0,
+        pensionProfitSharingLimits: 0,
         otherAddBacks: 0,
         otherAddBacksDescription: null,
       };

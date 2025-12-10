@@ -166,6 +166,20 @@ export const ScheduleXAccordion: React.FC<ScheduleXAccordionProps> = ({
               onChange={(v) => handleFieldChange('addBacks', 'politicalContributions', v)}
               helpText="Political campaign contributions (non-deductible)"
             />
+            <ScheduleXFieldInput
+              fieldName="clubDues"
+              label="Club Dues"
+              value={scheduleX.addBacks.clubDues}
+              onChange={(v) => handleFieldChange('addBacks', 'clubDues', v)}
+              helpText="Non-deductible club dues and membership fees (social, athletic, or sporting clubs)"
+            />
+            <ScheduleXFieldInput
+              fieldName="pensionProfitSharingLimits"
+              label="Pension/Profit-Sharing Excess"
+              value={scheduleX.addBacks.pensionProfitSharingLimits}
+              onChange={(v) => handleFieldChange('addBacks', 'pensionProfitSharingLimits', v)}
+              helpText="Pension/profit-sharing contributions exceeding IRS limits (IRC Section 404)"
+            />
           </div>
 
           {/* Capital & Losses */}
