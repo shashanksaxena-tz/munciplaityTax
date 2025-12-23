@@ -244,10 +244,11 @@ More content.
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.2 | 2025-12-10 | Referenced updated FEATURES_LIST.md with corrected feature statuses |
 | 1.1 | 2025-12-01 | Updated with latest main branch changes, added disconnect analysis reference |
 | 1.0 | 2025-12-01 | Initial documentation creation |
 
 ---
 
 **Document Owner:** Development Team  
-**Last Updated:** December 1, 2025
+**Last Updated:** December 10, 2025
