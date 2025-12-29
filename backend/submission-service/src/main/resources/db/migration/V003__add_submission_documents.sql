@@ -12,9 +12,17 @@ CREATE TABLE IF NOT EXISTS submission_documents (
     extraction_confidence DOUBLE PRECISION,
     page_count INTEGER,
     field_provenance TEXT,
-    tenant_id VARCHAR(50),
-    CONSTRAINT fk_submission FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE
+    tenant_id VARCHAR(50)
 );
+
+-- Add foreign key only if submissions table exists to keep migration idempotent
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'submissions') THEN
+        ALTER TABLE submission_documents
+            ADD CONSTRAINT IF NOT EXISTS fk_submission FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE;
+    END IF;
+END$$;
 
 CREATE INDEX IF NOT EXISTS idx_submission_documents_submission_id ON submission_documents(submission_id);
 CREATE INDEX IF NOT EXISTS idx_submission_documents_tenant_id ON submission_documents(tenant_id);
