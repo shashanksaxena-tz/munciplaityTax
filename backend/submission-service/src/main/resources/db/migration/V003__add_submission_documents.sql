@@ -19,8 +19,13 @@ CREATE TABLE IF NOT EXISTS submission_documents (
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'submissions') THEN
-        ALTER TABLE submission_documents
-            ADD CONSTRAINT IF NOT EXISTS fk_submission FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE;
+        -- Use EXECUTE because PostgreSQL does not support IF NOT EXISTS for ADD CONSTRAINT
+        BEGIN
+            EXECUTE 'ALTER TABLE submission_documents ADD CONSTRAINT fk_submission FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE';
+        EXCEPTION WHEN duplicate_object THEN
+            -- constraint already exists, ignore
+            NULL;
+        END;
     END IF;
 END$$;
 
