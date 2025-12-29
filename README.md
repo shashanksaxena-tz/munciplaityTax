@@ -8,6 +8,22 @@ A comprehensive tax filing and auditing system for Dublin Municipality, supporti
 
 View your app in AI Studio: https://ai.studio/apps/drive/1Dqi4Vp_81RqaSKw_9bwsdp5z0tdIwtxM
 
+---
+
+## 📚 Comprehensive Documentation
+
+**NEW:** Complete technical documentation is now available in the `doc-29-dec-2025/` folder:
+
+- **[00-PROJECT_README.md](./doc-29-dec-2025/00-PROJECT_README.md)** - Complete project overview and architecture
+- **[09-TAX_ENGINE.md](./doc-29-dec-2025/09-TAX_ENGINE.md)** - Detailed tax calculation engine documentation
+- **[10-RULE_FLOW.md](./doc-29-dec-2025/10-RULE_FLOW.md)** - Rule engine workflow and integration
+- **[15-CRITICAL_FINDINGS.md](./doc-29-dec-2025/15-CRITICAL_FINDINGS.md)** - Critical issues and remediation roadmap
+- **[README.md](./doc-29-dec-2025/README.md)** - Documentation index and navigation guide
+
+**Total:** ~490 pages of technical documentation with 45+ Mermaid diagrams, covering all microservices, tax algorithms, critical issues, and remediation plans.
+
+---
+
 ## Features
 
 ### For Taxpayers
