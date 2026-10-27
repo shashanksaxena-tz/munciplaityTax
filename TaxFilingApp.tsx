@@ -423,6 +423,8 @@ export default function TaxFilingApp() {
             onBack={() => setStep(AppStep.UPLOAD)}
             rules={taxRules}
             isSubmitted={currentSession.status === TaxReturnStatus.SUBMITTED}
+            pdfData={sessionPdfData}
+            formProvenances={sessionFormProvenances}
           />
         )}
 

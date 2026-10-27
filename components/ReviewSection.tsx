@@ -1,11 +1,12 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { TaxFormData, TaxFormType, W2Form, Form1099, W2GForm, ScheduleC, ScheduleE, ScheduleF, LocalTaxForm, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCalculationResult, Address, FilingStatus, FederalTaxForm, PartnershipEntity } from '../types';
-import { Trash2, DollarSign, Plus, ChevronDown, User, Calendar, Building, Ticket, FileText, Home, Wheat, MapPin, Hash, Briefcase, AlertTriangle, Calculator, Activity, PieChart, BarChart, CheckCircle, XCircle, ShieldAlert, FileSearch, Sparkles, AlertOctagon, Users, FileCheck } from 'lucide-react';
+import { TaxFormData, TaxFormType, W2Form, Form1099, W2GForm, ScheduleC, ScheduleE, ScheduleF, LocalTaxForm, TaxPayerProfile, TaxReturnSettings, TaxRulesConfig, TaxCalculationResult, Address, FilingStatus, FederalTaxForm, PartnershipEntity, FormProvenance, FieldProvenance, BoundingBox } from '../types';
+import { Trash2, DollarSign, Plus, ChevronDown, User, Calendar, Building, Ticket, FileText, Home, Wheat, MapPin, Hash, Briefcase, AlertTriangle, Calculator, Activity, PieChart, BarChart, CheckCircle, XCircle, ShieldAlert, FileSearch, Sparkles, AlertOctagon, Users, FileCheck, X, Eye } from 'lucide-react';
 import { DiscrepancyView } from './DiscrepancyView';
 import { api } from '../services/api';
 import { verifyLocalAddress } from '../utils/addressUtils';
 import { Tooltip } from './Tooltip';
+import { PdfViewer } from './PdfViewer';
 
 interface ReviewSectionProps {
   forms: TaxFormData[];
@@ -20,14 +21,25 @@ interface ReviewSectionProps {
   onBack: () => void;
   rules: TaxRulesConfig;
   isSubmitted?: boolean;
+  pdfData?: string;
+  formProvenances?: FormProvenance[];
+}
+
+interface SourceView {
+  fieldName: string;
+  formType: string;
+  pageNumber: number;
+  boundingBox?: BoundingBox;
+  confidence?: number;
 }
 
 export const ReviewSection: React.FC<ReviewSectionProps> = ({
-  forms, profile, settings, onUpdateProfile, onUpdateSettings, onUpdateForm, onDeleteForm, onAddManualForm, onCalculate, onBack, rules, isSubmitted
+  forms, profile, settings, onUpdateProfile, onUpdateSettings, onUpdateForm, onDeleteForm, onAddManualForm, onCalculate, onBack, rules, isSubmitted, pdfData, formProvenances
 }) => {
   const [expandedProfile, setExpandedProfile] = useState(!profile.name);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [liveResult, setLiveResult] = useState<TaxCalculationResult | null>(null);
+  const [viewingSource, setViewingSource] = useState<SourceView | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -198,7 +210,21 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
         ) : (
           <div className="grid gap-6">
             {forms.map((form) => {
-              const props = { key: form.id, form: form as any, onUpdate: onUpdateForm, onDelete: onDeleteForm };
+              const formProvenance = formProvenances?.find(p => p.formType === form.formType);
+              const props = {
+                key: form.id,
+                form: form as any,
+                onUpdate: onUpdateForm,
+                onDelete: onDeleteForm,
+                formProvenance,
+                onShowSource: (fieldName: string, prov?: FieldProvenance) => setViewingSource({
+                  fieldName,
+                  formType: form.formType,
+                  pageNumber: prov?.pageNumber ?? formProvenance?.pageNumber ?? form.sourcePage ?? 1,
+                  boundingBox: prov?.boundingBox ?? formProvenance?.boundingBox,
+                  confidence: prov?.confidence ?? formProvenance?.formConfidence,
+                })
+              };
               if (form.formType === TaxFormType.W2) return <W2Card {...props} />;
               if (form.formType === TaxFormType.W2G) return <W2GCard {...props} />;
               if (form.formType === TaxFormType.SCHEDULE_C) return <ScheduleCCard {...props} />;
@@ -255,6 +281,39 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({
                   {netBalance > 0 ? `+${Math.abs(netBalance).toLocaleString()}` : `${Math.abs(netBalance).toLocaleString()}`}
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewingSource && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl h-[85vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#dcdede]">
+              <span className="text-sm font-semibold text-[#0f1012]">Source Document</span>
+              <button onClick={() => setViewingSource(null)} className="text-[#babebf] hover:text-[#0f1012] transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden p-4">
+              {pdfData ? (
+                <PdfViewer
+                  pdfData={pdfData}
+                  currentPage={viewingSource.pageNumber}
+                  highlightedField={{
+                    fieldName: viewingSource.fieldName,
+                    boundingBox: viewingSource.boundingBox,
+                    formType: viewingSource.formType,
+                    pageNumber: viewingSource.pageNumber,
+                    confidence: viewingSource.confidence,
+                  }}
+                  className="h-full"
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-sm text-[#5d6567]">
+                  Original document isn't available for this session. Re-upload the document to view source evidence.
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -336,7 +395,7 @@ const MenuOption = ({ label, onClick }: any) => (
   <button onClick={onClick} className="w-full text-left px-3 py-2 text-sm text-[#5d6567] hover:bg-[#ebf4ff] hover:text-[#970bed]">{label}</button>
 );
 
-const InputGroup = ({ label, value, onChange, isText, placeholder, tooltip, taxRelevant, noLabel, confidence }: any) => {
+const InputGroup = ({ label, value, onChange, isText, placeholder, tooltip, taxRelevant, noLabel, confidence, onShowSource }: any) => {
   const isHighConfidence = confidence !== undefined && confidence >= 0.90;
   const isMedConfidence = confidence !== undefined && confidence >= 0.75 && confidence < 0.90;
   const isLowConfidence = confidence !== undefined && confidence < 0.75;
@@ -358,6 +417,16 @@ const InputGroup = ({ label, value, onChange, isText, placeholder, tooltip, taxR
                   <CheckCircle className="w-3 h-3 text-[#10b981]/50" />
               }
             </Tooltip>
+          )}
+          {onShowSource && (
+            <button
+              type="button"
+              onClick={onShowSource}
+              title="Show source in PDF"
+              className="ml-auto flex items-center gap-0.5 text-[#469fe8] hover:text-[#3a8bd4] transition-colors"
+            >
+              <Eye className="w-3 h-3" />
+            </button>
           )}
         </div>
       )}
@@ -381,7 +450,7 @@ const InputGroup = ({ label, value, onChange, isText, placeholder, tooltip, taxR
   );
 };
 
-const ExtractionMetaBar = ({ form }: { form: TaxFormData }) => {
+const ExtractionMetaBar = ({ form, onShowSource }: { form: TaxFormData, onShowSource?: (fieldName: string) => void }) => {
   // Only show extraction metadata if the form was AI-extracted
   if (!form.isAiExtracted) {
     return null;
@@ -389,10 +458,16 @@ const ExtractionMetaBar = ({ form }: { form: TaxFormData }) => {
 
   return (
     <div className="bg-[#ebf4ff] px-6 py-2 border-b border-[#469fe8]/20 flex items-center gap-6 text-xs text-[#469fe8]">
-      <div className="flex items-center gap-1.5" title="Click to view PDF source">
+      <button
+        type="button"
+        onClick={onShowSource ? () => onShowSource(form.formType) : undefined}
+        disabled={!onShowSource}
+        title="Click to view PDF source"
+        className={`flex items-center gap-1.5 ${onShowSource ? 'hover:underline cursor-pointer' : ''}`}
+      >
         <FileSearch className="w-3.5 h-3.5 text-[#469fe8]" />
         <span className="font-semibold">Source: Page {form.sourcePage || 1}</span>
-      </div>
+      </button>
       <div className="flex items-center gap-1.5">
         <Sparkles className="w-3.5 h-3.5 text-[#970bed]" />
         <span className="font-semibold">Reason:</span> {form.extractionReason || "AI Identified Form"}
@@ -448,28 +523,28 @@ const CardContainer = ({ title, icon, onDelete, children, meta, headerAction }: 
 
 // --- FORM CARDS ---
 
-const W2Card: React.FC<{ form: W2Form, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const W2Card: React.FC<{ form: W2Form, onUpdate: any, onDelete: any, formProvenance?: FormProvenance, onShowSource?: (fieldName: string, prov?: FieldProvenance) => void }> = ({ form, onUpdate, onDelete, formProvenance, onShowSource }) => {
   const update = (k: keyof W2Form, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
-
-  console.log('[W2Card] Rendering W2 form:', form);
+  const fieldProv = (key: string) => formProvenance?.fields.find(f => f.fieldName === key);
+  const showSourceFor = (key: string) => onShowSource ? () => onShowSource(key, fieldProv(key)) : undefined;
 
   return (
-    <CardContainer title={`W-2: ${form.employer || 'Unknown Employer'}`} icon={<Building className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
+    <CardContainer title={`W-2: ${form.employer || 'Unknown Employer'}`} icon={<Building className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3 p-3 bg-[#fbfbfb] rounded-lg">
           <h5 className="font-bold text-xs text-[#babebf] uppercase">Employer Info</h5>
-          <InputGroup label="Name" value={form.employer} onChange={(v: any) => update('employer', v)} isText confidence={conf.employer} />
-          <InputGroup label="EIN" value={form.employerEin} onChange={(v: any) => update('employerEin', v)} isText confidence={conf.employerEin} />
+          <InputGroup label="Name" value={form.employer} onChange={(v: any) => update('employer', v)} isText confidence={conf.employer} onShowSource={showSourceFor('employer')} />
+          <InputGroup label="EIN" value={form.employerEin} onChange={(v: any) => update('employerEin', v)} isText confidence={conf.employerEin} onShowSource={showSourceFor('employerEin')} />
         </div>
         <div className="space-y-3 p-3 bg-[#ebf4ff] rounded-lg">
           <h5 className="font-bold text-xs text-[#469fe8] uppercase">Wages & Tax</h5>
-          <InputGroup label="Box 1: Fed Wages" value={form.federalWages} onChange={(v: any) => update('federalWages', v)} taxRelevant confidence={conf.federalWages} />
-          <InputGroup label="Box 5: Medicare Wages" value={form.medicareWages} onChange={(v: any) => update('medicareWages', v)} taxRelevant confidence={conf.medicareWages} />
-          <InputGroup label="Box 18: Local Wages" value={form.localWages} onChange={(v: any) => update('localWages', v)} taxRelevant confidence={conf.localWages} />
+          <InputGroup label="Box 1: Fed Wages" value={form.federalWages} onChange={(v: any) => update('federalWages', v)} taxRelevant confidence={conf.federalWages} onShowSource={showSourceFor('federalWages')} />
+          <InputGroup label="Box 5: Medicare Wages" value={form.medicareWages} onChange={(v: any) => update('medicareWages', v)} taxRelevant confidence={conf.medicareWages} onShowSource={showSourceFor('medicareWages')} />
+          <InputGroup label="Box 18: Local Wages" value={form.localWages} onChange={(v: any) => update('localWages', v)} taxRelevant confidence={conf.localWages} onShowSource={showSourceFor('localWages')} />
           <div className="grid grid-cols-2 gap-2">
-            <InputGroup label="Box 19 Tax" value={form.localWithheld} onChange={(v: any) => update('localWithheld', v)} taxRelevant confidence={conf.localWithheld} />
-            <InputGroup label="Box 20 Locality" value={form.locality} onChange={(v: any) => update('locality', v)} isText taxRelevant confidence={conf.locality} />
+            <InputGroup label="Box 19 Tax" value={form.localWithheld} onChange={(v: any) => update('localWithheld', v)} taxRelevant confidence={conf.localWithheld} onShowSource={showSourceFor('localWithheld')} />
+            <InputGroup label="Box 20 Locality" value={form.locality} onChange={(v: any) => update('locality', v)} isText taxRelevant confidence={conf.locality} onShowSource={showSourceFor('locality')} />
           </div>
         </div>
       </div>
@@ -477,11 +552,11 @@ const W2Card: React.FC<{ form: W2Form, onUpdate: any, onDelete: any }> = ({ form
   );
 };
 
-const W2GCard: React.FC<{ form: W2GForm, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const W2GCard: React.FC<{ form: W2GForm, onUpdate: any, onDelete: any, onShowSource?: (fieldName: string) => void }> = ({ form, onUpdate, onDelete, onShowSource }) => {
   const update = (k: keyof W2GForm, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
   return (
-    <CardContainer title={`W-2G: ${form.payer}`} icon={<Ticket className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
+    <CardContainer title={`W-2G: ${form.payer}`} icon={<Ticket className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
           <InputGroup label="Payer Name" value={form.payer} onChange={(v: any) => update('payer', v)} isText confidence={conf.payer} />
@@ -497,11 +572,11 @@ const W2GCard: React.FC<{ form: W2GForm, onUpdate: any, onDelete: any }> = ({ fo
   );
 };
 
-const ScheduleCCard: React.FC<{ form: ScheduleC, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const ScheduleCCard: React.FC<{ form: ScheduleC, onUpdate: any, onDelete: any, onShowSource?: (fieldName: string) => void }> = ({ form, onUpdate, onDelete, onShowSource }) => {
   const update = (k: keyof ScheduleC, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
   return (
-    <CardContainer title={`Schedule C: ${form.businessName}`} icon={<Briefcase className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
+    <CardContainer title={`Schedule C: ${form.businessName}`} icon={<Briefcase className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
           <InputGroup label="Business Name" value={form.businessName} onChange={(v: any) => update('businessName', v)} isText confidence={conf.businessName} />
@@ -516,11 +591,11 @@ const ScheduleCCard: React.FC<{ form: ScheduleC, onUpdate: any, onDelete: any }>
   );
 };
 
-const ScheduleFCard: React.FC<{ form: ScheduleF, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const ScheduleFCard: React.FC<{ form: ScheduleF, onUpdate: any, onDelete: any, onShowSource?: (fieldName: string) => void }> = ({ form, onUpdate, onDelete, onShowSource }) => {
   const update = (k: keyof ScheduleF, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
   return (
-    <CardContainer title={`Schedule F: ${form.businessName}`} icon={<Wheat className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
+    <CardContainer title={`Schedule F: ${form.businessName}`} icon={<Wheat className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3"><InputGroup label="Proprietor" value={form.businessName} onChange={(v: any) => update('businessName', v)} isText confidence={conf.businessName} /></div>
         <div className="space-y-3"><InputGroup label="Net Farm Profit" value={form.netFarmProfit} onChange={(v: any) => update('netFarmProfit', v)} taxRelevant confidence={conf.netFarmProfit} /></div>
@@ -529,7 +604,7 @@ const ScheduleFCard: React.FC<{ form: ScheduleF, onUpdate: any, onDelete: any }>
   );
 };
 
-const ScheduleECard: React.FC<{ form: ScheduleE, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const ScheduleECard: React.FC<{ form: ScheduleE, onUpdate: any, onDelete: any, onShowSource?: (fieldName: string) => void }> = ({ form, onUpdate, onDelete, onShowSource }) => {
   const rentals = form.rentals || [];
   const partnerships = form.partnerships || [];
 
@@ -564,7 +639,7 @@ const ScheduleECard: React.FC<{ form: ScheduleE, onUpdate: any, onDelete: any }>
   };
 
   return (
-    <CardContainer title="Schedule E (Rentals & Partnerships)" icon={<Home className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => onUpdate({ ...form, owner: v })} />}>
+    <CardContainer title="Schedule E (Rentals & Partnerships)" icon={<Home className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => onUpdate({ ...form, owner: v })} />}>
       <div className="space-y-8">
 
         {/* Part I */}
@@ -639,11 +714,11 @@ const ScheduleECard: React.FC<{ form: ScheduleE, onUpdate: any, onDelete: any }>
   );
 };
 
-const Form1099Card: React.FC<{ form: Form1099, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const Form1099Card: React.FC<{ form: Form1099, onUpdate: any, onDelete: any, onShowSource?: (fieldName: string) => void }> = ({ form, onUpdate, onDelete, onShowSource }) => {
   const update = (k: keyof Form1099, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
   return (
-    <CardContainer title={`${form.formType}`} icon={<FileText className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
+    <CardContainer title={`${form.formType}`} icon={<FileText className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />} headerAction={<OwnerToggle value={form.owner} onChange={(v) => update('owner', v)} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <InputGroup label="Payer" value={form.payer} onChange={(v: any) => update('payer', v)} isText confidence={conf.payer} />
         <InputGroup label="Income Amount" value={form.incomeAmount} onChange={(v: any) => update('incomeAmount', v)} taxRelevant confidence={conf.incomeAmount} />
@@ -652,11 +727,11 @@ const Form1099Card: React.FC<{ form: Form1099, onUpdate: any, onDelete: any }> =
   );
 }
 
-const LocalFormCard: React.FC<{ form: LocalTaxForm, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const LocalFormCard: React.FC<{ form: LocalTaxForm, onUpdate: any, onDelete: any, onShowSource?: (fieldName: string) => void }> = ({ form, onUpdate, onDelete, onShowSource }) => {
   const update = (k: string, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
   return (
-    <CardContainer title={`Verification: ${form.formType}`} icon={<FileCheck className="w-4 h-4 text-[#970bed]" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />}>
+    <CardContainer title={`Verification: ${form.formType}`} icon={<FileCheck className="w-4 h-4 text-[#970bed]" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3 p-3 bg-[#fbfbfb] rounded-xl">
           <h5 className="text-xs font-bold text-[#babebf] uppercase border-b pb-1 mb-2">Income</h5>
@@ -677,11 +752,11 @@ const LocalFormCard: React.FC<{ form: LocalTaxForm, onUpdate: any, onDelete: any
   );
 };
 
-const Federal1040Card: React.FC<{ form: FederalTaxForm, onUpdate: any, onDelete: any }> = ({ form, onUpdate, onDelete }) => {
+const Federal1040Card: React.FC<{ form: FederalTaxForm, onUpdate: any, onDelete: any, onShowSource?: (fieldName: string) => void }> = ({ form, onUpdate, onDelete, onShowSource }) => {
   const update = (k: string, v: any) => onUpdate({ ...form, [k]: v });
   const conf = form.fieldConfidence || {};
   return (
-    <CardContainer title={`Federal 1040 Summary`} icon={<FileText className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} />}>
+    <CardContainer title={`Federal 1040 Summary`} icon={<FileText className="w-4 h-4" />} onDelete={() => onDelete(form.id)} meta={<ExtractionMetaBar form={form} onShowSource={onShowSource} />}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
           <InputGroup label="Wages (1z)" value={form.wages} onChange={(v: any) => update('wages', v)} />

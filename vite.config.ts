@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        watch: {
+          ignored: ['**/.omc/**'],
+        },
         proxy: {
           // Proxy API requests to the gateway service
           '/api': {

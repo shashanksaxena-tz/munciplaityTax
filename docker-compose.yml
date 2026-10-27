@@ -137,8 +137,8 @@ services:
       - discovery-service
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
-      GEMINI_API_KEY: xxxxx
-      GEMINI_API_MODEL: gemini-2.0-flash
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_API_MODEL: ${GEMINI_API_MODEL}
 
   submission-service:
     build:
